@@ -60,8 +60,11 @@ Backend behavior, data flow, and Hydrogen conventions **must remain consistent**
 |               | Workbox          | 7.0.0      | Service worker, offline support     |
 |               | Embla Carousel   | -          | Autoplay, auto-scroll               |
 |               | colorjs.io       | -          | Color manipulation                  |
+|               | Sonner           | 2.x        | Toast notifications                 |
+|               | tw-animate-css   | 1.x        | CSS animation utilities             |
+|               | react-intersection-observer | 10.x | Viewport detection / infinite scroll |
 | **Dev**       | ESLint           | 9          | TypeScript, React, a11y             |
-|               | Bun              | Latest     | Package manager + scripts           |
+|               | npm              | Latest     | Package manager + scripts           |
 |               | Prettier         | 3          | Shopify config                      |
 |               | Node.js          | >= 20.19.0 | **Strict requirement**              |
 
@@ -102,12 +105,12 @@ storefront_002/
 ## Common Commands
 
 ```bash
-bun run dev          # Dev server + GraphQL codegen
-bun run build        # Production build
-bun run preview      # Preview build
-bun run lint         # ESLint
-bun run typecheck    # TypeScript + route types
-bun run codegen      # Regenerate GraphQL types
+npm run dev          # Dev server + GraphQL codegen
+npm run build        # Production build
+npm run preview      # Preview build
+npm run lint         # ESLint
+npm run typecheck    # TypeScript + route types
+npm run codegen      # Regenerate GraphQL types
 ```
 
 ## Code Style
@@ -154,7 +157,7 @@ Always use MCP tools over web search for official docs. Validate GraphQL after A
 ## Repository
 
 **Commits**: Conventional (`feat:`, `fix:`, `docs:`, `refactor:`, `chore:`, `perf:`)
-**Before Push**: `bun run typecheck`, `bun run lint`, `bun run codegen` (after GraphQL changes)
+**Before Push**: `npm run typecheck`, `npm run lint`, `npm run codegen` (after GraphQL changes)
 **Code Review**: Read comments, update on change, test WCAG compliance
 
 ## Environment
@@ -185,7 +188,7 @@ SHOP_ID=66049638586
 
 For portfolio Workers deploys, demo-store credentials live in `wrangler.jsonc`. UI and content defaults are currently embedded in `app/lib/metaobject-parsers.ts`, and `app/lib/data-source.ts` currently proxies Shopify only.
 
-**Setup**: `bun install && bun run codegen && bun run dev`
+**Setup**: `npm install && npm run codegen && npm run dev`
 **Dev URL**: check the Hydrogen dev output for the active local URL; do not assume `http://localhost:3000`
 
 ## Key Files
@@ -217,7 +220,7 @@ For portfolio Workers deploys, demo-store credentials live in `wrangler.jsonc`. 
 **4. GraphQL Codegen**
 
 - **Problem**: Stale types after query changes
-- **Solution**: `bun run codegen` after ANY GraphQL modification
+- **Solution**: `npm run codegen` after ANY GraphQL modification
 
 **5. Service Worker Cache**
 
@@ -373,7 +376,7 @@ Multiple dev servers may be running simultaneously across projects. **Always ide
 
 Detection order (use the first that works):
 
-1. **Check dev server output** — the terminal running `bun run dev` prints the active URL (e.g. `Local: http://localhost:4457`)
+1. **Check dev server output** — the terminal running `npm run dev` prints the active URL (e.g. `Local: http://localhost:4457`)
 2. **Check `vite.config.ts`** — look for an explicit `server.port` value
 3. **Check `package.json`** — some scripts hardcode a port via `--port` flag
 4. **Scan active ports** — run `lsof -i :3000-4999 | grep LISTEN` to see what's bound, then match the process to this project's directory

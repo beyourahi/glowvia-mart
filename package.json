@@ -10,10 +10,10 @@
         "lint": "eslint --no-error-on-unmatched-pattern .",
         "typecheck": "react-router typegen && tsc --noEmit",
         "codegen": "shopify hydrogen codegen && react-router typegen",
-        "deploy": "bun run deploy:workers",
-        "deploy:workers": "bun run build && wrangler deploy",
-        "deploy:workers:dry": "bun run build && wrangler deploy --dry-run",
-        "dev:workers": "bun run build && wrangler dev",
+        "deploy": "npm run deploy:workers",
+        "deploy:workers": "npm run build && wrangler deploy",
+        "deploy:workers:dry": "npm run build && wrangler deploy --dry-run",
+        "dev:workers": "npm run build && wrangler dev",
         "cf-typegen": "wrangler types"
     },
     "dependencies": {

@@ -48,8 +48,8 @@ Backend behavior, data flow, and Hydrogen conventions **must remain consistent**
 | ------------- | ---------------- | ---------- | ----------------------------------- |
 | **Framework** | React            | 18.3.1     |                                     |
 |               | React Router     | 7.12       | Hydrogen preset, file-based routing |
-|               | Shopify Hydrogen | 2026.1.3   | Storefront + Customer Account APIs  |
-|               | Storefront API   | 2026-01    | GraphQL API version                 |
+|               | Shopify Hydrogen | 2026.4.0   | Storefront + Customer Account APIs  |
+|               | Storefront API   | 2026-04    | GraphQL API version                 |
 |               | TypeScript       | 5.9        | Strict mode, ES2022 target          |
 |               | Vite             | 6          | Build tooling                       |
 | **UI**        | Tailwind CSS     | v4         | CSS-first config via `@import`      |

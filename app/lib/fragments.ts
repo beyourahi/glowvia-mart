@@ -26,7 +26,7 @@
  * ```
  *
  * @dependencies
- * - Shopify Storefront API (2026-01 version)
+ * - Shopify Storefront API (2026-04 version)
  *
  * @related
  * - context.ts - Uses CART_QUERY_FRAGMENT for cart operations
@@ -125,6 +125,20 @@ export const CART_QUERY_FRAGMENT = `#graphql
         }
       }
     }
+    discountAllocations {
+      discountedAmount {
+        ...Money
+      }
+      ... on CartAutomaticDiscountAllocation {
+        title
+      }
+      ... on CartCodeDiscountAllocation {
+        code
+      }
+      ... on CartCustomDiscountAllocation {
+        title
+      }
+    }
     sellingPlanAllocation {
       sellingPlan {
         id
@@ -190,6 +204,20 @@ export const CART_QUERY_FRAGMENT = `#graphql
           name
           value
         }
+      }
+    }
+    discountAllocations {
+      discountedAmount {
+        ...Money
+      }
+      ... on CartAutomaticDiscountAllocation {
+        title
+      }
+      ... on CartCodeDiscountAllocation {
+        code
+      }
+      ... on CartCustomDiscountAllocation {
+        title
       }
     }
     sellingPlanAllocation {

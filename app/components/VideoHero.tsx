@@ -240,7 +240,7 @@ export function VideoHero({randomCollection}: {randomCollection?: HeroCollection
                 {/* Hero Content - Center-left
                      Responsive positioning and max-width to prevent overflow at 320px
                      Extended positioning and max-width for ultrawide screens */}
-                <div className="absolute top-1/2 -translate-y-1/2 left-3 sm:left-4 md:left-8 lg:left-12 xl:left-16 2xl:left-24 3xl:left-32 right-3 sm:right-auto z-[110] max-w-[calc(100%-1.5rem)] sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl 2xl:max-w-3xl">
+                <div className="absolute top-1/2 -translate-y-1/2 left-3 sm:left-4 md:left-8 lg:left-12 xl:left-16 2xl:left-24 3xl:left-32 right-3 sm:right-auto z-[10] max-w-[calc(100%-1.5rem)] sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl 2xl:max-w-3xl">
                     {/* Text Content */}
                     <div className="flex flex-col mb-6 md:mb-8">
                         {/* Tagline */}
@@ -314,7 +314,7 @@ export function VideoHero({randomCollection}: {randomCollection?: HeroCollection
                      → dark text required for all brands universally */}
                 <Link
                     to={cardLink}
-                    className="hidden md:flex absolute top-[60%] right-8 z-[110] w-90 lg:w-105 h-auto rounded-2xl overflow-hidden bg-overlay-light-hover backdrop-blur-md border border-foreground/15 no-underline hover:no-underline group sleek hover:bg-light/30 animate-float-gentle will-change-transform motion-reduce:animate-none cursor-pointer"
+                    className="hidden md:flex absolute top-[60%] right-8 z-[10] w-90 lg:w-105 h-auto rounded-2xl overflow-hidden bg-overlay-light-hover backdrop-blur-md border border-foreground/15 no-underline hover:no-underline group sleek hover:bg-light/30 animate-float-gentle will-change-transform motion-reduce:animate-none cursor-pointer"
                 >
                     {/* Image container with fixed aspect ratio - prevents flex stretching */}
                     <div className="w-36 lg:w-44 shrink-0 aspect-video overflow-hidden">

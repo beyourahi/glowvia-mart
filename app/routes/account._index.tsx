@@ -201,7 +201,8 @@ export async function loader({context, request}: Route.LoaderArgs) {
             if (response?.nodes) {
                 const productMap = new Map<string, CuratedProductFragment>();
                 for (const node of response.nodes) {
-                    if (node && node.__typename === "Product" && node.availableForSale) {
+                    // Include OOS products so recently viewed items remain visible after selling out
+                    if (node && node.__typename === "Product") {
                         productMap.set(node.id, node as CuratedProductFragment);
                     }
                 }
@@ -220,7 +221,7 @@ export async function loader({context, request}: Route.LoaderArgs) {
         const response = await dataAdapter.query(RECOMMENDED_PRODUCTS_QUERY);
         if (response?.products?.nodes) {
             recommendedProducts = response.products.nodes
-                .filter((p: CuratedProductFragment) => p.availableForSale && !recentlyViewedIds.includes(p.id))
+                .filter((p: CuratedProductFragment) => !recentlyViewedIds.includes(p.id))
                 .slice(0, 8);
         }
     } catch (error) {
@@ -232,7 +233,7 @@ export async function loader({context, request}: Route.LoaderArgs) {
     try {
         const response = await dataAdapter.query(ALL_PRODUCTS_QUERY);
         if (response?.products?.nodes) {
-            allProducts = response.products.nodes.filter((p: CuratedProductFragment) => p.availableForSale);
+            allProducts = response.products.nodes;
         }
     } catch {
         // Silent fail

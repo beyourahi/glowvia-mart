@@ -141,8 +141,7 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
                 handle,
                 ...paginationVariables,
                 sortKey: sortKey as ProductCollectionSortKeys,
-                reverse,
-                filters: [{available: true}]
+                reverse
             },
             cache: dataAdapter.CacheShort()
         }),

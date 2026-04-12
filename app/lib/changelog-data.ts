@@ -29,6 +29,13 @@ import type {ChangelogEntry} from "~/lib/types/changelog";
 // Newest entries at the top. Add new entries here in the same commit that ships the change.
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
+        date: "2026-04-13",
+        headline: "Out-of-stock products now appear across all shop pages",
+        summary:
+            "Products that are temporarily out of stock were previously hidden from collection pages, search results, the gallery, recommendations, and the homepage. They now show up everywhere so you can browse the full range, save items to your wishlist, and come back when they're available again.",
+        category: "Improvement"
+    },
+    {
         date: "2026-04-12",
         headline: "Changelog timeline is easier to read",
         summary:

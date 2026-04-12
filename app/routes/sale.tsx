@@ -315,7 +315,6 @@ const DISCOUNTS_QUERY = `#graphql
       last: $last
       before: $startCursor
       after: $endCursor
-      query: "available_for_sale:true"
     ) {
       nodes {
         ...DiscountProduct

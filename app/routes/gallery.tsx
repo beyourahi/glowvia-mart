@@ -148,7 +148,7 @@ export default function Gallery() {
 /**
  * Fetches products with images for gallery display.
  *
- * Only fetches products that are available for sale.
+ * Fetches all products including out-of-stock so shoppers can browse the full catalogue.
  * Includes up to 10 images per product for variety.
  * Uses cursor pagination for infinite scroll.
  */
@@ -159,10 +159,11 @@ const GALLERY_PRODUCTS_QUERY = `#graphql
     $first: Int!
     $after: String
   ) @inContext(country: $country, language: $language) {
-    products(first: $first, after: $after, query: "available_for_sale:true") {
+    products(first: $first, after: $after) {
       nodes {
         handle
         title
+        availableForSale
         collections(first: 1) {
           nodes {
             handle

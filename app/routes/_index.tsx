@@ -225,8 +225,8 @@ export async function loader({context, request}: Route.LoaderArgs) {
                 // Filter out null values and sort by original order
                 const productMap = new Map<string, CuratedProductFragment>();
                 for (const node of response.nodes) {
-                    // Client-side filter: nodes(ids:) query doesn't support availability filters
-                    if (node && node.__typename === "Product" && node.availableForSale) {
+                    // Include all products regardless of availability so OOS items remain visible
+                    if (node && node.__typename === "Product") {
                         productMap.set(node.id, node as CuratedProductFragment);
                     }
                 }
@@ -659,7 +659,7 @@ const CURATED_COLLECTIONS_QUERY = `#graphql
         id
         handle
         title
-        products(first: 6, filters: [{available: true}]) {
+        products(first: 6) {
           nodes {
             ...CuratedProduct
           }
@@ -746,7 +746,7 @@ const ALL_PRODUCTS_QUERY = `#graphql
     $country: CountryCode
     $language: LanguageCode
   ) @inContext(country: $country, language: $language) {
-    products(first: 250, query: "available_for_sale:true") {
+    products(first: 250) {
       nodes {
         id
         title

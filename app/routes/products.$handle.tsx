@@ -225,10 +225,8 @@ function loadDeferredData({context}: Route.LoaderArgs, productId: string) {
             cache: dataAdapter.CacheShort()
         })
         .then((data: any) => {
-            // Client-side filter: productRecommendations API doesn't support availability
-            // filters — this is the only supported way to exclude OOS products
-            const recs = data.productRecommendations ?? [];
-            return recs.filter((p: any) => p.availableForSale);
+            // Return all recommendations including OOS so shoppers can browse and wishlist them
+            return data.productRecommendations ?? [];
         })
         .catch(() => null);
 

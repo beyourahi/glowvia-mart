@@ -69,6 +69,7 @@ import type {SizeChartData} from "~/lib/size-chart";
 import {toast} from "sonner";
 import {filterDisplayTags, getButtonLabel} from "~/lib/product-tags";
 import {parseProductTitle} from "~/lib/product";
+import {OUT_OF_STOCK_LABEL} from "~/lib/product/product-card-utils";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Types
@@ -418,7 +419,7 @@ export function QuickAddSheet({product, open, onOpenChange, sizeChart}: QuickAdd
                         />
                     ) : availableVariants.length === 0 ? (
                         <div className="w-full min-h-12 inline-flex items-center justify-center rounded-full border-2 border-muted bg-muted/50 px-3 sm:px-4 py-2 text-lg font-medium text-muted-foreground">
-                            Sold out
+                            {OUT_OF_STOCK_LABEL}
                         </div>
                     ) : null}
                 </SheetFooter>
@@ -499,7 +500,7 @@ function QuickAddCartButton({
             </span>
             <span className="flex items-center gap-2">
                 {isLoading && <Loader2 className="size-5 animate-spin" />}
-                {variant.availableForSale ? buttonLabel : "Sold out"}
+                {variant.availableForSale ? buttonLabel : OUT_OF_STOCK_LABEL}
             </span>
         </button>
     );

@@ -401,7 +401,7 @@ const SALE_PRODUCTS_QUERY = `#graphql
     $language: LanguageCode
     $first: Int
   ) @inContext(country: $country, language: $language) {
-    products(first: $first, query: "available_for_sale:true") {
+    products(first: $first) {
       nodes {
         id
         availableForSale

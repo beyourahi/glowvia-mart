@@ -1337,7 +1337,7 @@ export const SEARCH_QUERY = `#graphql
       first: $productFirst,
       after: $productAfter,
       sortKey: RELEVANCE,
-      unavailableProducts: HIDE,
+      unavailableProducts: SHOW,
     ) {
       nodes {
         ...on Product {
@@ -1386,7 +1386,7 @@ const SEARCH_PRODUCTS_QUERY = `#graphql
       first: $first,
       after: $after,
       sortKey: RELEVANCE,
-      unavailableProducts: HIDE,
+      unavailableProducts: SHOW,
     ) {
       nodes {
         ...on Product {
@@ -1853,15 +1853,8 @@ async function predictiveSearch({
         throw new Error("No predictive search data returned from Shopify API");
     }
 
-    // Client-side filter: predictiveSearch API doesn't support unavailableProducts param
-    // (only the full search query supports it — predictive search has no equivalent argument)
-    const filteredItems = {
-        ...items,
-        products: items.products.filter((p: any) => p.availableForSale),
-        collections: items.collections.filter((c: any) => c.products?.nodes?.some((p: any) => p.availableForSale))
-    };
+    // All products (including OOS) are surfaced in predictive search results
+    const total = Object.values(items).reduce((acc: number, item: Array<unknown>) => acc + item.length, 0);
 
-    const total = Object.values(filteredItems).reduce((acc: number, item: Array<unknown>) => acc + item.length, 0);
-
-    return {type, term, result: {items: filteredItems, total}};
+    return {type, term, result: {items, total}};
 }

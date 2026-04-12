@@ -294,7 +294,6 @@ const CATALOG_QUERY = `#graphql
       after: $endCursor
       sortKey: $sortKey
       reverse: $reverse
-      query: "available_for_sale:true"
     ) {
       nodes {
         ...CollectionItem

@@ -56,6 +56,7 @@ import {ProductBadgeStack} from "~/components/ProductBadge";
 import {ProductTitle} from "~/components/ProductTitle";
 import {analyzeProductDiscount, type DiscountBadgeInfo, type ProductWithVariants} from "~/lib/discounts";
 import {getSpecialTags} from "~/lib/product-tags";
+import {OUT_OF_STOCK_LABEL} from "~/lib/product/product-card-utils";
 import {cn} from "~/lib/utils";
 import type {GridColumns} from "~/lib/gridColumns";
 import {usePointerCapabilities} from "~/hooks/usePointerCapabilities";
@@ -404,6 +405,9 @@ export function ProductItem({
     // Stagger delay: cap at 12 items (480ms max) for elegant cascade without being too slow
     const staggerDelay = Math.min(index, 11) * 40;
 
+    // OOS state: product.availableForSale is always present in all fragment types
+    const isOutOfStock = !product.availableForSale;
+
     // List variant - horizontal layout
     if (variant === "list") {
         return (
@@ -591,6 +595,10 @@ export function ProductItem({
             className={cn(
                 "block no-underline animate-product-fade-in cursor-pointer relative overflow-visible rounded-lg",
                 canHover ? "group motion-surface" : "motion-press active:scale-[var(--motion-press-scale)]",
+                // Muted visual treatment for out-of-stock products: reduced opacity + desaturated
+                // opacity-[0.82] keeps text legible; saturate(0.65) signals unavailability without
+                // making the card invisible — both preserve WCAG contrast minimums
+                isOutOfStock && "opacity-[0.82] [filter:saturate(0.65)]",
                 layoutClasses.container,
                 className
             )}
@@ -611,7 +619,7 @@ export function ProductItem({
                     layoutClasses.padding
                 )}
             >
-                {/* Badge stack - discount badge + special tags (below pin icon) */}
+                {/* Badge stack - OOS (topmost) + discount + special tags (below pin icon) */}
                 {/* When pinned, push badges down to avoid collision with pin icon */}
                 {showBadges && (
                     <div
@@ -620,6 +628,17 @@ export function ProductItem({
                             specialTags.isPinned ? "top-6 sm:top-7" : "top-2"
                         )}
                     >
+                        {/* Out of Stock badge - rendered first so it sits topmost in the stack */}
+                        {/* Uses secondary token (same as Premium badge) for neutral, non-alarming tone */}
+                        {isOutOfStock && (
+                            <span
+                                className="inline-flex items-center justify-center rounded-full bg-secondary px-2.5 py-1 text-xs font-medium uppercase tracking-wide text-secondary-foreground shadow-md"
+                                role="status"
+                                aria-label="Out of stock"
+                            >
+                                {OUT_OF_STOCK_LABEL}
+                            </span>
+                        )}
                         {/* Discount badge - primary, with emerald shimmer */}
                         {discountPercentageProp ? (
                             <DiscountBadge percentage={discountPercentageProp} position="inline" />

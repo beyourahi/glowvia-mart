@@ -29,6 +29,13 @@ import type {ChangelogEntry} from "~/lib/types/changelog";
 // Newest entries at the top. Add new entries here in the same commit that ships the change.
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
+        date: "2026-04-12",
+        headline: "Changelog timeline is easier to read",
+        summary:
+            "The updates page now has a clean two-column layout with a continuous vertical rail and category-colored markers for each entry. The date and content are clearly separated, entries have consistent spacing, and the layout adapts correctly to every screen size.",
+        category: "Design"
+    },
+    {
         date: "2026-04-10",
         headline: "Chat and install buttons no longer overlap the footer",
         summary:

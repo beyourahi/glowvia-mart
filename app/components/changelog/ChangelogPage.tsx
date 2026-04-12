@@ -148,13 +148,7 @@ export function ChangelogPage({entries}: ChangelogLoaderData) {
 
             {/* ───── Timeline ───── */}
             <section className="pb-16 sm:pb-20 md:pb-24">
-                <div className="max-w-3xl mx-auto px-4 sm:px-6 relative">
-                    {/* Vertical timeline rule — desktop only */}
-                    <div
-                        className="hidden md:block absolute left-[calc(1.5rem+7.5rem)] top-0 bottom-0 w-px bg-[var(--border-subtle)]"
-                        aria-hidden="true"
-                    />
-
+                <div className="max-w-3xl mx-auto px-4 sm:px-6">
                     {isEmpty ? (
                         <Empty className="border-[var(--border-subtle)] mt-4">
                             <EmptyHeader>
@@ -165,15 +159,25 @@ export function ChangelogPage({entries}: ChangelogLoaderData) {
                             </EmptyHeader>
                         </Empty>
                     ) : (
-                        <ol className="divide-y divide-[var(--border-subtle)]/50">
-                            {visibleEntries.map((entry, index) => (
-                                <ChangelogEntryCard
-                                    key={`${entry.date}-${entry.headline}`}
-                                    entry={entry}
-                                    index={index}
-                                />
-                            ))}
-                        </ol>
+                        /* Relative wrapper so the continuous rail positions correctly.
+                           The rail sits at left-36 (9rem = date column width).
+                           Each <li> is also relative, with its dot at left-36 -translate-x-1/2,
+                           centering the 10px dot on the 2px rail. */
+                        <div className="relative">
+                            <div
+                                className="hidden md:block absolute left-36 top-0 bottom-0 w-[2px] bg-[var(--border-subtle)]"
+                                aria-hidden="true"
+                            />
+                            <ol>
+                                {visibleEntries.map((entry, index) => (
+                                    <ChangelogEntryCard
+                                        key={`${entry.date}-${entry.headline}`}
+                                        entry={entry}
+                                        index={index}
+                                    />
+                                ))}
+                            </ol>
+                        </div>
                     )}
 
                     {/* Load more */}
@@ -200,22 +204,21 @@ export function ChangelogPage({entries}: ChangelogLoaderData) {
 function ChangelogEntrySkeleton({index}: {index: number}) {
     return (
         <li
-            className="flex flex-col md:flex-row gap-4 md:gap-0 py-4 md:py-5 animate-pulse"
+            className="flex flex-col md:flex-row border-b border-[var(--border-subtle)]/50 last:border-b-0 py-7 sm:py-8 animate-pulse"
             style={{animationDelay: `${index * 80}ms`}}
         >
-            {/* Date column */}
-            <div className="md:w-[7.5rem] md:shrink-0 md:pr-6 flex flex-col gap-1.5">
-                <Skeleton className="h-3 w-16 rounded" />
-                <Skeleton className="h-3 w-20 rounded" />
+            {/* Date column — matches ChangelogEntryCard layout */}
+            <div className="flex items-center gap-2 mb-2.5 md:mb-0 md:w-36 md:shrink-0 md:pr-8 md:flex-col md:items-end md:gap-0.5">
+                <Skeleton className="h-3 w-14 rounded" />
+                <Skeleton className="h-3 w-20 rounded hidden md:block" />
             </div>
             {/* Content */}
-            <div className="flex-1 space-y-2.5">
-                <Skeleton className="h-5 w-20 rounded-full" />
+            <div className="flex-1 space-y-2.5 md:pl-8">
+                <Skeleton className="h-5 w-24 rounded-full" />
                 <Skeleton className="h-5 w-3/4 rounded" />
                 <div className="space-y-1.5">
                     <Skeleton className="h-4 w-full rounded" />
                     <Skeleton className="h-4 w-5/6 rounded" />
-                    <Skeleton className="h-4 w-2/3 rounded" />
                 </div>
             </div>
         </li>
@@ -248,7 +251,7 @@ export function ChangelogPageSkeleton() {
             {/* Entry skeletons */}
             <section className="pb-16">
                 <div className="max-w-3xl mx-auto px-4 sm:px-6">
-                    <ol className="divide-y divide-[var(--border-subtle)]/50">
+                    <ol>
                         {Array.from({length: 5}).map((_, i) => (
                             // eslint-disable-next-line react/no-array-index-key -- static skeleton
                             <ChangelogEntrySkeleton key={i} index={i} />

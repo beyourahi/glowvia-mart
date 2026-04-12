@@ -37,7 +37,7 @@ import {Skeleton} from "~/components/ui/skeleton";
 import {Empty, EmptyHeader, EmptyTitle, EmptyDescription} from "~/components/ui/empty";
 import {ChangelogEntryCard} from "~/components/changelog/ChangelogEntry";
 import {useChangelogFilter} from "~/hooks/useChangelogFilter";
-import {formatAbsoluteDate} from "~/lib/date-formatters";
+import {formatAbsoluteDate, formatRelativeDayLabel} from "~/lib/date-formatters";
 import type {ChangelogCategory, ChangelogEntry as ChangelogEntryType, ChangelogLoaderData} from "~/lib/types/changelog";
 
 // =============================================================================
@@ -207,9 +207,14 @@ export function ChangelogPage({entries}: ChangelogLoaderData) {
                                         <div key={group.date} className="mb-10 sm:mb-12">
                                             {/* Date section header with decorative rule */}
                                             <div className="flex items-center gap-3 mb-4 sm:mb-5">
-                                                <h2 className="font-serif text-base sm:text-lg font-medium text-[var(--text-secondary)] shrink-0">
-                                                    {formatAbsoluteDate(group.date)}
-                                                </h2>
+                                                <div className="flex items-baseline gap-2 shrink-0">
+                                                    <h2 className="font-serif text-base sm:text-lg font-medium text-[var(--text-secondary)]">
+                                                        {formatAbsoluteDate(group.date)}
+                                                    </h2>
+                                                    <span className="text-xs text-[var(--text-subtle)]">
+                                                        {formatRelativeDayLabel(group.date)}
+                                                    </span>
+                                                </div>
                                                 <div
                                                     className="flex-1 h-px bg-[var(--border-subtle)]"
                                                     aria-hidden="true"

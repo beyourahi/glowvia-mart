@@ -54,6 +54,32 @@ export const SITE_CONTENT_QUERY = `#graphql
     siteSettings: metaobject(handle: {type: "site_settings", handle: "main"}) {
       ...SiteSettings
     }
+    shop {
+      name
+      description
+      primaryDomain {
+        url
+      }
+      brand {
+        logo {
+          image {
+            url
+            altText
+            width
+            height
+          }
+        }
+        coverImage {
+          image {
+            url
+            altText
+            width
+            height
+          }
+        }
+        shortDescription
+      }
+    }
   }
   ${SITE_SETTINGS_FRAGMENT}
 ` as const;

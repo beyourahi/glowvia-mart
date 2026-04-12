@@ -32,7 +32,7 @@
 
 import type {Route} from "./+types/favicon[.]ico";
 import {redirect} from "react-router";
-import {parseSiteSettings} from "~/lib/metaobject-parsers";
+import {parseSiteSettings, parseShopBrand} from "~/lib/metaobject-parsers";
 import {buildLettermarkIconSvg} from "~/lib/pwa-parsers";
 
 // Query for favicon from site_settings metaobject
@@ -42,14 +42,6 @@ const FAVICON_QUERY = `#graphql
     $language: LanguageCode
   ) @inContext(country: $country, language: $language) {
     siteSettings: metaobject(handle: {type: "site_settings", handle: "main"}) {
-      brandLogo: field(key: "brand_logo") {
-        reference {
-          ... on MediaImage {
-            __typename
-            image { url altText width height }
-          }
-        }
-      }
       favicon: field(key: "favicon") {
         reference {
           ... on MediaImage {
@@ -67,6 +59,14 @@ const FAVICON_QUERY = `#graphql
         }
       }
     }
+    shop {
+      name
+      brand {
+        logo {
+          image { url }
+        }
+      }
+    }
   }
 ` as const;
 
@@ -78,7 +78,7 @@ export async function loader({context}: Route.LoaderArgs) {
             cache: dataAdapter.CacheLong() // Favicon changes rarely
         });
 
-        const siteSettings = parseSiteSettings(data?.siteSettings);
+        const siteSettings = {...parseSiteSettings(data?.siteSettings), ...parseShopBrand(data?.shop)};
         const faviconUrl = siteSettings.faviconUrl || siteSettings.brandLogo?.url || siteSettings.icon192Url;
 
         if (faviconUrl) {

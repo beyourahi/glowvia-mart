@@ -120,6 +120,7 @@ const FALLBACK_SECTION_HEADINGS = {
 const FALLBACK_SITE_SETTINGS = {
     brandName: "",
     brandLogo: null,
+    ogImage: null,
     brandWords: FALLBACK_BRAND_WORDS,
     missionStatement: "",
     featuredProductSection: null,
@@ -984,21 +985,7 @@ export function parseSiteSettings(rawData: unknown): SiteSettings {
 
     return {
         // Brand Identity
-        brandName: data.brandName?.value || DEFAULT_SITE_SETTINGS.brandName,
-        brandLogo: (() => {
-            const ref = data.brandLogo?.reference;
-            if (!ref || ref.__typename !== "MediaImage") return null;
-            const image = ref.image as Record<string, unknown> | undefined;
-            if (!image?.url) return null;
-            return {
-                url: image.url as string,
-                altText: (image.altText as string | null) ?? null,
-                width: (image.width as number | null) ?? null,
-                height: (image.height as number | null) ?? null
-            };
-        })(),
         brandWords: parseBrandWords(data.brandWords),
-        missionStatement: data.missionStatement?.value || DEFAULT_SITE_SETTINGS.missionStatement,
         featuredProductSection: parseFeaturedProductSection(data.featuredProductSection),
 
         // Hero Section
@@ -1006,9 +993,6 @@ export function parseSiteSettings(rawData: unknown): SiteSettings {
         heroDescription: data.heroDescription?.value || DEFAULT_SITE_SETTINGS.heroDescription,
         heroMediaMobile: parseHeroMedia(data.heroMediaMobile) || DEFAULT_SITE_SETTINGS.heroMediaMobile,
         heroMediaLargeScreen: parseHeroMedia(data.heroMediaLargeScreen) || DEFAULT_SITE_SETTINGS.heroMediaLargeScreen,
-
-        // SEO Defaults
-        siteUrl: data.siteUrl?.value || DEFAULT_SITE_SETTINGS.siteUrl,
 
         // Contact Information
         contactEmail: data.contactEmail?.value || DEFAULT_SITE_SETTINGS.contactEmail,
@@ -1512,12 +1496,55 @@ export function parseWishlistContent(data: unknown): WishlistContent {
  * @param themeSettingsData - Response from THEME_SETTINGS_QUERY
  * @returns Combined site content with settings and theme
  */
+/** Parse brand identity fields from the Storefront API `shop {}` object. */
+export function parseShopBrand(
+    shop: unknown
+): Partial<Pick<SiteSettings, "brandName" | "brandLogo" | "ogImage" | "missionStatement" | "siteUrl">> {
+    if (!shop || typeof shop !== "object") return {};
+    const s = shop as Record<string, unknown>;
+    const brand = s.brand as Record<string, unknown> | undefined;
+
+    const parseImage = (raw: unknown) => {
+        const img = raw as Record<string, unknown> | undefined;
+        if (!img?.url) return null;
+        return {
+            url: img.url as string,
+            altText: (img.altText as string | null) ?? null,
+            width: (img.width as number | null) ?? null,
+            height: (img.height as number | null) ?? null
+        };
+    };
+
+    const result: Partial<Pick<SiteSettings, "brandName" | "brandLogo" | "ogImage" | "missionStatement" | "siteUrl">> = {};
+
+    if (s.name) result.brandName = s.name as string;
+
+    const primaryDomain = s.primaryDomain as Record<string, unknown> | undefined;
+    if (primaryDomain?.url) result.siteUrl = primaryDomain.url as string;
+
+    // Prefer brand.shortDescription, fall back to shop.description
+    const desc = (brand?.shortDescription as string | null) || (s.description as string | null);
+    if (desc) result.missionStatement = desc;
+
+    if (brand) {
+        const logoImg = parseImage((brand.logo as Record<string, unknown> | undefined)?.image);
+        if (logoImg) result.brandLogo = logoImg;
+
+        const coverImg = parseImage((brand.coverImage as Record<string, unknown> | undefined)?.image);
+        if (coverImg) result.ogImage = coverImg;
+    }
+
+    return result;
+}
+
 export function parseSiteContent(
-    siteContentData: {siteSettings?: unknown} | null,
+    siteContentData: {siteSettings?: unknown; shop?: unknown} | null,
     themeSettingsData: {themeSettings?: unknown} | null
 ): SiteContent {
+    const siteSettings = parseSiteSettings(siteContentData?.siteSettings);
+    const shopOverrides = parseShopBrand(siteContentData?.shop);
     return {
-        siteSettings: parseSiteSettings(siteContentData?.siteSettings),
+        siteSettings: {...siteSettings, ...shopOverrides},
         themeConfig: parseThemeSettings(themeSettingsData?.themeSettings)
     };
 }

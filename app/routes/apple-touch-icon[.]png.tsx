@@ -37,7 +37,7 @@
 
 import type {Route} from "./+types/apple-touch-icon[.]png";
 import {redirect} from "react-router";
-import {parseSiteSettings} from "~/lib/metaobject-parsers";
+import {parseSiteSettings, parseShopBrand} from "~/lib/metaobject-parsers";
 import {buildLettermarkIconSvg, getAppleTouchIconUrl} from "~/lib/pwa-parsers";
 
 // Simple query for apple touch icon sources
@@ -47,14 +47,6 @@ const APPLE_ICON_QUERY = `#graphql
     $language: LanguageCode
   ) @inContext(country: $country, language: $language) {
     siteSettings: metaobject(handle: {type: "site_settings", handle: "main"}) {
-      brandLogo: field(key: "brand_logo") {
-        reference {
-          ... on MediaImage {
-            __typename
-            image { url altText width height }
-          }
-        }
-      }
       icon180Apple: field(key: "icon_180_apple") {
         reference {
           ... on MediaImage {
@@ -72,6 +64,14 @@ const APPLE_ICON_QUERY = `#graphql
         }
       }
     }
+    shop {
+      name
+      brand {
+        logo {
+          image { url altText width height }
+        }
+      }
+    }
   }
 ` as const;
 
@@ -83,7 +83,7 @@ export async function loader({context}: Route.LoaderArgs) {
             cache: dataAdapter.CacheLong() // Icon rarely changes
         });
 
-        const siteSettings = parseSiteSettings(data?.siteSettings);
+        const siteSettings = {...parseSiteSettings(data?.siteSettings), ...parseShopBrand(data?.shop)};
         const iconUrl = getAppleTouchIconUrl(siteSettings);
 
         if (iconUrl) {

@@ -984,7 +984,11 @@ export function parseSiteSettings(rawData: unknown): SiteSettings {
     const parsedInstagramMedia = parseInstagramMedia(data.instagramMediaData);
 
     return {
-        // Brand Identity
+        // Brand Identity — brandName/missionStatement/siteUrl come from shop {} via parseShopBrand;
+        // defaults here are overridden by shopOverrides in parseSiteContent.
+        brandName: DEFAULT_SITE_SETTINGS.brandName,
+        missionStatement: DEFAULT_SITE_SETTINGS.missionStatement,
+        siteUrl: DEFAULT_SITE_SETTINGS.siteUrl,
         brandWords: parseBrandWords(data.brandWords),
         featuredProductSection: parseFeaturedProductSection(data.featuredProductSection),
 

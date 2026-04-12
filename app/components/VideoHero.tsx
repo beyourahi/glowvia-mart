@@ -286,10 +286,10 @@ export function VideoHero({randomCollection}: {randomCollection?: HeroCollection
                     <div className="flex items-center gap-3 sm:gap-4">
                         <Link
                             to="/collections/all-products"
-                            className="group inline-flex items-center justify-center gap-2 sm:gap-2.5 md:gap-3 rounded-[var(--radius-pill-raw)] bg-primary border-2 border-primary px-4 sm:px-5 md:px-6 py-3 md:py-3.5 font-sans text-sm md:text-base font-medium text-primary-foreground no-underline hover:no-underline sleek hover:bg-light hover:text-primary hover:border-light active:bg-light/90 active:border-light active:scale-[0.98] cursor-pointer"
+                            className="group/btn inline-flex items-center justify-center gap-2 sm:gap-2.5 md:gap-3 rounded-[var(--radius-pill-raw)] bg-primary border-2 border-primary px-4 sm:px-5 md:px-6 py-3 md:py-3.5 font-sans text-sm md:text-base font-medium text-primary-foreground no-underline hover:no-underline sleek hover:bg-light hover:text-primary hover:border-light active:bg-light/90 active:border-light active:scale-[0.98] cursor-pointer"
                         >
                             Shop Now
-                            <CircleArrowOutUpRight className="w-5 h-5 md:w-6 md:h-6 sleek lg:rotate-45 group-hover:rotate-45 lg:group-hover:rotate-90" />
+                            <CircleArrowOutUpRight className="w-5 h-5 md:w-6 md:h-6 sleek rotate-7.5 group-hover/btn:rotate-45" />
                         </Link>
 
                         <button

@@ -103,15 +103,16 @@ export function OpenInAppButton({variant = "menu-item"}: OpenInAppButtonProps) {
                 variant={isFixed ? "default" : "outline"}
                 className={cn(
                     "gap-3",
-                    // Fixed variant: visible on all screen sizes with safe-area bottom padding on mobile.
+                    // Fixed variant: mobile-only (md:hidden — desktop users access this via the menu-item
+                    // variant in the navigation header, so the fixed button is not needed there).
                     // z-[102] on mobile: above hero brand name watermark (zIndex: 100, BrandAnimation.tsx).
                     // StickyMobileGetNow is raised to z-[103] to maintain purchase-CTA priority over
-                    // this install prompt on product pages. z-[9999] on desktop unchanged.
+                    // this install prompt on product pages.
                     isFixed && [
-                        "fixed right-4 md:right-6",
-                        "bottom-[calc(max(1rem,env(safe-area-inset-bottom))+5.5rem)] md:bottom-6",
-                        "z-[102] md:z-[9999]",
-                        "flex",
+                        "fixed right-4",
+                        "bottom-[calc(max(1rem,env(safe-area-inset-bottom))+5.5rem)]",
+                        "z-[102]",
+                        "flex md:hidden",
                         "animate-slide-up-fade opacity-0"
                     ],
                     // Menu item variant: full width on mobile, auto on desktop

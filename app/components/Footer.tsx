@@ -69,7 +69,7 @@ export function Footer({footer: footerPromise, header: _header}: FooterProps) {
         <Suspense>
             <Await resolve={footerPromise}>
                 {footer => (
-                    <footer className="bg-primary text-primary-foreground md:pb-20 mt-auto min-h-dvh flex flex-col">
+                    <footer className="bg-primary text-primary-foreground mt-auto min-h-dvh flex flex-col">
                         {/* Main content area - grows to fill space
                              Responsive padding matches Container and all homepage sections
                              px-container uses --container-padding: clamp(0.5rem, 0.75vw, 0.75rem) */}

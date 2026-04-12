@@ -2,15 +2,16 @@
  * @fileoverview ChangelogPage — Full changelog page layout
  *
  * @description
- * Renders the /changelog page with a hero search, category filter chips,
- * a vertical timeline list of entries, and a "Load more" button for pagination.
+ * Renders the /changelog page with a hero search, prominent Rahi attribution
+ * badge, category filter chips, date-grouped entry cards, and a "Load more"
+ * button for pagination.
  *
  * @features
- * - Hero with h1 + subtitle + centered search input
+ * - Hero with h1 + attribution badge + subtitle + centered search input
  * - Category filter chips (All, New Feature, Improvement, Fix, Performance, Design)
- * - Vertical timeline with left rule on md+ viewports
- * - Staggered entry animations via ChangelogEntryCard
- * - Client-side "Load more" pagination (10 entries at a time, no URL changes)
+ * - Entries grouped by date with serif section headers + horizontal rule
+ * - Staggered entry card animations via ChangelogEntryCard (global stagger index)
+ * - Client-side "Load more" pagination (50 entries at a time, no URL changes)
  * - Empty state when search/filter returns no results
  * - Skeleton loading state (ChangelogPageSkeleton)
  *
@@ -18,26 +19,26 @@
  * max-w-3xl mx-auto:
  *   1. Hero (center-aligned, pt-page-breathing-room)
  *   2. Filter chips row
- *   3. Timeline container (relative, with absolute vertical rule on md+)
- *      └── <ol> of ChangelogEntryCard
+ *   3. Date-grouped cards (IIFE scopes globalStaggerIndex across groups)
  *   4. Load-more button
  *
  * @accessibility
  * - Search: role="search" landmark
- * - Filter chips: role="radiogroup" with aria-pressed per chip
- * - Entry list: <ol> with ordered list semantics
- * - Load-more: <button> with descriptive label
+ * - Filter chips: role="radiogroup" with aria-checked per chip
+ * - Date group headers: <h2> for correct heading hierarchy
+ * - Attribution: external link with rel="noopener noreferrer"
  */
 
 import {useState, useEffect} from "react";
-import {Search} from "lucide-react";
+import {Search, ArrowUpRight} from "lucide-react";
 import {Input} from "~/components/ui/input";
 import {Button} from "~/components/ui/button";
 import {Skeleton} from "~/components/ui/skeleton";
 import {Empty, EmptyHeader, EmptyTitle, EmptyDescription} from "~/components/ui/empty";
 import {ChangelogEntryCard} from "~/components/changelog/ChangelogEntry";
 import {useChangelogFilter} from "~/hooks/useChangelogFilter";
-import type {ChangelogCategory, ChangelogLoaderData} from "~/lib/types/changelog";
+import {formatAbsoluteDate} from "~/lib/date-formatters";
+import type {ChangelogCategory, ChangelogEntry as ChangelogEntryType, ChangelogLoaderData} from "~/lib/types/changelog";
 
 // =============================================================================
 // CONSTANTS
@@ -51,8 +52,31 @@ const ALL_CATEGORIES: ChangelogCategory[] = [
     "Design"
 ];
 
-const INITIAL_VISIBLE = 10;
-const LOAD_MORE_INCREMENT = 10;
+const INITIAL_VISIBLE = 100;
+const LOAD_MORE_INCREMENT = 50;
+
+// =============================================================================
+// HELPERS
+// =============================================================================
+
+interface DateGroup {
+    date: string;
+    entries: ChangelogEntryType[];
+}
+
+/**
+ * Groups an ordered array of entries by their `date` field, preserving
+ * insertion order (newest-first, as CHANGELOG_ENTRIES is authored).
+ */
+function groupEntriesByDate(entries: ChangelogEntryType[]): DateGroup[] {
+    const map = new Map<string, ChangelogEntryType[]>();
+    for (const entry of entries) {
+        const existing = map.get(entry.date);
+        if (existing) existing.push(entry);
+        else map.set(entry.date, [entry]);
+    }
+    return Array.from(map.entries()).map(([date, entries]) => ({date, entries}));
+}
 
 // =============================================================================
 // CHANGELOG PAGE
@@ -83,6 +107,20 @@ export function ChangelogPage({entries}: ChangelogLoaderData) {
                     <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl font-normal tracking-tight text-[var(--text-primary)] mb-4">
                         What&apos;s New
                     </h1>
+
+                    {/* Attribution badge — prominent hero placement */}
+                    <div className="flex justify-center mb-5">
+                        <a
+                            href="https://beyourahi.com"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 rounded-full border border-[var(--brand-primary)] px-4 py-2 text-sm font-medium text-[var(--brand-primary)] motion-interactive hover:bg-[var(--brand-primary)] hover:text-white"
+                        >
+                            Built by Rahi Khan
+                            <ArrowUpRight className="size-3.5" aria-hidden="true" />
+                        </a>
+                    </div>
+
                     <p className="text-base sm:text-lg text-[var(--text-secondary)] max-w-md mx-auto mb-8">
                         A running record of everything we&apos;ve shipped — features, fixes, and improvements.
                     </p>
@@ -146,7 +184,7 @@ export function ChangelogPage({entries}: ChangelogLoaderData) {
                 </div>
             </section>
 
-            {/* ───── Timeline ───── */}
+            {/* ───── Grouped entries ───── */}
             <section className="pb-16 sm:pb-20 md:pb-24">
                 <div className="max-w-3xl mx-auto px-4 sm:px-6">
                     {isEmpty ? (
@@ -159,25 +197,38 @@ export function ChangelogPage({entries}: ChangelogLoaderData) {
                             </EmptyHeader>
                         </Empty>
                     ) : (
-                        /* Relative wrapper so the continuous rail positions correctly.
-                           The rail sits at left-36 (9rem = date column width).
-                           Each <li> is also relative, with its dot at left-36 -translate-x-1/2,
-                           centering the 10px dot on the 2px rail. */
-                        <div className="relative">
-                            <div
-                                className="hidden md:block absolute left-36 top-0 bottom-0 w-[2px] bg-[var(--border-subtle)]"
-                                aria-hidden="true"
-                            />
-                            <ol>
-                                {visibleEntries.map((entry, index) => (
-                                    <ChangelogEntryCard
-                                        key={`${entry.date}-${entry.headline}`}
-                                        entry={entry}
-                                        index={index}
-                                    />
-                                ))}
-                            </ol>
-                        </div>
+                        /* IIFE scopes globalStaggerIndex so animation delays are continuous
+                           across all date groups rather than resetting per group. */
+                        (() => {
+                            let globalStaggerIndex = 0;
+                            return (
+                                <div>
+                                    {groupEntriesByDate(visibleEntries).map(group => (
+                                        <div key={group.date} className="mb-10 sm:mb-12">
+                                            {/* Date section header with decorative rule */}
+                                            <div className="flex items-center gap-3 mb-4 sm:mb-5">
+                                                <h2 className="font-serif text-base sm:text-lg font-medium text-[var(--text-secondary)] shrink-0">
+                                                    {formatAbsoluteDate(group.date)}
+                                                </h2>
+                                                <div
+                                                    className="flex-1 h-px bg-[var(--border-subtle)]"
+                                                    aria-hidden="true"
+                                                />
+                                            </div>
+                                            <div className="space-y-3">
+                                                {group.entries.map(entry => (
+                                                    <ChangelogEntryCard
+                                                        key={`${entry.date}-${entry.headline}`}
+                                                        entry={entry}
+                                                        index={globalStaggerIndex++}
+                                                    />
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            );
+                        })()
                     )}
 
                     {/* Load more */}
@@ -201,27 +252,36 @@ export function ChangelogPage({entries}: ChangelogLoaderData) {
 // SKELETON
 // =============================================================================
 
-function ChangelogEntrySkeleton({index}: {index: number}) {
+function ChangelogCardSkeleton({index}: {index: number}) {
     return (
-        <li
-            className="flex flex-col md:flex-row border-b border-[var(--border-subtle)]/50 last:border-b-0 py-7 sm:py-8 animate-pulse"
+        <div
+            className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-4 sm:p-5 animate-pulse"
             style={{animationDelay: `${index * 80}ms`}}
         >
-            {/* Date column — matches ChangelogEntryCard layout */}
-            <div className="flex items-center gap-2 mb-2.5 md:mb-0 md:w-36 md:shrink-0 md:pr-8 md:flex-col md:items-end md:gap-0.5">
-                <Skeleton className="h-3 w-14 rounded" />
-                <Skeleton className="h-3 w-20 rounded hidden md:block" />
+            <Skeleton className="h-5 w-24 rounded-full mb-2" />
+            <Skeleton className="h-5 w-3/4 rounded mt-2 mb-1.5" />
+            <div className="space-y-1.5">
+                <Skeleton className="h-4 w-full rounded" />
+                <Skeleton className="h-4 w-5/6 rounded" />
             </div>
-            {/* Content */}
-            <div className="flex-1 space-y-2.5 md:pl-8">
-                <Skeleton className="h-5 w-24 rounded-full" />
-                <Skeleton className="h-5 w-3/4 rounded" />
-                <div className="space-y-1.5">
-                    <Skeleton className="h-4 w-full rounded" />
-                    <Skeleton className="h-4 w-5/6 rounded" />
-                </div>
+        </div>
+    );
+}
+
+function ChangelogGroupSkeleton({startIndex}: {startIndex: number}) {
+    return (
+        <div className="mb-10 sm:mb-12">
+            <div className="flex items-center gap-3 mb-4 sm:mb-5">
+                <Skeleton className="h-5 w-28 rounded shrink-0" />
+                <div className="flex-1 h-px bg-[var(--border-subtle)]" />
             </div>
-        </li>
+            <div className="space-y-3">
+                {Array.from({length: 3}).map((_, i) => (
+                    // eslint-disable-next-line react/no-array-index-key -- static skeleton
+                    <ChangelogCardSkeleton key={i} index={startIndex + i} />
+                ))}
+            </div>
+        </div>
     );
 }
 
@@ -233,6 +293,7 @@ export function ChangelogPageSkeleton() {
                 <div className="max-w-3xl mx-auto px-4 sm:px-6 flex flex-col items-center gap-4">
                     <Skeleton className="h-4 w-28 rounded" />
                     <Skeleton className="h-10 w-48 rounded" />
+                    <Skeleton className="h-9 w-44 rounded-full" />
                     <Skeleton className="h-5 w-72 rounded" />
                     <Skeleton className="h-10 w-64 rounded-xl mt-2" />
                 </div>
@@ -248,15 +309,11 @@ export function ChangelogPageSkeleton() {
                 </div>
             </section>
 
-            {/* Entry skeletons */}
-            <section className="pb-16">
+            {/* Entry group skeletons */}
+            <section className="pb-16 sm:pb-20 md:pb-24">
                 <div className="max-w-3xl mx-auto px-4 sm:px-6">
-                    <ol>
-                        {Array.from({length: 5}).map((_, i) => (
-                            // eslint-disable-next-line react/no-array-index-key -- static skeleton
-                            <ChangelogEntrySkeleton key={i} index={i} />
-                        ))}
-                    </ol>
+                    <ChangelogGroupSkeleton startIndex={0} />
+                    <ChangelogGroupSkeleton startIndex={3} />
                 </div>
             </section>
         </div>

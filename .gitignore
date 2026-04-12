@@ -92,6 +92,16 @@ coverage/
 .nyc_output/
 
 # ========================================
+# Package Manager Lockfiles
+# ========================================
+# Prevent foreign lockfiles from being committed — project uses npm only
+yarn.lock
+pnpm-lock.yaml
+pnpm-lock.yml
+bun.lock
+bun.lockb
+
+# ========================================
 # Miscellaneous
 # ========================================
 *.pem

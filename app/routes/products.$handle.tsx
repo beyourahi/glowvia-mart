@@ -314,6 +314,7 @@ export default function Product() {
                         images={product.images.nodes}
                         selectedVariantImage={selectedVariant?.image}
                         media={product.media?.nodes}
+                        isAvailableForSale={product.availableForSale}
                     />
                 </div>
 
@@ -389,6 +390,7 @@ export default function Product() {
                                     images={product.images.nodes}
                                     selectedVariantImage={selectedVariant?.image}
                                     media={product.media?.nodes}
+                                    isAvailableForSale={product.availableForSale}
                                 />
                             </div>
                             {/* Product Info - sticky on md+ screens while the image gallery is in view.

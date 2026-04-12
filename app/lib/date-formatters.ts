@@ -11,7 +11,8 @@ const relativeFormatter = new Intl.RelativeTimeFormat("en", {numeric: "auto"});
 const absoluteFormatter = new Intl.DateTimeFormat("en", {
     month: "short",
     day: "numeric",
-    year: "numeric"
+    year: "numeric",
+    timeZone: "UTC" // ISO date-only strings parse as UTC midnight — format in UTC to match
 });
 
 /**

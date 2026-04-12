@@ -81,7 +81,7 @@ import {ProductLightbox} from "~/components/ProductLightbox";
  * - Responsive sizing across all screen sizes
  * - Full-screen lightbox on image click
  */
-export function ProductImageGallery({images, selectedVariantImage, media}: ProductImageGalleryProps) {
+export function ProductImageGallery({images, selectedVariantImage, media, isAvailableForSale = true}: ProductImageGalleryProps) {
     // =============================================================================
     // STATE MANAGEMENT
     // =============================================================================
@@ -297,13 +297,17 @@ export function ProductImageGallery({images, selectedVariantImage, media}: Produ
                         loading={index === 0 ? "eager" : "lazy"}
                         sizes="(min-width: 45em) 50vw, 100vw"
                         className={cn(
-                            "sleek product-image w-full h-full object-cover hover:scale-105",
-                            !isLoaded && "opacity-0"
+                            "sleek product-image w-full h-full object-cover",
+                            !isLoaded && "opacity-0",
+                            isAvailableForSale && "hover:scale-105"
                         )}
                     />
 
                     {/* Hover overlay - subtle darkening to indicate clickability */}
-                    <div className="absolute inset-0 bg-dark/0 group-hover:bg-dark/5 motion-overlay pointer-events-none" />
+                    <div className={cn(
+                        "absolute inset-0 bg-dark/0 motion-overlay pointer-events-none",
+                        isAvailableForSale && "group-hover:bg-dark/5"
+                    )} />
                 </div>
             </div>
         );

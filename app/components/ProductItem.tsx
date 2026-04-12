@@ -632,7 +632,7 @@ export function ProductItem({
                         {/* Uses secondary token (same as Premium badge) for neutral, non-alarming tone */}
                         {isOutOfStock && (
                             <span
-                                className="inline-flex items-center justify-center rounded-full bg-secondary px-2.5 py-1 text-xs font-medium uppercase tracking-wide text-secondary-foreground shadow-md"
+                                className="inline-flex items-center justify-center rounded-full bg-destructive px-2.5 py-1 text-xs font-medium uppercase tracking-wide text-destructive-foreground shadow-md"
                                 role="status"
                                 aria-label="Out of stock"
                             >
@@ -670,15 +670,43 @@ export function ProductItem({
 
                 {/* Product images - carousel for multiple, static for single */}
                 {productImages.length > 0 ? (
-                    <ProductImageCarousel images={productImages} productTitle={product.title} loading={loading} />
+                    <ProductImageCarousel images={productImages} productTitle={product.title} loading={loading} isOutOfStock={isOutOfStock} />
                 ) : (
                     <div className="aspect-4/5 bg-muted/50" />
+                )}
+
+                {/* OOS image treatment: semi-transparent overlay + diagonal strike-through */}
+                {/* overflow-hidden on parent clips both to image bounds; pointer-events-none */}
+                {/* preserves all click targets; z-[11]/z-[12] sits above image, below badges (z-20) */}
+                {isOutOfStock && (
+                    <>
+                        <div
+                            className="absolute inset-0 bg-white/40 pointer-events-none z-[11]"
+                            aria-hidden="true"
+                        />
+                        <svg
+                            className="absolute inset-0 w-full h-full pointer-events-none z-[12]"
+                            viewBox="0 0 1 1"
+                            preserveAspectRatio="none"
+                            aria-hidden="true"
+                        >
+                            <line
+                                x1="0"
+                                y1="0"
+                                x2="1"
+                                y2="1"
+                                stroke="rgba(0,0,0,0.28)"
+                                strokeWidth="1"
+                                vectorEffect="non-scaling-stroke"
+                            />
+                        </svg>
+                    </>
                 )}
 
                 {/* Hover overlay - subtle darkening effect */}
                 <div className={cn(
                     "absolute inset-0 bg-primary/0 motion-overlay pointer-events-none z-10",
-                    canHover && "group-hover:bg-primary/5"
+                    canHover && !isOutOfStock && "group-hover:bg-primary/5"
                 )} />
 
                 {/* Quick Add Button or Custom Actions - full width at bottom, visible on mobile, show on hover for desktop */}

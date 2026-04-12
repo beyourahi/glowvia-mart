@@ -57,6 +57,7 @@ interface ProductImageCarouselProps {
     productTitle: string;
     loading?: "eager" | "lazy";
     className?: string;
+    isOutOfStock?: boolean;
 }
 
 // =============================================================================
@@ -73,7 +74,7 @@ interface ProductImageCarouselProps {
  *
  * Falls back to static image for products with only one image.
  */
-export function ProductImageCarousel({images, productTitle, loading = "lazy", className}: ProductImageCarouselProps) {
+export function ProductImageCarousel({images, productTitle, loading = "lazy", className, isOutOfStock = false}: ProductImageCarouselProps) {
     const [api, setApi] = useState<CarouselApi>();
 
     // =============================================================================
@@ -95,7 +96,10 @@ export function ProductImageCarousel({images, productTitle, loading = "lazy", cl
                     data={image}
                     loading={loading}
                     sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
-                    className="sleek product-image h-auto w-full object-cover group-hover:scale-[1.03] rounded-lg"
+                    className={cn(
+                        "sleek product-image h-auto w-full object-cover rounded-lg",
+                        !isOutOfStock && "group-hover:scale-[1.03]"
+                    )}
                 />
             </div>
         );
@@ -125,7 +129,10 @@ export function ProductImageCarousel({images, productTitle, loading = "lazy", cl
                                     data={image}
                                     loading={index === 0 ? loading : "lazy"}
                                     sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
-                                    className="sleek product-image h-auto w-full object-cover group-hover:scale-[1.03] rounded-lg"
+                                    className={cn(
+                                        "sleek product-image h-auto w-full object-cover rounded-lg",
+                                        !isOutOfStock && "group-hover:scale-[1.03]"
+                                    )}
                                 />
                             </div>
                         </CarouselItem>
@@ -139,7 +146,10 @@ export function ProductImageCarousel({images, productTitle, loading = "lazy", cl
             <div
                 role="button"
                 tabIndex={0}
-                className="absolute left-2 top-1/2 -translate-y-1/2 z-20 size-8 rounded-full hidden md:flex items-center justify-center opacity-0 group-hover:opacity-100 motion-overlay bg-primary border-0 hover:bg-primary/90 cursor-pointer"
+                className={cn(
+                    "absolute left-2 top-1/2 -translate-y-1/2 z-20 size-8 rounded-full hidden md:flex items-center justify-center motion-overlay bg-primary border-0 hover:bg-primary/90 cursor-pointer",
+                    isOutOfStock ? "opacity-0" : "opacity-0 group-hover:opacity-100"
+                )}
                 onClick={e => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -159,7 +169,10 @@ export function ProductImageCarousel({images, productTitle, loading = "lazy", cl
             <div
                 role="button"
                 tabIndex={0}
-                className="absolute right-2 top-1/2 -translate-y-1/2 z-20 size-8 rounded-full hidden md:flex items-center justify-center opacity-0 group-hover:opacity-100 motion-overlay bg-primary border-0 hover:bg-primary/90 cursor-pointer"
+                className={cn(
+                    "absolute right-2 top-1/2 -translate-y-1/2 z-20 size-8 rounded-full hidden md:flex items-center justify-center motion-overlay bg-primary border-0 hover:bg-primary/90 cursor-pointer",
+                    isOutOfStock ? "opacity-0" : "opacity-0 group-hover:opacity-100"
+                )}
                 onClick={e => {
                     e.preventDefault();
                     e.stopPropagation();

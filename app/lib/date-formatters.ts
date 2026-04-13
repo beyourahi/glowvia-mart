@@ -50,13 +50,22 @@ export function formatAbsoluteDate(isoDate: string): string {
  * Returns a human-readable relative day label for a changelog date group header.
  * e.g. "Today", "Yesterday", "3 days ago", "2 weeks ago", "4 months ago"
  *
- * Compares UTC calendar dates (midnight → midnight) rather than raw milliseconds,
+ * Compares calendar dates (midnight → midnight) rather than raw milliseconds,
  * so the result is stable regardless of what time of day it currently is.
+ *
+ * Uses LOCAL date components (not UTC) for "today" because entry dates like
+ * "2026-04-13" are local calendar days — authored and read in local time. If
+ * UTC has already rolled over to the next day while the local calendar is still
+ * on the previous day (or vice-versa), using getUTCDate() would produce the
+ * wrong relative label (e.g. "Yesterday" for today's entries).
  */
 export function formatRelativeDayLabel(isoDate: string): string {
     const now = new Date();
-    // Anchor both sides to UTC midnight to avoid time-of-day drift
-    const todayUtcMs = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+    // Anchor "today" to the LOCAL calendar date, then express it as UTC midnight
+    // so it can be compared directly with entry timestamps (date-only ISO strings
+    // parse as UTC midnight). This keeps both sides in the same unit (ms) without
+    // introducing a timezone offset error in the day-difference calculation.
+    const todayUtcMs = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
     const entryUtcMs = new Date(isoDate).getTime(); // date-only ISO strings parse as UTC midnight
     const diffDays = Math.round((entryUtcMs - todayUtcMs) / 86_400_000);
 

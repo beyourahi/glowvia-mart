@@ -105,7 +105,7 @@ export function ChangelogPage({entries, totalCommits}: ChangelogLoaderData) {
                             <span className="font-serif text-sm tracking-normal tabular-nums text-[var(--text-secondary)]">
                                 {totalCommits.toLocaleString("en-US")}
                             </span>
-                            {" "}commits
+                            {" "}updates shipped
                         </p>
                     )}
                 </div>

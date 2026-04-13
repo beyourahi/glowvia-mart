@@ -77,7 +77,7 @@ Backend behavior, data flow, and Hydrogen conventions **must remain consistent**
 storefront_002/
 ├── app/
 │   ├── routes/              # 50 routes
-│   ├── components/          # 125 components
+│   ├── components/          # 123 components
 │   │   ├── ui/              # 27 shadcn
 │   │   ├── blog/            # 7 blog
 │   │   ├── changelog/       # 2 changelog
@@ -170,6 +170,7 @@ SESSION_SECRET=<32chars>                        # Required
 PUBLIC_STORE_DOMAIN=<store>.myshopify.com      # Required
 PUBLIC_STOREFRONT_API_TOKEN=<token>            # Required
 PUBLIC_GTM_CONTAINER_ID=GTM-XXXXXXX            # Optional
+GITHUB_TOKEN=<token>                           # Optional (enables live commit count in changelog hero; omit for public repos or to disable)
 ```
 
 **Fallback Demo Store (Cloudflare Workers, Local Dev, and Portfolio Showcase ONLY):**
@@ -343,7 +344,7 @@ Read all comments before editing. Update when changing code. Add for complex log
 
 **Gallery**: Responsive grid + lightbox, route: `/gallery`, components: GalleryGrid, GalleryImageCard, metaobject-driven
 
-**Changelog**: Static changelog page for shoppers, route: `/changelog`, components: ChangelogEntry, ChangelogPage, hook: `useChangelogFilter`. Entries live in `lib/changelog-data.ts` (static file — add entries manually at commit time, see Changelog Entries section).
+**Changelog**: Changelog page for shoppers, route: `/changelog`, components: ChangelogEntry, ChangelogPage, hook: `useChangelogFilter`. Entries live in `lib/changelog-data.ts` (static file — add entries manually at commit time, see Changelog Entries section). The hero displays a live "updates shipped" count fetched from the GitHub API at render time (`GITHUB_TOKEN` env var required for private repos; count is omitted gracefully if the API call fails).
 
 ---
 

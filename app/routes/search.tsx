@@ -75,6 +75,7 @@ import {OfflineAwareErrorPage} from "~/components/OfflineAwareErrorPage";
 import {trackErrorBoundary} from "~/hooks/usePwaAnalytics";
 import {sortWithPinnedFirst} from "~/lib/product-tags";
 import {AnimatedSection} from "~/components/AnimatedSection";
+import {PageHeading} from "~/components/PageHeading";
 
 const FALLBACK_POPULAR_SEARCHES = ["new arrivals", "best sellers", "gift ideas", "on sale", "trending now"];
 
@@ -287,9 +288,7 @@ export default function SearchPage() {
                  pt-(--page-breathing-room): Breathing room from fixed header (24px → 64px) */}
             <AnimatedSection animation="fade" threshold={0.08}>
                 <header className="pt-(--page-breathing-room) pb-6 sm:pb-8 md:pb-12 lg:pb-16 xl:pb-20">
-                    <h1 className="font-serif text-xl md:text-3xl lg:text-4xl font-medium text-primary tracking-tight m-0">
-                        / Search
-                    </h1>
+                    <PageHeading title="/ Search" />
                 </header>
             </AnimatedSection>
 

@@ -42,6 +42,7 @@ import type {Route} from "./+types/contact";
 import {getSeoMeta} from "@shopify/hydrogen";
 import {Fragment} from "react";
 import {AnimatedSection} from "~/components/AnimatedSection";
+import {PageHeading} from "~/components/PageHeading";
 import {buildCanonicalUrl, getBrandNameFromMatches, getSiteUrlFromMatches} from "~/lib/seo";
 import {useContactInfo, useSocialLinks} from "~/lib/site-content-context";
 import {STORE_COUNTRY_NAME} from "~/lib/store-locale";
@@ -76,11 +77,7 @@ export default function Contact() {
                             <div className="grid gap-6 sm:gap-8 lg:grid-cols-2 lg:gap-16 items-end">
                             {/* Large Title */}
                                 <div>
-                                    <h1 className="font-serif text-xl md:text-3xl lg:text-4xl font-medium text-primary leading-tight">
-                                        Get in{" "}
-                                        <br />
-                                        Touch
-                                    </h1>
+                                    <PageHeading title={<>Get in{" "}<br />Touch</>} />
                                 </div>
 
                             {/* Tagline */}

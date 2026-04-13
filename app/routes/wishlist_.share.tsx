@@ -50,6 +50,7 @@ import {ProductItem} from "~/components/ProductItem";
 import {Button} from "~/components/ui/button";
 import {buildCanonicalUrl, getSiteUrlFromMatches} from "~/lib/seo";
 import {toast} from "sonner";
+import {PageHeading} from "~/components/PageHeading";
 
 // =============================================================================
 // META & LOADER
@@ -189,9 +190,7 @@ function SharedWishlistHeader({count, onSaveAll}: {count: number; onSaveAll?: ()
                     <span className="inline-block mb-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">
                         Shared Wishlist
                     </span>
-                    <h1 className="font-serif text-xl font-medium text-primary md:text-3xl lg:text-4xl mb-0 mt-0">
-                        Wishlist
-                    </h1>
+                    <PageHeading title="Wishlist" />
                     <p className="mt-1 text-base text-muted-foreground md:text-lg">
                         {count === 0
                             ? "No items in this wishlist"

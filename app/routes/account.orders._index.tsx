@@ -306,7 +306,7 @@ export default function Orders() {
                                 <PackageSearchIcon className="size-5 md:size-6 text-muted-foreground" />
                             </div>
                             <div>
-                                <h1 className="text-xl md:text-2xl lg:text-3xl font-serif font-medium text-foreground tracking-tight my-0">
+                                <h1 className="text-xl md:text-2xl lg:text-3xl font-serif font-medium text-primary tracking-tight my-0">
                                     Order History
                                 </h1>
                                 <p className="text-muted-foreground text-sm md:text-base mt-1">

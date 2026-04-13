@@ -30,6 +30,13 @@ import type {ChangelogEntry} from "~/lib/types/changelog";
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
         date: "2026-04-13",
+        headline: "Page titles are now bolder and easier to scan at a glance",
+        summary:
+            "Headings on pages like Search, Contact, Gallery, FAQ, Blog, and Changelog are now displayed at a larger, more consistent size that matches the visual weight of the Collections pages. Every section of the store now has the same clear, confident title hierarchy.",
+        category: "Design"
+    },
+    {
+        date: "2026-04-13",
         headline: "Date headers stay visible as you scroll through the changelog",
         summary:
             "Each date section header now stays pinned at the top of the page as you scroll through its updates, then slides away when the next date arrives. You always know which date you're reading without having to scroll back up.",

@@ -187,7 +187,7 @@ function getFontSizes(
     // Secondary maintains ~1.6–2.0x ratio with primary for cohesive title treatment.
     if (variant === "pdp") {
         return {
-            primary: "text-3xl md:text-4xl xl:text-fluid-h1 2xl:text-5xl",
+            primary: "text-3xl md:text-4xl xl:text-fluid-h1 2xl:text-5xl tracking-wide",
             secondary: "text-lg md:text-xl xl:text-2xl"
         };
     }

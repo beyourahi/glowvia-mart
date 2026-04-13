@@ -34,6 +34,7 @@ import {ChangelogEntryCard} from "~/components/changelog/ChangelogEntry";
 import {useChangelogFilter} from "~/hooks/useChangelogFilter";
 import {formatAbsoluteDate, formatRelativeDayLabel} from "~/lib/date-formatters";
 import type {ChangelogCategory, ChangelogEntry as ChangelogEntryType, ChangelogLoaderData} from "~/lib/types/changelog";
+import {PageHeading} from "~/components/PageHeading";
 
 // =============================================================================
 // CONSTANTS
@@ -95,12 +96,10 @@ export function ChangelogPage({entries}: ChangelogLoaderData) {
             {/* ───── Hero ───── */}
             <section className="pt-6 sm:pt-8 pb-5 sm:pb-6">
                 <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
-                    <h1 className="font-serif text-2xl sm:text-3xl font-normal tracking-tight text-[var(--text-primary)] mb-2">
-                        What&apos;s New
-                    </h1>
-                    <p className="text-sm sm:text-base text-[var(--text-secondary)] max-w-md mx-auto">
-                        A running record of everything we&apos;ve shipped — features, fixes, and improvements.
-                    </p>
+                    <PageHeading
+                        title="What's New"
+                        description="A running record of everything we've shipped — features, fixes, and improvements."
+                    />
                 </div>
             </section>
 

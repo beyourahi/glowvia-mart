@@ -371,7 +371,7 @@ export default function SubscriptionDetail() {
                                 </div>
                                 <div>
                                     <div className="flex items-center gap-2.5 flex-wrap">
-                                        <h1 className="text-xl md:text-2xl lg:text-3xl font-serif font-medium text-foreground tracking-tight my-0">
+                                        <h1 className="text-xl md:text-2xl lg:text-3xl font-serif font-medium text-primary tracking-tight my-0">
                                             Subscription Details
                                         </h1>
                                         <Badge variant={statusConfig.variant}>{statusConfig.label}</Badge>

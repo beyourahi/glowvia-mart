@@ -720,7 +720,7 @@ function WishlistHeader({count, ids, products, onClearClick}: WishlistHeaderProp
                         <div className="flex items-center justify-center size-10 md:size-12 rounded-2xl bg-muted/50 shrink-0">
                             <HeartIcon className="size-5 md:size-6 text-muted-foreground" />
                         </div>
-                        <h1 className="text-xl md:text-2xl lg:text-3xl font-serif font-medium text-foreground tracking-tight my-0">
+                        <h1 className="text-xl md:text-2xl lg:text-3xl font-serif font-medium text-primary tracking-tight my-0">
                             Wishlist
                         </h1>
                     </div>

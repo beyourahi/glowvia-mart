@@ -52,6 +52,7 @@ import {Carousel, CarouselContent, CarouselItem} from "~/components/ui/carousel"
 import {cn} from "~/lib/utils";
 import {buildCanonicalUrl, getBrandNameFromMatches, getSiteUrlFromMatches} from "~/lib/seo";
 import {useSiteSettings} from "~/lib/site-content-context";
+import {PageHeading} from "~/components/PageHeading";
 
 interface BlogWithArticles {
     title: string;
@@ -188,12 +189,7 @@ export default function Blogs({loaderData}: Route.ComponentProps) {
                      pt-(--page-breathing-room): Breathing room from fixed header (24px → 64px) */}
             <AnimatedSection animation="hero" threshold={0.1}>
                 <header className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-16 items-end pt-(--page-breathing-room) pb-6 sm:pb-8 md:pb-12">
-                    <h1 className="font-serif text-xl md:text-3xl lg:text-4xl font-medium text-primary leading-tight">
-                        {blogPageHeading}
-                    </h1>
-                    <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-primary leading-relaxed max-w-xl">
-                        {blogPageDescription}
-                    </p>
+                    <PageHeading title={blogPageHeading} description={blogPageDescription} />
                 </header>
             </AnimatedSection>
 

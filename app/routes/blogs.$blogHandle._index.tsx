@@ -48,6 +48,7 @@ import {ArticleCard, type ArticleCardData} from "~/components/blog/ArticleCard";
 import {ArticleHero} from "~/components/blog/ArticleHero";
 import {TagList} from "~/components/blog/TagBadge";
 import {buildCanonicalUrl, truncateDescription, getBrandNameFromMatches, getSiteUrlFromMatches} from "~/lib/seo";
+import {PageHeading} from "~/components/PageHeading";
 
 export const meta: Route.MetaFunction = ({data, matches}) => {
     const brandName = getBrandNameFromMatches(matches);
@@ -161,14 +162,7 @@ export default function Blog({loaderData}: Route.ComponentProps) {
             {/* Blog Header with fluid title sizing
                  pt-(--page-breathing-room): Breathing room from fixed header (24px → 64px) */}
             <header className="space-y-3 sm:space-y-4 md:space-y-5 text-center max-w-3xl xl:max-w-4xl mx-auto pt-(--page-breathing-room)">
-                <h1 className="font-serif text-xl md:text-3xl lg:text-4xl font-medium text-primary">
-                    {blog.title}
-                </h1>
-                {blog.seo?.description && (
-                    <p className="text-base sm:text-lg md:text-xl text-muted-foreground leading-relaxed">
-                        {blog.seo.description}
-                    </p>
-                )}
+                <PageHeading title={blog.title} />
             </header>
 
             {/* Featured Article Hero */}

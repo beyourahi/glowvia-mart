@@ -53,6 +53,7 @@ import {transformToGalleryImages} from "~/lib/gallery";
 import type {GalleryImageData, GalleryPageInfo} from "~/lib/gallery";
 import {buildCanonicalUrl, getBrandNameFromMatches, getSiteUrlFromMatches} from "~/lib/seo";
 import {useSiteSettings} from "~/lib/site-content-context";
+import {PageHeading} from "~/components/PageHeading";
 
 export const meta: Route.MetaFunction = ({matches}) => {
     const brandName = getBrandNameFromMatches(matches);
@@ -121,10 +122,7 @@ export default function Gallery() {
                  pt-(--page-breathing-room): Breathing room from fixed header (24px → 64px) */}
             <AnimatedSection animation="fade" threshold={0.08}>
                 <header className="pt-(--page-breathing-room) mb-6 md:mb-10 lg:mb-12">
-                    <h1 className="font-serif text-xl md:text-3xl lg:text-4xl font-medium text-primary mb-2 md:mb-3">
-                        {galleryPageHeading}
-                    </h1>
-                    <p className="text-muted-foreground text-sm sm:text-base max-w-2xl">{galleryPageDescription}</p>
+                    <PageHeading title={galleryPageHeading} description={galleryPageDescription} />
                 </header>
             </AnimatedSection>
 

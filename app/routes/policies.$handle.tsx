@@ -53,6 +53,7 @@ import {type Shop} from "@shopify/hydrogen/storefront-api-types";
 import {AnimatedSection} from "~/components/AnimatedSection";
 import {buildCanonicalUrl, getBrandNameFromMatches, getSiteUrlFromMatches} from "~/lib/seo";
 import {useSiteSettings} from "~/lib/site-content-context";
+import {PageHeading} from "~/components/PageHeading";
 
 type SelectedPolicies = keyof Pick<Shop, "privacyPolicy" | "shippingPolicy" | "termsOfService" | "refundPolicy">;
 
@@ -144,11 +145,10 @@ export default function Policy() {
                             <div className="grid gap-8 sm:gap-12 lg:grid-cols-[2fr_3fr] lg:gap-16">
                                 {/* Sticky Policy Heading */}
                                 <div className="lg:sticky lg:top-24 lg:self-start">
-                                    <h1 className="font-serif text-xl md:text-3xl lg:text-4xl font-medium text-primary-foreground leading-tight">
-                                        {policy.title.split(" ").slice(0, -1).join(" ")}
-                                        <br />
-                                        {policy.title.split(" ").slice(-1)[0]}
-                                    </h1>
+                                    <PageHeading
+                                        variant="dark"
+                                        title={<>{policy.title.split(" ").slice(0, -1).join(" ")}<br />{policy.title.split(" ").slice(-1)[0]}</>}
+                                    />
                                     <p className="mt-4 sm:mt-6 text-base sm:text-lg text-primary-foreground/70 leading-relaxed max-w-sm">
                                         {getPolicyDescription(policy.handle, brandName) ||
                                             `Read our ${policy.title.toLowerCase()} to understand your rights and our commitments.`}

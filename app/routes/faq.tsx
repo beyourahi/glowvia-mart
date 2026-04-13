@@ -49,6 +49,7 @@ import {AnimatedSection} from "~/components/AnimatedSection";
 import {Accordion, AccordionContent, AccordionItem, AccordionTrigger} from "~/components/ui/accordion";
 import {buildCanonicalUrl, getBrandNameFromMatches, getSiteUrlFromMatches, generateFAQPageSchema} from "~/lib/seo";
 import {useFaqItems} from "~/lib/site-content-context";
+import {PageHeading} from "~/components/PageHeading";
 
 export const meta: Route.MetaFunction = ({matches}) => {
     const brandName = getBrandNameFromMatches(matches);
@@ -90,14 +91,11 @@ export default function FAQ() {
                         <div className="grid gap-8 sm:gap-12 lg:grid-cols-[2fr_3fr] lg:gap-16">
                             {/* Sticky FAQ Heading */}
                             <div className="lg:sticky lg:top-32 lg:self-start">
-                                <h1 className="font-serif text-xl md:text-3xl lg:text-4xl font-medium text-primary-foreground leading-tight">
-                                    Frequently Asked{" "}
-                                    <br />
-                                    Questions
-                                </h1>
-                                <p className="mt-4 sm:mt-6 text-base sm:text-lg text-primary-foreground/70 leading-relaxed max-w-sm">
-                                    Find answers to common questions about orders, shipping, returns, and more.
-                                </p>
+                                <PageHeading
+                                    variant="dark"
+                                    title={<>Frequently Asked{" "}<br />Questions</>}
+                                    description="Find answers to common questions about orders, shipping, returns, and more."
+                                />
                                 <p className="mt-4 text-sm text-primary-foreground/50">{faqItems.length} questions</p>
                             </div>
 

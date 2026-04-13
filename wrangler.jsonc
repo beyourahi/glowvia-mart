@@ -15,7 +15,8 @@
         "PRIVATE_STOREFRONT_API_TOKEN": "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",
         "PUBLIC_CUSTOMER_ACCOUNT_API_CLIENT_ID": "d59946cb-1d27-415f-bb8e-c8ea32ffb5eb",
         "PUBLIC_CUSTOMER_ACCOUNT_API_URL": "https://shopify.com/66049638586",
-        "SHOP_ID": "66049638586"
+        "SHOP_ID": "66049638586",
+        "GITHUB_TOKEN": "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"
     },
     "upload_source_maps": true,
     "observability": {

@@ -15,8 +15,8 @@
  * - Skeleton loading state (ChangelogPageSkeleton)
  *
  * @layout
- * max-w-3xl mx-auto:
- *   1. Hero (center-aligned, pt-6 sm:pt-8 — compact, no forced viewport height)
+ * px-4 sm:px-6 lg:px-8 outer wrapper (no pt — PageLayout main already clears the header):
+ *   1. Hero (center-aligned, pt-(--page-breathing-room) — standard breathing room)
  *   2. Filter chips row
  *   3. Date-grouped cards (IIFE scopes globalStaggerIndex across groups)
  *   4. Load-more button
@@ -92,10 +92,10 @@ export function ChangelogPage({entries, totalCommits}: ChangelogLoaderData) {
     const hasMore = visibleCount < filteredEntries.length;
 
     return (
-        <div className="bg-[var(--surface-canvas)] pt-[var(--total-header-height)]">
+        <div className="bg-[var(--surface-canvas)] px-4 sm:px-6 lg:px-8">
             {/* ───── Hero ───── */}
-            <section className="pt-6 sm:pt-8 pb-5 sm:pb-6">
-                <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
+            <section className="pt-(--page-breathing-room) pb-5 sm:pb-6">
+                <div className="text-center">
                     <PageHeading
                         title="What's New"
                         description="A running record of everything we've shipped — features, fixes, and improvements."
@@ -114,7 +114,7 @@ export function ChangelogPage({entries, totalCommits}: ChangelogLoaderData) {
             {/* ───── Filter chips ───── */}
             <section className="pb-8 sm:pb-10">
                 <div
-                    className="max-w-3xl mx-auto px-4 sm:px-6 flex flex-wrap justify-center gap-2"
+                    className="flex flex-wrap justify-center gap-2"
                     role="radiogroup"
                     aria-label="Filter by category"
                 >
@@ -154,7 +154,7 @@ export function ChangelogPage({entries, totalCommits}: ChangelogLoaderData) {
 
             {/* ───── Grouped entries ───── */}
             <section className="pb-16 sm:pb-20 md:pb-24">
-                <div className="max-w-3xl mx-auto px-4 sm:px-6">
+                <div>
                     {isEmpty ? (
                         <Empty className="border-[var(--border-subtle)] mt-4">
                             <EmptyHeader>
@@ -266,10 +266,10 @@ function ChangelogGroupSkeleton({startIndex}: {startIndex: number}) {
 
 export function ChangelogPageSkeleton() {
     return (
-        <div className="bg-[var(--surface-canvas)] pt-[var(--total-header-height)]">
+        <div className="bg-[var(--surface-canvas)] px-4 sm:px-6 lg:px-8">
             {/* Hero skeleton */}
-            <section className="pt-6 sm:pt-8 pb-5 sm:pb-6">
-                <div className="max-w-3xl mx-auto px-4 sm:px-6 flex flex-col items-center gap-3">
+            <section className="pt-(--page-breathing-room) pb-5 sm:pb-6">
+                <div className="flex flex-col items-center gap-3">
                     <Skeleton className="h-8 w-36 rounded" />
                     <Skeleton className="h-4 w-72 rounded" />
                     <Skeleton className="h-3 w-20 rounded mt-2" />
@@ -278,7 +278,7 @@ export function ChangelogPageSkeleton() {
 
             {/* Filter chips skeleton */}
             <section className="pb-8 sm:pb-10">
-                <div className="max-w-3xl mx-auto px-4 sm:px-6 flex flex-wrap justify-center gap-2">
+                <div className="flex flex-wrap justify-center gap-2">
                     {Array.from({length: 6}).map((_, i) => (
                         // eslint-disable-next-line react/no-array-index-key -- static skeleton
                         <Skeleton key={i} className="h-8 w-24 rounded-full" />
@@ -288,7 +288,7 @@ export function ChangelogPageSkeleton() {
 
             {/* Entry group skeletons */}
             <section className="pb-16 sm:pb-20 md:pb-24">
-                <div className="max-w-3xl mx-auto px-4 sm:px-6">
+                <div>
                     <ChangelogGroupSkeleton startIndex={0} />
                     <ChangelogGroupSkeleton startIndex={3} />
                 </div>

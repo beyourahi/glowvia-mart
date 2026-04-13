@@ -24,4 +24,5 @@ export type ChangelogEntry = {
 
 export type ChangelogLoaderData = {
     entries: ChangelogEntry[];
+    totalCommits: number | null;
 };

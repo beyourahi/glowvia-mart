@@ -78,7 +78,7 @@ function groupEntriesByDate(entries: ChangelogEntryType[]): DateGroup[] {
 // CHANGELOG PAGE
 // =============================================================================
 
-export function ChangelogPage({entries}: ChangelogLoaderData) {
+export function ChangelogPage({entries, totalCommits}: ChangelogLoaderData) {
     const {filteredEntries, setCategory, activeCategory, isEmpty} = useChangelogFilter(entries);
 
     const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE);
@@ -100,6 +100,14 @@ export function ChangelogPage({entries}: ChangelogLoaderData) {
                         title="What's New"
                         description="A running record of everything we've shipped — features, fixes, and improvements."
                     />
+                    {totalCommits != null && (
+                        <p className="mt-5 sm:mt-6 text-xs tracking-wider text-[var(--text-subtle)]">
+                            <span className="font-serif text-sm tracking-normal tabular-nums text-[var(--text-secondary)]">
+                                {totalCommits.toLocaleString("en-US")}
+                            </span>
+                            {" "}commits
+                        </p>
+                    )}
                 </div>
             </section>
 
@@ -182,6 +190,9 @@ export function ChangelogPage({entries}: ChangelogLoaderData) {
                                                     className="flex-1 h-px bg-[var(--border-subtle)]"
                                                     aria-hidden="true"
                                                 />
+                                                <span className="shrink-0 tabular-nums text-xs text-[var(--text-subtle)]">
+                                                    {group.entries.length} {group.entries.length === 1 ? "update" : "updates"}
+                                                </span>
                                             </div>
                                             <div className="space-y-3">
                                                 {group.entries.map(entry => (
@@ -261,6 +272,7 @@ export function ChangelogPageSkeleton() {
                 <div className="max-w-3xl mx-auto px-4 sm:px-6 flex flex-col items-center gap-3">
                     <Skeleton className="h-8 w-36 rounded" />
                     <Skeleton className="h-4 w-72 rounded" />
+                    <Skeleton className="h-3 w-20 rounded mt-2" />
                 </div>
             </section>
 

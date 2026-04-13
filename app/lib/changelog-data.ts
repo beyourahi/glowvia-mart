@@ -30,6 +30,13 @@ import type {ChangelogEntry} from "~/lib/types/changelog";
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
         date: "2026-04-13",
+        headline: "The updates page now shows a live total commit count and per-date update tallies",
+        summary:
+            "The changelog page now displays the all-time number of commits shipped, shown quietly below the page title. Each date section also shows how many updates landed that day — so you can see at a glance which days were busy and which were quiet.",
+        category: "New Feature"
+    },
+    {
+        date: "2026-04-13",
         headline: "Page titles are now bolder and easier to scan at a glance",
         summary:
             "Headings on pages like Search, Contact, Gallery, FAQ, Blog, and Changelog are now displayed at a larger, more consistent size that matches the visual weight of the Collections pages. Every section of the store now has the same clear, confident title hierarchy.",

@@ -10,9 +10,9 @@
  *
  * @features
  * - Server-side rendering (all entries returned in a single loader call)
- * - Client-side category filter + search (no extra network requests)
+ * - Client-side category filter (no extra network requests)
  * - Client-side "Load more" pagination (no URL changes)
- * - Graceful empty state when search/filter returns no results
+ * - Graceful empty state when filter returns no results
  *
  * @related
  * - app/lib/changelog-data.ts  - Curated entry data (add new entries here)

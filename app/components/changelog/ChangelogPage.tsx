@@ -2,17 +2,17 @@
  * @fileoverview ChangelogPage — Full changelog page layout
  *
  * @description
- * Renders the /changelog page with a hero search, prominent Rahi attribution
+ * Renders the /changelog page with a hero, prominent Rahi attribution
  * badge, category filter chips, date-grouped entry cards, and a "Load more"
  * button for pagination.
  *
  * @features
- * - Hero with h1 + attribution badge + subtitle + centered search input
+ * - Hero with h1 + attribution badge + subtitle
  * - Category filter chips (All, New Feature, Improvement, Fix, Performance, Design)
  * - Entries grouped by date with serif section headers + horizontal rule
  * - Staggered entry card animations via ChangelogEntryCard (global stagger index)
  * - Client-side "Load more" pagination (50 entries at a time, no URL changes)
- * - Empty state when search/filter returns no results
+ * - Empty state when filter returns no results
  * - Skeleton loading state (ChangelogPageSkeleton)
  *
  * @layout
@@ -23,15 +23,13 @@
  *   4. Load-more button
  *
  * @accessibility
- * - Search: role="search" landmark
  * - Filter chips: role="radiogroup" with aria-checked per chip
  * - Date group headers: <h2> for correct heading hierarchy
  * - Attribution: external link with rel="noopener noreferrer"
  */
 
 import {useState, useEffect} from "react";
-import {Search, ArrowUpRight} from "lucide-react";
-import {Input} from "~/components/ui/input";
+import {ArrowUpRight} from "lucide-react";
 import {Button} from "~/components/ui/button";
 import {Skeleton} from "~/components/ui/skeleton";
 import {Empty, EmptyHeader, EmptyTitle, EmptyDescription} from "~/components/ui/empty";
@@ -83,15 +81,14 @@ function groupEntriesByDate(entries: ChangelogEntryType[]): DateGroup[] {
 // =============================================================================
 
 export function ChangelogPage({entries}: ChangelogLoaderData) {
-    const {filteredEntries, setSearch, setCategory, activeCategory, searchQuery, isEmpty} =
-        useChangelogFilter(entries);
+    const {filteredEntries, setCategory, activeCategory, isEmpty} = useChangelogFilter(entries);
 
     const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE);
 
-    // Reset visible count whenever the user changes the search or category filter
+    // Reset visible count whenever the user changes the category filter
     useEffect(() => {
         setVisibleCount(INITIAL_VISIBLE);
-    }, [activeCategory, searchQuery]);
+    }, [activeCategory]);
 
     const visibleEntries = filteredEntries.slice(0, visibleCount);
     const hasMore = visibleCount < filteredEntries.length;
@@ -121,25 +118,9 @@ export function ChangelogPage({entries}: ChangelogLoaderData) {
                         </a>
                     </div>
 
-                    <p className="text-base sm:text-lg text-[var(--text-secondary)] max-w-md mx-auto mb-8">
+                    <p className="text-base sm:text-lg text-[var(--text-secondary)] max-w-md mx-auto">
                         A running record of everything we&apos;ve shipped — features, fixes, and improvements.
                     </p>
-
-                    {/* Search */}
-                    <div className="relative max-w-sm mx-auto" role="search">
-                        <Search
-                            className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[var(--text-subtle)] pointer-events-none"
-                            aria-hidden="true"
-                        />
-                        <Input
-                            type="search"
-                            placeholder="Search updates…"
-                            value={searchQuery}
-                            onChange={e => setSearch(e.target.value)}
-                            className="pl-9"
-                            aria-label="Search changelog entries"
-                        />
-                    </div>
                 </div>
             </section>
 
@@ -300,7 +281,6 @@ export function ChangelogPageSkeleton() {
                     <Skeleton className="h-10 w-48 rounded" />
                     <Skeleton className="h-9 w-44 rounded-full" />
                     <Skeleton className="h-5 w-72 rounded" />
-                    <Skeleton className="h-10 w-64 rounded-xl mt-2" />
                 </div>
             </section>
 

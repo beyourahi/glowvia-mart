@@ -2,12 +2,11 @@
  * @fileoverview ChangelogPage — Full changelog page layout
  *
  * @description
- * Renders the /changelog page with a hero, prominent Rahi attribution
- * badge, category filter chips, date-grouped entry cards, and a "Load more"
- * button for pagination.
+ * Renders the /changelog page with a compact hero, category filter chips,
+ * date-grouped entry cards, and a "Load more" button for pagination.
  *
  * @features
- * - Hero with h1 + attribution badge + subtitle
+ * - Compact hero with h1 + subtitle (no forced min-height)
  * - Category filter chips (All, New Feature, Improvement, Fix, Performance, Design)
  * - Entries grouped by date with serif section headers + horizontal rule
  * - Staggered entry card animations via ChangelogEntryCard (global stagger index)
@@ -17,7 +16,7 @@
  *
  * @layout
  * max-w-3xl mx-auto:
- *   1. Hero (center-aligned, pt-page-breathing-room)
+ *   1. Hero (center-aligned, pt-6 sm:pt-8 — compact, no forced viewport height)
  *   2. Filter chips row
  *   3. Date-grouped cards (IIFE scopes globalStaggerIndex across groups)
  *   4. Load-more button
@@ -25,11 +24,9 @@
  * @accessibility
  * - Filter chips: role="radiogroup" with aria-checked per chip
  * - Date group headers: <h2> for correct heading hierarchy
- * - Attribution: external link with rel="noopener noreferrer"
  */
 
 import {useState, useEffect} from "react";
-import {ArrowUpRight} from "lucide-react";
 import {Button} from "~/components/ui/button";
 import {Skeleton} from "~/components/ui/skeleton";
 import {Empty, EmptyHeader, EmptyTitle, EmptyDescription} from "~/components/ui/empty";
@@ -94,31 +91,14 @@ export function ChangelogPage({entries}: ChangelogLoaderData) {
     const hasMore = visibleCount < filteredEntries.length;
 
     return (
-        <div className="min-h-dvh bg-[var(--surface-canvas)] pt-[var(--total-header-height)]">
+        <div className="bg-[var(--surface-canvas)] pt-[var(--total-header-height)]">
             {/* ───── Hero ───── */}
-            <section className="pt-(--page-breathing-room) pb-8 sm:pb-10">
+            <section className="pt-6 sm:pt-8 pb-5 sm:pb-6">
                 <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
-                    <p className="text-xs font-semibold uppercase tracking-widest text-[var(--brand-primary)] mb-3">
-                        Product Updates
-                    </p>
-                    <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl font-normal tracking-tight text-[var(--text-primary)] mb-4">
+                    <h1 className="font-serif text-2xl sm:text-3xl font-normal tracking-tight text-[var(--text-primary)] mb-2">
                         What&apos;s New
                     </h1>
-
-                    {/* Attribution badge — prominent hero placement */}
-                    <div className="flex justify-center mb-5">
-                        <a
-                            href="https://beyourahi.com"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 rounded-full border border-[var(--brand-primary)] px-4 py-2 text-sm font-medium text-[var(--brand-primary)] motion-interactive hover:bg-[var(--brand-primary)] hover:text-white"
-                        >
-                            Built by Rahi Khan
-                            <ArrowUpRight className="size-3.5" aria-hidden="true" />
-                        </a>
-                    </div>
-
-                    <p className="text-base sm:text-lg text-[var(--text-secondary)] max-w-md mx-auto">
+                    <p className="text-sm sm:text-base text-[var(--text-secondary)] max-w-md mx-auto">
                         A running record of everything we&apos;ve shipped — features, fixes, and improvements.
                     </p>
                 </div>
@@ -173,7 +153,7 @@ export function ChangelogPage({entries}: ChangelogLoaderData) {
                             <EmptyHeader>
                                 <EmptyTitle>No updates found</EmptyTitle>
                                 <EmptyDescription>
-                                    Try adjusting your search or clearing the category filter.
+                                    Try clearing the category filter.
                                 </EmptyDescription>
                             </EmptyHeader>
                         </Empty>
@@ -186,8 +166,11 @@ export function ChangelogPage({entries}: ChangelogLoaderData) {
                                 <div>
                                     {groupEntriesByDate(visibleEntries).map(group => (
                                         <div key={group.date} className="mb-10 sm:mb-12">
-                                            {/* Date section header with decorative rule */}
-                                            <div className="flex items-center gap-3 mb-4 sm:mb-5">
+                                            {/* Date section header with decorative rule.
+                                                sticky + top offset parks it just below the fixed navbar
+                                                while its group's entries are in view. bg-[surface-canvas]
+                                                prevents entry cards from bleeding through during scroll. */}
+                                            <div className="sticky top-[var(--total-header-height)] z-10 bg-[var(--surface-canvas)] flex items-center gap-3 mb-4 sm:mb-5">
                                                 <div className="flex items-baseline gap-2 shrink-0">
                                                     <h2 className="font-serif text-base sm:text-lg font-medium text-[var(--text-secondary)]">
                                                         {formatAbsoluteDate(group.date)}
@@ -273,14 +256,12 @@ function ChangelogGroupSkeleton({startIndex}: {startIndex: number}) {
 
 export function ChangelogPageSkeleton() {
     return (
-        <div className="min-h-dvh bg-[var(--surface-canvas)] pt-[var(--total-header-height)]">
+        <div className="bg-[var(--surface-canvas)] pt-[var(--total-header-height)]">
             {/* Hero skeleton */}
-            <section className="pt-(--page-breathing-room) pb-8 sm:pb-10">
-                <div className="max-w-3xl mx-auto px-4 sm:px-6 flex flex-col items-center gap-4">
-                    <Skeleton className="h-4 w-28 rounded" />
-                    <Skeleton className="h-10 w-48 rounded" />
-                    <Skeleton className="h-9 w-44 rounded-full" />
-                    <Skeleton className="h-5 w-72 rounded" />
+            <section className="pt-6 sm:pt-8 pb-5 sm:pb-6">
+                <div className="max-w-3xl mx-auto px-4 sm:px-6 flex flex-col items-center gap-3">
+                    <Skeleton className="h-8 w-36 rounded" />
+                    <Skeleton className="h-4 w-72 rounded" />
                 </div>
             </section>
 

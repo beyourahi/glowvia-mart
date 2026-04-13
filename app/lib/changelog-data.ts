@@ -30,6 +30,13 @@ import type {ChangelogEntry} from "~/lib/types/changelog";
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
         date: "2026-04-13",
+        headline: "Date headers stay visible as you scroll through the changelog",
+        summary:
+            "Each date section header now stays pinned at the top of the page as you scroll through its updates, then slides away when the next date arrives. You always know which date you're reading without having to scroll back up.",
+        category: "Design"
+    },
+    {
+        date: "2026-04-13",
         headline: "Changelog dates now show how long ago each update was",
         summary:
             "Date group headers on the updates page now display a relative label alongside the calendar date — \"Today\", \"Yesterday\", \"3 days ago\", and so on. No need to do the mental arithmetic yourself.",

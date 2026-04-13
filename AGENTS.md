@@ -170,7 +170,6 @@ SESSION_SECRET=<32chars>                        # Required
 PUBLIC_STORE_DOMAIN=<store>.myshopify.com      # Required
 PUBLIC_STOREFRONT_API_TOKEN=<token>            # Required
 PUBLIC_GTM_CONTAINER_ID=GTM-XXXXXXX            # Optional
-GITHUB_TOKEN=<token>                           # Optional (enables live commit count in changelog hero; omit for public repos or to disable)
 ```
 
 **Fallback Demo Store (Cloudflare Workers, Local Dev, and Portfolio Showcase ONLY):**
@@ -344,7 +343,7 @@ Read all comments before editing. Update when changing code. Add for complex log
 
 **Gallery**: Responsive grid + lightbox, route: `/gallery`, components: GalleryGrid, GalleryImageCard, metaobject-driven
 
-**Changelog**: Changelog page for shoppers, route: `/changelog`, components: ChangelogEntry, ChangelogPage, hook: `useChangelogFilter`. Entries live in `lib/changelog-data.ts` (static file — add entries manually at commit time, see Changelog Entries section). The hero displays a live "updates shipped" count fetched from the GitHub API at render time (`GITHUB_TOKEN` env var required for private repos; count is omitted gracefully if the API call fails).
+**Changelog**: Changelog page for shoppers, route: `/changelog`, components: ChangelogEntry, ChangelogPage, hook: `useChangelogFilter`. Entries live in `lib/changelog-data.ts` (static file — add entries manually at commit time, see Changelog Entries section). The hero displays a live "updates shipped" count fetched from the GitHub API at render time (token is hardcoded in `app/routes/changelog.tsx`).
 
 ---
 

@@ -31,7 +31,7 @@ export function PageHeading({
             {description && (
                 <p
                     className={cn(
-                        "mt-3 sm:mt-4 md:mt-6 font-sans text-sm sm:text-base md:text-lg lg:text-xl max-w-prose leading-relaxed",
+                        "mt-3 sm:mt-4 md:mt-6 font-sans text-sm sm:text-base md:text-lg lg:text-xl max-w-prose mx-auto leading-relaxed",
                         isDark ? "text-primary-foreground/70" : "text-primary/70",
                         descriptionClassName
                     )}

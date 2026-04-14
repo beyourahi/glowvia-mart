@@ -91,8 +91,11 @@ export function Footer({footer: footerPromise, header: _header}: FooterProps) {
                         <div className="mt-auto border-t border-primary-foreground/10">
                             {/* Responsive padding matching Container and all homepage sections
                                  px-container uses --container-padding: clamp(0.5rem, 0.75vw, 0.75rem)
-                                 This ensures footer padding matches homepage sections exactly */}
-                            <div className="py-4 sm:py-6 px-container flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-2">
+                                 This ensures footer padding matches homepage sections exactly.
+                                 Bottom padding on mobile is enlarged to clear the StickyMobileGetNow button
+                                 (min-h-14 = 3.5rem, plus device safe-area-inset-bottom, plus 0.75rem buffer).
+                                 At md+ the button is hidden (md:hidden) so normal pb-6 is restored. */}
+                            <div className="pt-4 sm:pt-6 pb-[calc(3.5rem+env(safe-area-inset-bottom,0px)+0.75rem)] md:pb-6 px-container flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-2">
                                 <Copyright shopName={brandName || "Store"} />
                                 <a
                                     href="https://beyourahi.com"

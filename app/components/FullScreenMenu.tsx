@@ -300,8 +300,9 @@ export function FullScreenMenu({collections, totalCollections, totalProductCount
                                 <span>Search...</span>
                             </button>
 
-                            {/* Mobile-only Open in App Button - prominent placement after search */}
-                            <div className="sm:hidden mt-4 mb-8">
+                            {/* Open in App Button — shown in menu for the full below-lg range (320–1023px).
+                                lg:hidden because the desktop-fixed variant takes over at ≥1024px. */}
+                            <div className="lg:hidden mt-4 mb-8">
                                 <OpenInAppButton variant="menu-item" />
                             </div>
 

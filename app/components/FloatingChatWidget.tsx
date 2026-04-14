@@ -21,13 +21,18 @@
  *   - aria-label on every interactive element
  *
  * @positioning
- *   fixed bottom-[calc(7rem+env(safe-area-inset-bottom))] sm:bottom-24 right-4 z-[102]
+ *   fixed bottom-[calc(7rem+env(safe-area-inset-bottom))] sm:bottom-24 lg:bottom-40 right-4 z-[102]
  *   Sits visibly above the footer copyright/designer row at every breakpoint:
  *   - Mobile (<640px) : copyright row is flex-col with py-4 = 88px total. 7rem (112px) +
  *              env(safe-area-inset-bottom) (0–34px) gives 112–146px clearance. Gap ≥ 24px. ✓
- *   - sm+ (≥640px) : copyright row is flex-row with py-6 = 72px total. sm:bottom-24 = 96px.
+ *   - sm–lg (640–1023px) : copyright row is flex-row with py-6 = 72px total. sm:bottom-24 = 96px.
  *              Gap = 24px above copyright bar. ✓
- *   OpenInAppButton (lg+): fixed right-6 bottom-6 (24px). Chat widget base = 96px. ~32px gap. ✓
+ *   - lg+ (≥1024px) : lg:bottom-40 = 160px. PWA button at bottom-24 = 96px (top edge at 140px).
+ *              20px gap between chat container base and PWA top edge — no overlap. ✓
+ *              Both chat widget and PWA button clear the 72px footer bar. ✓
+ *   Slot-fill: flex-col container pins its bottom edge at the offset; the last rendered item
+ *   naturally sits at the bottommost slot. When only one chat button is present it drops to
+ *   the bottom position automatically — no JSX reorder needed.
  *   No md:pb-20 on footer (removed). Offsets derived from measured copyright bar heights.
  *   z-[102]: above the hero brand name watermark (zIndex: 100, BrandAnimation.tsx). Physically at
  *   the bottom-right corner, so having z-index above header (z-100) or announcement (z-101) causes
@@ -86,7 +91,7 @@ export function FloatingChatWidget() {
 
     return (
         <div
-            className="fixed bottom-[calc(7rem+env(safe-area-inset-bottom))] sm:bottom-24 right-4 z-[102] flex flex-col items-end gap-3"
+            className="fixed bottom-[calc(7rem+env(safe-area-inset-bottom))] sm:bottom-24 lg:bottom-40 right-4 z-[102] flex flex-col items-end gap-3"
             aria-label="Chat support options"
         >
             {/* WhatsApp — renders above Messenger */}

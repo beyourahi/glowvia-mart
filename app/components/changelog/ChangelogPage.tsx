@@ -78,7 +78,7 @@ function groupEntriesByDate(entries: ChangelogEntryType[]): DateGroup[] {
 // CHANGELOG PAGE
 // =============================================================================
 
-export function ChangelogPage({entries, totalCommits}: ChangelogLoaderData) {
+export function ChangelogPage({entries}: ChangelogLoaderData) {
     const {filteredEntries, setCategory, activeCategory, isEmpty} = useChangelogFilter(entries);
 
     const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE);
@@ -100,32 +100,6 @@ export function ChangelogPage({entries, totalCommits}: ChangelogLoaderData) {
                         title="Changelog"
                         description="A running record of everything we've shipped — features, fixes, and improvements."
                     />
-                    {totalCommits != null && (
-                        <div className="mt-6 sm:mt-8 flex flex-col items-center gap-2">
-                            {/* Ruled line with dot — mirrors timeline group dot motif */}
-                            <div className="flex w-full max-w-xs items-center gap-3" aria-hidden="true">
-                                <div className="h-px flex-1 bg-[var(--border-subtle)]" />
-                                <div className="h-2 w-2 rounded-full bg-[var(--brand-primary)]" />
-                                <div className="h-px flex-1 bg-[var(--border-subtle)]" />
-                            </div>
-
-                            <div className="py-1 text-center">
-                                <p className="font-serif text-fluid-h2 font-bold tabular-nums leading-none text-[var(--brand-primary)]">
-                                    {totalCommits.toLocaleString("en-US")}
-                                </p>
-                                <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.15em] text-[var(--text-subtle)]">
-                                    updates shipped so far
-                                </p>
-                            </div>
-
-                            {/* Mirrored bottom rule */}
-                            <div className="flex w-full max-w-xs items-center gap-3" aria-hidden="true">
-                                <div className="h-px flex-1 bg-[var(--border-subtle)]" />
-                                <div className="h-2 w-2 rounded-full bg-[var(--brand-primary)]" />
-                                <div className="h-px flex-1 bg-[var(--border-subtle)]" />
-                            </div>
-                        </div>
-                    )}
                 </div>
             </section>
 

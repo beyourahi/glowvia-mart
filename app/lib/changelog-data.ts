@@ -29,6 +29,14 @@ import type {ChangelogEntry} from "~/lib/types/changelog";
 // Newest entries at the top. Add new entries here in the same commit that ships the change.
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
+        date: "2026-04-15",
+        time: "12pm",
+        headline: "Store address and contact details are now visible on the homepage",
+        summary:
+            "Your store's address, email, phone number, and business hours now appear at the bottom of the homepage. The footer also shows your email and phone directly, so shoppers can reach you without hunting for a contact page.",
+        category: "New Feature"
+    },
+    {
         date: "2026-04-14",
         time: "3pm",
         headline: "Changelog dates now show the time each update shipped",

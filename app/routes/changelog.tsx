@@ -3,10 +3,7 @@
  *
  * @description
  * Public-facing changelog surfacing hand-curated product update entries.
- * Static entry data comes from `app/lib/changelog-data.ts`. The loader also
- * fetches the all-time commit count from the GitHub API (Link header strategy)
- * to display a live total in the hero. Token is hardcoded in the loader;
- * gracefully omits the count if the API call fails.
+ * Static entry data comes from `app/lib/changelog-data.ts`.
  *
  * @route GET /changelog
  *
@@ -50,33 +47,8 @@ export const meta: Route.MetaFunction = ({matches}) => {
 // LOADER
 // =============================================================================
 
-export async function loader({context}: Route.LoaderArgs) {
-    const token = "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";
-    const totalCommits = await fetchTotalCommits(token);
-    return {entries: CHANGELOG_ENTRIES, totalCommits};
-}
-
-/** Fetches the all-time commit count by parsing the rel="last" page number from the Link header. */
-async function fetchTotalCommits(token?: string): Promise<number | null> {
-    try {
-        const headers: Record<string, string> = {
-            "Accept": "application/vnd.github+json",
-            "User-Agent": "storefront-002"
-        };
-        if (token) headers["Authorization"] = `Bearer ${token}`;
-        const res = await fetch(
-            "https://api.github.com/repos/beyourahi/storefront_002/commits?per_page=1",
-            {headers}
-        );
-        if (!res.ok) return null;
-        const link = res.headers.get("Link");
-        if (!link) return 1;
-        // Link: <...?per_page=1&page=N>; rel="last" — page N equals total commit count
-        const match = link.match(/[?&]page=(\d+)>;\s*rel="last"/);
-        return match ? parseInt(match[1], 10) : null;
-    } catch {
-        return null;
-    }
+export async function loader() {
+    return {entries: CHANGELOG_ENTRIES};
 }
 
 // =============================================================================

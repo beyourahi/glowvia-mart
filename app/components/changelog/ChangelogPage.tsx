@@ -97,7 +97,7 @@ export function ChangelogPage({entries, totalCommits}: ChangelogLoaderData) {
             <section className="pt-(--page-breathing-room) pb-5 sm:pb-6">
                 <div className="text-center">
                     <PageHeading
-                        title="What's New"
+                        title="Changelog"
                         description="A running record of everything we've shipped — features, fixes, and improvements."
                     />
                     {totalCommits != null && (
@@ -154,7 +154,7 @@ export function ChangelogPage({entries, totalCommits}: ChangelogLoaderData) {
 
             {/* ───── Grouped entries ───── */}
             <section className="pb-16 sm:pb-20 md:pb-24">
-                <div>
+                <div className="max-w-5xl mx-auto">
                     {isEmpty ? (
                         <Empty className="border-[var(--border-subtle)] mt-4">
                             <EmptyHeader>
@@ -172,36 +172,50 @@ export function ChangelogPage({entries, totalCommits}: ChangelogLoaderData) {
                             return (
                                 <div>
                                     {groupEntriesByDate(visibleEntries).map(group => (
-                                        <div key={group.date} className="mb-10 sm:mb-12">
-                                            {/* Date section header with decorative rule.
-                                                sticky + top offset parks it just below the fixed navbar
-                                                while its group's entries are in view. bg-[surface-canvas]
-                                                prevents entry cards from bleeding through during scroll. */}
-                                            <div className="sticky top-[var(--total-header-height)] z-10 bg-[var(--surface-canvas)] flex items-center gap-3 mb-4 sm:mb-5">
-                                                <div className="flex items-baseline gap-2 shrink-0">
-                                                    <h2 className="font-serif text-base sm:text-lg font-medium text-[var(--text-secondary)]">
-                                                        {formatAbsoluteDate(group.date)}
-                                                    </h2>
-                                                    <span className="text-xs text-[var(--text-subtle)]">
+                                        <div key={group.date} className="mb-10 sm:mb-12 lg:flex">
+                                            {/* Mobile sticky date header — full-bleed, hidden on desktop */}
+                                            <div className="sticky top-[var(--total-header-height)] z-20 -mx-4 sm:-mx-6 bg-[var(--surface-canvas)] px-4 sm:px-6 py-2 lg:hidden">
+                                                <div className="flex items-center justify-between gap-2">
+                                                    <span className="text-xs text-[var(--text-secondary)]">
+                                                        <time dateTime={group.date}>{formatAbsoluteDate(group.date)}</time>
+                                                        {" · "}
                                                         {formatRelativeDayLabel(group.date)}
                                                     </span>
+                                                    <span className="shrink-0 inline-flex items-center rounded-full border border-[var(--border-subtle)] bg-[var(--surface-raised)] px-2 py-0.5 text-[10px] font-medium text-[var(--text-subtle)] tabular-nums">
+                                                        {group.entries.length} {group.entries.length === 1 ? "update" : "updates"}
+                                                    </span>
                                                 </div>
-                                                <div
-                                                    className="flex-1 h-px bg-[var(--border-subtle)]"
-                                                    aria-hidden="true"
-                                                />
-                                                <span className="shrink-0 tabular-nums text-xs text-[var(--text-subtle)]">
+                                            </div>
+
+                                            {/* Desktop date column — sticky, right-aligned, hidden on mobile */}
+                                            <div className="hidden lg:flex lg:w-44 lg:shrink-0 lg:flex-col lg:items-end lg:pr-8 lg:pt-1.5 lg:sticky lg:top-[var(--total-header-height)] lg:self-start lg:z-20">
+                                                <time dateTime={group.date} className="text-right text-xs font-mono font-medium leading-tight text-[var(--text-primary)]">
+                                                    {formatAbsoluteDate(group.date)}
+                                                </time>
+                                                <span className="mt-0.5 text-right text-xs text-[var(--text-subtle)]">
+                                                    {formatRelativeDayLabel(group.date)}
+                                                </span>
+                                                <span className="mt-2 inline-flex items-center rounded-full border border-[var(--border-subtle)] bg-[var(--surface-raised)] px-2 py-0.5 text-[10px] font-medium text-[var(--text-subtle)] tabular-nums">
                                                     {group.entries.length} {group.entries.length === 1 ? "update" : "updates"}
                                                 </span>
                                             </div>
-                                            <div className="space-y-3">
-                                                {group.entries.map(entry => (
-                                                    <ChangelogEntryCard
-                                                        key={`${entry.date}-${entry.headline}`}
-                                                        entry={entry}
-                                                        index={globalStaggerIndex++}
-                                                    />
-                                                ))}
+
+                                            {/* Vertical rail + dot + entries */}
+                                            <div className="relative flex-1 lg:border-l-2 lg:border-[var(--border-subtle)] lg:pl-8">
+                                                {/* Timeline dot — one per group, only on desktop */}
+                                                <div
+                                                    className="hidden lg:block absolute -left-[7px] top-4 h-3 w-3 rounded-full bg-[var(--brand-primary)] ring-4 ring-[var(--surface-canvas)]"
+                                                    aria-hidden="true"
+                                                />
+                                                <div className="space-y-5 lg:space-y-6">
+                                                    {group.entries.map(entry => (
+                                                        <ChangelogEntryCard
+                                                            key={`${entry.date}-${entry.headline}`}
+                                                            entry={entry}
+                                                            index={globalStaggerIndex++}
+                                                        />
+                                                    ))}
+                                                </div>
                                             </div>
                                         </div>
                                     ))}
@@ -249,16 +263,25 @@ function ChangelogCardSkeleton({index}: {index: number}) {
 
 function ChangelogGroupSkeleton({startIndex}: {startIndex: number}) {
     return (
-        <div className="mb-10 sm:mb-12">
-            <div className="flex items-center gap-3 mb-4 sm:mb-5">
-                <Skeleton className="h-5 w-28 rounded shrink-0" />
-                <div className="flex-1 h-px bg-[var(--border-subtle)]" />
+        <div className="mb-10 sm:mb-12 lg:flex">
+            {/* Mobile date header skeleton */}
+            <div className="lg:hidden py-2 mb-4">
+                <Skeleton className="h-4 w-44 rounded" />
             </div>
-            <div className="space-y-3">
-                {Array.from({length: 3}).map((_, i) => (
-                    // eslint-disable-next-line react/no-array-index-key -- static skeleton
-                    <ChangelogCardSkeleton key={i} index={startIndex + i} />
-                ))}
+            {/* Desktop date column skeleton */}
+            <div className="hidden lg:flex lg:w-44 lg:shrink-0 lg:flex-col lg:items-end lg:pr-8 lg:pt-1.5">
+                <Skeleton className="h-3.5 w-24 rounded" />
+                <Skeleton className="h-3 w-12 rounded mt-1" />
+                <Skeleton className="h-5 w-16 rounded-full mt-2" />
+            </div>
+            {/* Rail + entries skeleton */}
+            <div className="relative flex-1 lg:border-l-2 lg:border-[var(--border-subtle)] lg:pl-8">
+                <div className="space-y-5 lg:space-y-6">
+                    {Array.from({length: 3}).map((_, i) => (
+                        // eslint-disable-next-line react/no-array-index-key -- static skeleton
+                        <ChangelogCardSkeleton key={i} index={startIndex + i} />
+                    ))}
+                </div>
             </div>
         </div>
     );

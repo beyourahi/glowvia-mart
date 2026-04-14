@@ -15,6 +15,12 @@ import {cn} from "~/lib/utils";
 import type {ChangelogEntry as ChangelogEntryType, ChangelogCategory} from "~/lib/types/changelog";
 
 // =============================================================================
+// AUTHOR
+// =============================================================================
+
+const CHANGELOG_AUTHOR = {name: "Rahi Khan", url: "https://beyourahi.com"} as const;
+
+// =============================================================================
 // CATEGORY COLOR MAPPING
 // =============================================================================
 
@@ -111,9 +117,12 @@ export function ChangelogEntryCard({entry, index}: ChangelogEntryProps) {
         <article
             className={cn(
                 "animate-product-fade-in bg-[var(--surface-raised)] rounded-xl border border-[var(--border-subtle)]",
-                "shadow-[var(--shadow-xs)] p-4 sm:p-5 motion-interactive hover:shadow-[var(--shadow-sm)] hover:-translate-y-px"
+                "border-l-4 overflow-hidden shadow-[var(--shadow-xs)] p-4 sm:p-5 motion-interactive hover:shadow-[var(--shadow-sm)] hover:-translate-y-px"
             )}
-            style={{animationDelay: `${delayMs}ms`}}
+            style={{
+                animationDelay: `${delayMs}ms`,
+                borderLeftColor: entry.category ? CATEGORY_DOT_COLORS[entry.category] : "var(--border-subtle)"
+            }}
         >
             {categoryStyle && entry.category && (
                 <div className="mb-2">
@@ -125,10 +134,21 @@ export function ChangelogEntryCard({entry, index}: ChangelogEntryProps) {
                     </span>
                 </div>
             )}
-            <h3 className="text-sm sm:text-base font-semibold text-[var(--text-primary)] leading-snug mt-2 mb-1.5">
+            <h3 className="font-serif text-base sm:text-lg font-semibold text-[var(--text-primary)] leading-snug mt-2 mb-1.5">
                 {entry.headline}
             </h3>
             <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{displaySummary}</p>
+            <p className="mt-3 text-xs text-[var(--text-subtle)]">
+                by{" "}
+                <a
+                    href={CHANGELOG_AUTHOR.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-medium text-[var(--text-secondary)] underline underline-offset-2 decoration-[var(--border-subtle)] hover:text-[var(--brand-primary)] motion-link"
+                >
+                    {CHANGELOG_AUTHOR.name}
+                </a>
+            </p>
         </article>
     );
 }

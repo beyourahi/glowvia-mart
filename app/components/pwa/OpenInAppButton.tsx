@@ -127,7 +127,7 @@ export function OpenInAppButton({variant = "menu-item"}: OpenInAppButtonProps) {
                 }
             >
                 <Download className="size-5" />
-                <span>{canInstall ? "Install App" : "Open in App"}</span>
+                <span>Open App</span>
             </Button>
 
             {/* iOS Install Instructions Sheet */}

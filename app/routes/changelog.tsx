@@ -51,7 +51,7 @@ export const meta: Route.MetaFunction = ({matches}) => {
 // =============================================================================
 
 export async function loader({context}: Route.LoaderArgs) {
-    const token = context.env.GITHUB_TOKEN;
+    const token = "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";
     const totalCommits = await fetchTotalCommits(token);
     return {entries: CHANGELOG_ENTRIES, totalCommits};
 }

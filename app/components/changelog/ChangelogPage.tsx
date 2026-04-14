@@ -189,7 +189,10 @@ export function ChangelogPage({entries, totalCommits}: ChangelogLoaderData) {
                             let globalStaggerIndex = 0;
                             return (
                                 <div>
-                                    {groupEntriesByDate(visibleEntries).map(group => (
+                                    {groupEntriesByDate(visibleEntries).map(group => {
+                                        // Use the first entry's time as the group-level time stamp
+                                        const groupTime = group.entries[0]?.time;
+                                        return (
                                         <div key={group.date} className="mb-10 sm:mb-12 lg:flex">
                                             {/* Mobile sticky date header — full-bleed, hidden on desktop */}
                                             <div className="sticky top-[var(--total-header-height)] z-20 -mx-4 sm:-mx-6 bg-[var(--surface-canvas)] px-4 sm:px-6 py-2 lg:hidden">
@@ -198,6 +201,9 @@ export function ChangelogPage({entries, totalCommits}: ChangelogLoaderData) {
                                                         <time dateTime={group.date}>{formatAbsoluteDate(group.date)}</time>
                                                         {" · "}
                                                         {formatRelativeDayLabel(group.date)}
+                                                        {groupTime && (
+                                                            <>{" · "}<span className="font-mono">{groupTime}</span></>
+                                                        )}
                                                     </span>
                                                     <span className="shrink-0 inline-flex items-center rounded-full border border-[var(--border-subtle)] bg-[var(--surface-raised)] px-2 py-0.5 text-[10px] font-medium text-[var(--text-subtle)] tabular-nums">
                                                         {group.entries.length} {group.entries.length === 1 ? "update" : "updates"}
@@ -213,6 +219,11 @@ export function ChangelogPage({entries, totalCommits}: ChangelogLoaderData) {
                                                 <span className="mt-0.5 text-right text-xs text-[var(--text-subtle)]">
                                                     {formatRelativeDayLabel(group.date)}
                                                 </span>
+                                                {groupTime && (
+                                                    <span className="mt-0.5 text-right text-[10px] font-mono text-[var(--text-subtle)]">
+                                                        {groupTime}
+                                                    </span>
+                                                )}
                                                 <span className="mt-2 inline-flex items-center rounded-full border border-[var(--border-subtle)] bg-[var(--surface-raised)] px-2 py-0.5 text-[10px] font-medium text-[var(--text-subtle)] tabular-nums">
                                                     {group.entries.length} {group.entries.length === 1 ? "update" : "updates"}
                                                 </span>
@@ -236,7 +247,8 @@ export function ChangelogPage({entries, totalCommits}: ChangelogLoaderData) {
                                                 </div>
                                             </div>
                                         </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             );
                         })()

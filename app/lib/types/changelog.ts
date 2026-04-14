@@ -17,6 +17,7 @@ export type ChangelogCategory =
 /** A single user-facing changelog entry. */
 export type ChangelogEntry = {
     date: string; // ISO 8601 YYYY-MM-DD
+    time?: string; // Optional time of day, e.g. "8pm", "11am", "12pm"
     headline: string; // ≤80 chars, plain language
     summary: string; // 2–3 sentences, user-facing
     category?: ChangelogCategory;

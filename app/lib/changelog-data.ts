@@ -32,7 +32,7 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
         date: "2026-04-14",
         headline: "The updates count on the changelog page is now a proper typographic display",
         summary:
-            "The total number of updates shipped is now shown as a large, prominent number framed by ruled lines and dot accents — the same visual motifs used in the timeline below. It reads as a milestone rather than a footnote.",
+            "The total number of updates shipped so far is now shown as a large, prominent number framed by ruled lines and dot accents — the same visual motifs used in the timeline below. It reads as a milestone rather than a footnote.",
         category: "Design"
     },
     {

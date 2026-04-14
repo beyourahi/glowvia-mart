@@ -114,7 +114,7 @@ export function ChangelogPage({entries, totalCommits}: ChangelogLoaderData) {
                                     {totalCommits.toLocaleString("en-US")}
                                 </p>
                                 <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.15em] text-[var(--text-subtle)]">
-                                    updates shipped
+                                    updates shipped so far
                                 </p>
                             </div>
 

@@ -344,7 +344,7 @@ Read all comments before editing. Update when changing code. Add for complex log
 
 **Gallery**: Responsive grid + lightbox, route: `/gallery`, components: GalleryGrid, GalleryImageCard, metaobject-driven
 
-**Changelog**: Changelog page for shoppers, route: `/changelog`, components: ChangelogEntry, ChangelogPage, hook: `useChangelogFilter`. Entries live in `lib/changelog-data.ts` (static file — add entries manually at commit time, see Changelog Entries section). The hero displays a live "updates shipped" count fetched from the GitHub API at render time (token is hardcoded in `app/routes/changelog.tsx`).
+**Changelog**: Changelog page for shoppers, route: `/changelog`, components: ChangelogEntry, ChangelogPage, hook: `useChangelogFilter`. Entries live in `lib/changelog-data.ts` (static file — add entries manually at commit time, see Changelog Entries section). The hero displays a live "updates shipped so far" count fetched from the GitHub API at render time (token is hardcoded in `app/routes/changelog.tsx`).
 
 ---
 

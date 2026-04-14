@@ -101,12 +101,30 @@ export function ChangelogPage({entries, totalCommits}: ChangelogLoaderData) {
                         description="A running record of everything we've shipped — features, fixes, and improvements."
                     />
                     {totalCommits != null && (
-                        <p className="mt-5 sm:mt-6 text-xs tracking-wider text-[var(--text-subtle)]">
-                            <span className="font-serif text-sm tracking-normal tabular-nums text-[var(--text-secondary)]">
-                                {totalCommits.toLocaleString("en-US")}
-                            </span>
-                            {" "}updates shipped
-                        </p>
+                        <div className="mt-6 sm:mt-8 flex flex-col items-center gap-2">
+                            {/* Ruled line with dot — mirrors timeline group dot motif */}
+                            <div className="flex w-full max-w-xs items-center gap-3" aria-hidden="true">
+                                <div className="h-px flex-1 bg-[var(--border-subtle)]" />
+                                <div className="h-2 w-2 rounded-full bg-[var(--brand-primary)]" />
+                                <div className="h-px flex-1 bg-[var(--border-subtle)]" />
+                            </div>
+
+                            <div className="py-1 text-center">
+                                <p className="font-serif text-fluid-h2 font-bold tabular-nums leading-none text-[var(--brand-primary)]">
+                                    {totalCommits.toLocaleString("en-US")}
+                                </p>
+                                <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.15em] text-[var(--text-subtle)]">
+                                    updates shipped
+                                </p>
+                            </div>
+
+                            {/* Mirrored bottom rule */}
+                            <div className="flex w-full max-w-xs items-center gap-3" aria-hidden="true">
+                                <div className="h-px flex-1 bg-[var(--border-subtle)]" />
+                                <div className="h-2 w-2 rounded-full bg-[var(--brand-primary)]" />
+                                <div className="h-px flex-1 bg-[var(--border-subtle)]" />
+                            </div>
+                        </div>
                     )}
                 </div>
             </section>

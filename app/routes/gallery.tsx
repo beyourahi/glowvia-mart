@@ -122,7 +122,7 @@ export default function Gallery() {
                  pt-(--page-breathing-room): Breathing room from fixed header (24px → 64px) */}
             <AnimatedSection animation="fade" threshold={0.08}>
                 <header className="pt-(--page-breathing-room) mb-6 md:mb-10 lg:mb-12">
-                    <PageHeading title={galleryPageHeading} description={galleryPageDescription} />
+                    <PageHeading title={galleryPageHeading} description={galleryPageDescription} descriptionClassName="mx-0" />
                 </header>
             </AnimatedSection>
 

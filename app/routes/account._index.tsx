@@ -809,7 +809,7 @@ function QuickActionsGrid() {
         {
             icon: MessageCircleIcon,
             label: accountContent.actionGetHelp,
-            href: "/contact",
+            href: "/faq",
             description: "Contact support"
         },
         {

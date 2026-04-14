@@ -212,7 +212,6 @@ const SHOP_LINKS: FooterLink[] = [
 
 // Support column links (FAQ conditionally included based on CMS data)
 const SUPPORT_LINKS: FooterLink[] = [
-    {title: "Contact", url: "/contact"},
     {title: "Shipping", url: "/policies/shipping-policy"},
     {title: "Returns", url: "/policies/refund-policy"},
     {title: "Privacy Policy", url: "/policies/privacy-policy"},

@@ -188,28 +188,6 @@ export default function Policy() {
                 </section>
             </AnimatedSection>
 
-            <AnimatedSection animation="slide-up" threshold={0.1}>
-                <section className="bg-primary-foreground/10 py-12 sm:py-16 md:py-20">
-                    <div className="px-4 sm:px-6 lg:px-8">
-                        <div className="text-center">
-                            <h2 className="font-serif text-2xl sm:text-3xl md:text-4xl font-medium text-primary-foreground mb-3 sm:mb-4">
-                                Questions about this policy?
-                            </h2>
-                            <p className="text-base sm:text-lg text-primary-foreground/70 mb-6 sm:mb-8 max-w-lg mx-auto">
-                                Our team is here to help clarify any details. Reach out and we&apos;ll respond within 24
-                                hours.
-                            </p>
-                            <a
-                                href="/contact"
-                                className="inline-flex items-center justify-center px-6 sm:px-8 py-3 sm:py-4 rounded-full bg-primary-foreground text-primary text-base sm:text-lg font-medium hover:bg-primary-foreground/90 min-h-12 sm:min-h-14"
-                            >
-                                Contact Us
-                                <span className="ml-2">&rarr;</span>
-                            </a>
-                        </div>
-                    </div>
-                </section>
-            </AnimatedSection>
         </div>
     );
 }

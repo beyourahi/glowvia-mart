@@ -325,14 +325,6 @@ function GenericErrorUI({statusCode, title, message}: GenericErrorUIProps) {
                 </Button>
             </div>
 
-            {/* Contact footer for server errors */}
-            <p className="mt-8 text-sm text-muted-foreground">
-                If the problem persists,{" "}
-                <Link to="/contact" className="text-primary underline underline-offset-4 hover:text-primary/80">
-                    please contact us
-                </Link>
-                .
-            </p>
         </div>
     );
 }

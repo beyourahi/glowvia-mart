@@ -12,7 +12,6 @@ const KNOWN_ROUTE_PREFIXES = new Set([
     "blogs",
     "cart",
     "collections",
-    "contact",
     "discount",
     "faq",
     "gallery",

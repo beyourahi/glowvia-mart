@@ -104,8 +104,7 @@ const ACCOUNT_LINKS = [
     {title: "Wishlist", url: "/account/wishlist"},
     {title: "Gallery", url: "/gallery"},
     {title: "Changelog", url: "/changelog"},
-    {title: "FAQ", url: "/faq"},
-    {title: "Contact", url: "/contact"}
+    {title: "FAQ", url: "/faq"}
 ];
 
 /**

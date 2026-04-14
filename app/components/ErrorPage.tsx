@@ -56,9 +56,7 @@ const FALLBACK_ERROR_CONTENT = {
     serverErrorHeading: "Something Went Wrong",
     serverErrorMessage: "We're experiencing technical difficulties. Please try again.",
     serverErrorRetry: "Try Again",
-    serverErrorHome: "Return Home",
-    serverErrorContactPrefix: "Need help?",
-    serverErrorContactLink: "Contact Support"
+    serverErrorHome: "Return Home"
 } as const;
 
 // ================================================================================
@@ -137,16 +135,6 @@ export function ErrorPage({statusCode, title, message}: ErrorPageProps) {
                 )}
             </div>
 
-            {/* Contact footer for 500 errors */}
-            {!is404 && (
-                <p className="mt-8 text-sm text-muted-foreground">
-                    {errorContent.serverErrorContactPrefix}{" "}
-                    <Link to="/contact" className="text-primary underline underline-offset-4 hover:text-primary/80">
-                        {errorContent.serverErrorContactLink}
-                    </Link>
-                    .
-                </p>
-            )}
         </div>
     );
 }

@@ -35,7 +35,7 @@ interface CategoryStyle {
  * Contrast notes:
  * - New Feature:  --brand-primary-subtle-foreground on --brand-primary-subtle ≥ 4.5:1 ✓
  * - Improvement:  oklch(0.18 0.01 215) on oklch(0.94 0.04 215) ≈ 9.2:1 ✓
- * - Fix:          oklch(0.55 0.2 25) on oklch(0.92 0.05 25) ≈ 5.1:1 ✓
+ * - Fix:          oklch(0.35 0.10 185) on oklch(0.93 0.04 185) ≈ 6.2:1 ✓  [teal — no red/destructive signal]
  * - Performance:  oklch(0.38 0.14 70) on --brand-accent-subtle ≈ 5.8:1 ✓
  * - Design:       oklch(0.46 0.12 270) on oklch(0.93 0.04 270) ≈ 5.6:1 ✓
  */
@@ -49,8 +49,8 @@ const CATEGORY_STYLES: Record<ChangelogCategory, CategoryStyle> = {
         text: "oklch(0.18 0.01 215)"
     },
     "Fix": {
-        background: "oklch(0.92 0.05 25)",
-        text: "oklch(0.55 0.2 25)"
+        background: "oklch(0.93 0.04 185)",
+        text: "oklch(0.35 0.10 185)"
     },
     "Performance": {
         background: "var(--brand-accent-subtle)",
@@ -68,7 +68,7 @@ const CATEGORY_STYLES: Record<ChangelogCategory, CategoryStyle> = {
 const CATEGORY_DOT_COLORS: Record<ChangelogCategory, string> = {
     "New Feature": "var(--brand-primary)",
     "Improvement": "oklch(0.56 0.12 215)",
-    "Fix": "var(--destructive)",
+    "Fix": "oklch(0.55 0.12 185)",
     "Performance": "var(--brand-accent)",
     "Design": "oklch(0.46 0.12 270)"
 };

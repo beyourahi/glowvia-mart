@@ -30,6 +30,22 @@ import type {ChangelogEntry} from "~/lib/types/changelog";
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
         date: "2026-04-15",
+        time: "6pm",
+        headline: "Search button on the hero now shows a rotating label as you hover",
+        summary:
+            "On desktop, hovering the search button in the hero section smoothly expands it to reveal a rotating prompt — cycling through phrases like \"What are you looking for?\" and \"Search the collection\". On mobile and tablet, the button fills the available row width and cycles through labels automatically. Respects reduced-motion preferences.",
+        category: "Design"
+    },
+    {
+        date: "2026-04-15",
+        time: "4pm",
+        headline: "Google Maps now appears on the homepage for each store location",
+        summary:
+            "You can now embed an interactive Google Maps view directly on your homepage — one per physical location. Shoppers can see where you are at a glance, with a direct link to open directions in Google Maps. For stores with multiple locations, a tab switcher lets shoppers choose which store to view.",
+        category: "New Feature"
+    },
+    {
+        date: "2026-04-15",
         time: "12pm",
         headline: "Store address and contact details are now visible on the homepage",
         summary:

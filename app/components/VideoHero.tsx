@@ -22,7 +22,7 @@
  * - types/index.ts - HeroMedia type definition
  */
 
-import {useEffect, useRef} from "react";
+import {useEffect, useReducer, useRef} from "react";
 import {Link} from "react-router";
 import {CircleArrowOutUpRight, Search} from "lucide-react";
 import {useBrandAnimation, AnimatedBrandText} from "~/components/BrandAnimation";
@@ -38,6 +38,40 @@ const FALLBACK_HERO_MEDIA_CONFIG: {type: "video" | "image"; videoSrc?: string; i
     videoSrc: "/hero-video.mp4"
 };
 import type {HeroCollection} from "~/routes/_index";
+
+// ============================================================================
+// Search Label Rotation — constants and state shape
+// ============================================================================
+
+/** Labels that cycle through the search button ticker. Longest entry sets the min expansion width. */
+const SEARCH_LABELS = [
+    "What are you looking for?",
+    "Find something new",
+    "Search the collection",
+    "Explore what's here",
+    "Discover something great",
+];
+
+/** Milliseconds between label changes */
+const LABEL_ROTATION_INTERVAL = 3000;
+
+type SearchLabelState = {
+    /** Index of the currently visible (incoming) label */
+    currentIndex: number;
+    /** Index of the label animating out — null until first rotation */
+    prevIndex: number | null;
+    /**
+     * Bumped on every advance so the label spans get a new React key,
+     * which remounts them and restarts the CSS ticker animation from scratch.
+     */
+    tickKey: number;
+};
+
+const INITIAL_SEARCH_LABEL_STATE: SearchLabelState = {
+    currentIndex: 0,
+    prevIndex: null,
+    tickKey: 0,
+};
 
 // ============================================================================
 // Hero Background Media Component
@@ -182,6 +216,22 @@ export function VideoHero({randomCollection}: {randomCollection?: HeroCollection
     const {heroHeading, heroDescription, heroMediaMobile, heroMediaLargeScreen, brandWords} = useSiteSettings();
     const fallbackVideoSrc = (FALLBACK_HERO_MEDIA_CONFIG as {videoSrc?: string}).videoSrc;
 
+    // --- Search label rotation ---
+    // Reducer keeps currentIndex, prevIndex, and tickKey in sync atomically.
+    // dispatch is stable (guaranteed by React) — safe to use in setInterval closures.
+    const [labelState, dispatchLabel] = useReducer(
+        (state: SearchLabelState, _action: "advance"): SearchLabelState => ({
+            currentIndex: (state.currentIndex + 1) % SEARCH_LABELS.length,
+            prevIndex: state.currentIndex,
+            tickKey: state.tickKey + 1,
+        }),
+        INITIAL_SEARCH_LABEL_STATE
+    );
+    const searchIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    // "large screen" = desktop breakpoint (≥ 1024px / lg); below lg = mobile + tablet
+    const {screenSize, isHydrated} = useScreenSize();
+    const isLargeScreen = isHydrated && screenSize === "desktop";
+
     // Generate tagline from first 3 brand words
     const heroTagline = brandWords.slice(0, 3).join(" · ");
 
@@ -221,6 +271,41 @@ export function VideoHero({randomCollection}: {randomCollection?: HeroCollection
         setIsHomePage(true);
         return () => setIsHomePage(false);
     }, [setIsHomePage]);
+
+    // Mobile / tablet (< lg): label rotation runs passively from mount — no hover dependency.
+    // Re-runs when the screen size category crosses the lg threshold (e.g. window resize).
+    useEffect(() => {
+        if (!isHydrated || isLargeScreen) return;
+        searchIntervalRef.current = setInterval(() => dispatchLabel("advance"), LABEL_ROTATION_INTERVAL);
+        return () => {
+            if (searchIntervalRef.current) {
+                clearInterval(searchIntervalRef.current);
+                searchIntervalRef.current = null;
+            }
+        };
+    }, [isHydrated, isLargeScreen, dispatchLabel]);
+
+    // Safety net: clear any desktop-hover interval still running if the component unmounts
+    // before the user moves their mouse off the button.
+    useEffect(() => {
+        return () => {
+            if (searchIntervalRef.current) clearInterval(searchIntervalRef.current);
+        };
+    }, []);
+
+    // Desktop (≥ lg) hover handlers — start/stop the ticker on enter/leave.
+    // Clearing before starting prevents multiple overlapping intervals on rapid hover.
+    const handleSearchMouseEnter = () => {
+        if (searchIntervalRef.current) clearInterval(searchIntervalRef.current);
+        searchIntervalRef.current = setInterval(() => dispatchLabel("advance"), LABEL_ROTATION_INTERVAL);
+    };
+
+    const handleSearchMouseLeave = () => {
+        if (searchIntervalRef.current) {
+            clearInterval(searchIntervalRef.current);
+            searchIntervalRef.current = null;
+        }
+    };
 
     return (
         <section ref={heroRef} className="group grid h-dvh overflow-hidden w-full p-0">
@@ -292,13 +377,65 @@ export function VideoHero({randomCollection}: {randomCollection?: HeroCollection
                             <CircleArrowOutUpRight className="w-5 h-5 md:w-6 md:h-6 sleek rotate-7.5 group-hover/btn:rotate-45" />
                         </Link>
 
+                        {/*
+                            Search button — animated expanding label
+                            Mobile / tablet (< lg):  button is flex-1 (fills remaining row space);
+                                                     label is always visible and rotates passively.
+                            Desktop (≥ lg):          button is icon-only by default; expands on hover
+                                                     via max-width transition to reveal the label ticker.
+
+                            Layout: [Search icon] [label region (overflow-hidden max-width)]
+                            The label region has no gap/margin at its flex-item level — the 8px
+                            gap lives as pl-2 inside the absolute label spans, so it gets clipped
+                            by overflow-hidden when max-width is 0 (no visible "jump" on collapse).
+                        */}
                         <button
                             type="button"
                             onClick={() => openSearch("search")}
                             aria-label="Search"
-                            className="inline-flex items-center justify-center rounded-[var(--radius-pill-raw)] bg-transparent border-2 border-light/40 text-light px-3 md:px-3.5 py-3 md:py-3.5 sleek hover:bg-light/15 hover:border-light/65 active:scale-[0.98] cursor-pointer"
+                            onMouseEnter={isLargeScreen ? handleSearchMouseEnter : undefined}
+                            onMouseLeave={isLargeScreen ? handleSearchMouseLeave : undefined}
+                            className="group/sb inline-flex items-center justify-center rounded-[var(--radius-pill-raw)] bg-transparent border-2 border-light/40 text-light px-3 md:px-3.5 py-3 md:py-3.5 sleek hover:bg-light/15 hover:border-light/65 active:scale-[0.98] cursor-pointer flex-1 lg:flex-none min-w-0"
                         >
-                            <Search className="w-5 h-5 md:w-6 md:h-6" />
+                            <Search className="w-5 h-5 md:w-6 md:h-6 shrink-0" />
+
+                            {/* Label region
+                                - aria-hidden: button already has aria-label="Search"; the rotating
+                                  copy is decorative and would be noisy if read aloud every 3 s.
+                                - Mobile/tablet: flex-1 min-w-0 fills button's remaining interior space.
+                                - Desktop: max-w-0 → max-w-[14rem] on group-hover, with transition.
+                                - .search-label-region: hooks into the reduced-motion rule
+                                  (transition-duration: 1ms !important) in tailwind.css. */}
+                            <span
+                                aria-hidden="true"
+                                className="search-label-region flex-1 min-w-0 overflow-hidden lg:flex-none lg:w-[14rem] lg:max-w-0 lg:group-hover/sb:max-w-[14rem] lg:transition-[max-width] lg:duration-[260ms] lg:ease-(--motion-ease-emphasized)"
+                            >
+                                {/* Fixed-height inner container — clips the Y-axis ticker animation.
+                                    Height matches the icon size (h-5 / md:h-6) so the CTA row height
+                                    is consistent at all breakpoints. */}
+                                <span className="relative w-full h-5 md:h-6 overflow-hidden">
+                                    {/* Outgoing label: only rendered after the first rotation fires.
+                                        React key changes on every tick → element remounts → CSS
+                                        animation restarts from translateY(0) → translateY(-110%). */}
+                                    {labelState.prevIndex !== null && (
+                                        <span
+                                            key={`search-out-${labelState.tickKey}`}
+                                            className="absolute inset-0 flex items-center pl-2 whitespace-nowrap font-sans text-sm font-medium search-label-exit"
+                                        >
+                                            {SEARCH_LABELS[labelState.prevIndex]}
+                                        </span>
+                                    )}
+
+                                    {/* Current / incoming label: no animation on first render (tickKey=0)
+                                        to avoid a spurious slide-in before the user sees the button. */}
+                                    <span
+                                        key={`search-in-${labelState.tickKey}`}
+                                        className={`absolute inset-0 flex items-center pl-2 whitespace-nowrap font-sans text-sm font-medium${labelState.tickKey > 0 ? " search-label-enter" : ""}`}
+                                    >
+                                        {SEARCH_LABELS[labelState.currentIndex]}
+                                    </span>
+                                </span>
+                            </span>
                         </button>
                     </div>
                 </div>

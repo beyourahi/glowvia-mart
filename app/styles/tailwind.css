@@ -768,6 +768,43 @@ body {
 }
 
 /* ==========================================
+   Search Button Label Ticker
+   Vertical tick-up animation for the rotating search labels
+   in the Video Hero search button. Does NOT use the "animate-"
+   prefix to stay outside the catch-all reduced-motion reset below.
+   ========================================== */
+
+@keyframes ticker-up-in {
+    from {
+        transform: translateY(110%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes ticker-up-out {
+    from {
+        transform: translateY(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateY(-110%);
+        opacity: 0;
+    }
+}
+
+.search-label-enter {
+    animation: ticker-up-in var(--motion-duration-standard) var(--motion-ease-emphasized) both;
+}
+
+.search-label-exit {
+    animation: ticker-up-out var(--motion-duration-standard) var(--motion-ease-emphasized) both;
+}
+
+/* ==========================================
    Reduced Motion Preferences
    Disable all custom animations when user prefers reduced motion
    ========================================== */
@@ -1454,6 +1491,7 @@ select:not(:disabled):not(:focus):hover {
     .motion-field,
     .motion-surface,
     .sleek,
+    .search-label-region,
     .cool-underline,
     .cool-active-underline,
     .mobile-nav-link,
@@ -1480,6 +1518,24 @@ select:not(:disabled):not(:focus):hover {
 
     .mobile-nav-link::before {
         transition-duration: 1ms !important;
+    }
+}
+
+/* Ticker labels: entering label shows immediately; exiting label hides immediately.
+   These rules come AFTER the global catch-all block so they win on source order.
+   Note: .search-label-enter / .search-label-exit don't start with "animate-" so
+   they are NOT affected by the catch-all [class*="animate-"] rule above. */
+@media (prefers-reduced-motion: reduce) {
+    .search-label-enter {
+        animation: none;
+        opacity: 1;
+        transform: none;
+    }
+
+    /* Hide the outgoing label immediately — no overlap with the incoming one */
+    .search-label-exit {
+        animation: none;
+        opacity: 0;
     }
 }
 

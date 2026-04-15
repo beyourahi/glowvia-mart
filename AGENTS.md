@@ -76,8 +76,8 @@ Backend behavior, data flow, and Hydrogen conventions **must remain consistent**
 ```
 storefront_002/
 ├── app/
-│   ├── routes/              # 50 routes
-│   ├── components/          # 123 components
+│   ├── routes/              # 49 routes
+│   ├── components/          # 127 components
 │   │   ├── ui/              # 27 shadcn
 │   │   ├── blog/            # 7 blog
 │   │   ├── changelog/       # 2 changelog
@@ -344,7 +344,7 @@ Read all comments before editing. Update when changing code. Add for complex log
 
 **Gallery**: Responsive grid + lightbox, route: `/gallery`, components: GalleryGrid, GalleryImageCard, metaobject-driven
 
-**Changelog**: Changelog page for shoppers, route: `/changelog`, components: ChangelogEntry, ChangelogPage, hook: `useChangelogFilter`. Entries live in `lib/changelog-data.ts` (static file — add entries manually at commit time, see Changelog Entries section). The hero displays a live "updates shipped so far" count fetched from the GitHub API at render time (token is hardcoded in `app/routes/changelog.tsx`).
+**Changelog**: Changelog page for shoppers, route: `/changelog`, components: ChangelogEntry, ChangelogPage, hook: `useChangelogFilter`. Entries live in `lib/changelog-data.ts` (static file — add entries manually at commit time, see Changelog Entries section). The loader returns static entries directly — no external API calls.
 
 ---
 

@@ -30,6 +30,14 @@ import type {ChangelogEntry} from "~/lib/types/changelog";
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
         date: "2026-04-15",
+        time: "7pm",
+        headline: "Search button label in the hero is now visible on all devices",
+        summary:
+            "The rotating label inside the hero search button was invisible due to a display rendering issue. It now shows correctly — on mobile it's always visible alongside the icon, and on desktop it appears when you hover over the button.",
+        category: "Fix"
+    },
+    {
+        date: "2026-04-15",
         time: "6pm",
         headline: "Search button on the hero now shows a rotating label as you hover",
         summary:

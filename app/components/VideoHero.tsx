@@ -53,7 +53,7 @@ const SEARCH_LABELS = [
 ];
 
 /** Milliseconds between label changes */
-const LABEL_ROTATION_INTERVAL = 3000;
+const LABEL_ROTATION_INTERVAL = 2000;
 
 type SearchLabelState = {
     /** Index of the currently visible (incoming) label */
@@ -413,7 +413,7 @@ export function VideoHero({randomCollection}: {randomCollection?: HeroCollection
                                 {/* Fixed-height inner container — clips the Y-axis ticker animation.
                                     Height matches the icon size (h-5 / md:h-6) so the CTA row height
                                     is consistent at all breakpoints. */}
-                                <span className="relative w-full h-5 md:h-6 overflow-hidden">
+                                <span className="relative block w-full h-5 md:h-6 overflow-hidden">
                                     {/* Outgoing label: only rendered after the first rotation fires.
                                         React key changes on every tick → element remounts → CSS
                                         animation restarts from translateY(0) → translateY(-110%). */}

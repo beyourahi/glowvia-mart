@@ -11,6 +11,8 @@
  * - routes/_index.tsx - Inserted between FAQSection (#12) and PromotionalBannerTwo (#13)
  */
 
+import {NavLink} from "react-router";
+import {LogIn} from "lucide-react";
 import {NewsletterForm} from "~/components/NewsletterForm";
 
 // ============================================================================
@@ -31,6 +33,19 @@ export function NewsletterSection() {
             aria-label="Newsletter signup"
         >
             <NewsletterForm variant="standalone" />
+
+            {/* Login CTA - Secondary action */}
+            <div className="mt-4 pt-4 border-t border-border flex items-center justify-center gap-2">
+                <p className="text-sm text-muted-foreground">Already a member?</p>
+                <NavLink
+                    to="/account"
+                    prefetch="viewport"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 hover:no-underline transition-colors"
+                >
+                    <LogIn className="size-3.5" />
+                    <span>Log in to your account</span>
+                </NavLink>
+            </div>
         </section>
     );
 }

@@ -325,15 +325,14 @@ function NewsletterSection() {
             <NewsletterForm variant="footer" />
 
             {/* Login CTA - Secondary action */}
-            <div className="pt-4 border-t border-primary-foreground/10">
-                <p className="text-sm text-primary-foreground/60 mb-3">Already a member?</p>
+            <div className="pt-4 border-t border-primary-foreground/10 flex items-center gap-2">
+                <p className="text-sm text-primary-foreground/60">Already a member?</p>
                 <NavLink
                     to="/account"
                     prefetch="viewport"
-                    className="inline-flex items-center gap-2 min-h-11 py-2 sm:min-h-0 sm:py-1 text-sm text-primary-foreground/80 hover:text-primary-foreground hover:no-underline cursor-pointer group"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary-foreground text-primary text-sm font-medium hover:bg-primary-foreground/90 hover:no-underline transition-colors"
                 >
-                    <span className="font-medium">Log in to your account</span>
-                    <span className="transition-transform group-hover:translate-x-1">&rarr;</span>
+                    <span>Log in to your account</span>
                 </NavLink>
             </div>
         </div>

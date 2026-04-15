@@ -127,6 +127,7 @@ import {
     generateWebsiteSchema
 } from "~/lib/seo";
 import {useTestimonials, useInstagramMedia, useFaqItems, usePromotionalBanners, useContactInfo} from "~/lib/site-content-context";
+import {ShopLocation} from "~/components/ShopLocation";
 import {useWishlist} from "~/lib/wishlist-context";
 
 // =============================================================================
@@ -587,6 +588,11 @@ export default function Homepage() {
                         <InstagramSection media={instagramMedia} />
                     </AnimatedSection>
                 )}
+
+                {/* Shop Location — full-bleed dark map panel, hidden when no locations configured */}
+                <AnimatedSection animation="slide-up" threshold={0.1} className="mt-16 md:mt-20 lg:mt-24 -mx-container">
+                    <ShopLocation />
+                </AnimatedSection>
 
                 {/* Contact Section — only rendered when at least one field has content */}
                 <AnimatedSection animation="slide-up" threshold={0.1} className="mt-16 md:mt-20 lg:mt-24">

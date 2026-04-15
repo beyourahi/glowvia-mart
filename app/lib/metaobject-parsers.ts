@@ -176,6 +176,8 @@ const FALLBACK_SITE_SETTINGS = {
         }
     ],
     instagramMedia: [],
+    googleMapsEmbedUrls: [],
+    googleMapsLinks: [],
     faviconUrl: null,
     icon192Url: null,
     icon512Url: null,
@@ -525,6 +527,66 @@ function parseAnnouncementTexts(announcementField: MetaobjectField | undefined):
         // (JSON array). Wrap it so the banner renders regardless of which field type the store uses.
         const text = announcementField.value.trim();
         return text ? [text] : [];
+    }
+}
+
+/**
+ * Parse a list.url field from Shopify metaobjects.
+ * Shopify returns list.url as a JSON array string: ["https://...", "https://..."]
+ * Returns [] when the field is absent, empty, or malformed.
+ */
+function parseUrlList(field: MetaobjectField | undefined): string[] {
+    if (!field?.value) return [];
+    try {
+        const parsed = JSON.parse(field.value) as unknown;
+        if (Array.isArray(parsed) && parsed.every((item): item is string => typeof item === "string")) {
+            return parsed.filter(url => url.trim().length > 0);
+        }
+        return [];
+    } catch {
+        return [];
+    }
+}
+
+/**
+ * Extract the `src` URL from a Google Maps full iframe embed code.
+ * Google Maps "Share > Embed a map" produces HTML like:
+ *   <iframe src="https://www.google.com/maps/embed?pb=..." ...></iframe>
+ *
+ * Accepts both the full HTML string and a bare URL.
+ * Returns null when extraction fails.
+ */
+function extractIframeSrc(value: string): string | null {
+    const trimmed = value.trim();
+    // Full iframe HTML — extract src attribute
+    if (trimmed.startsWith("<")) {
+        const match = trimmed.match(/src="([^"]+)"/);
+        return match?.[1] ?? null;
+    }
+    // Already a bare URL
+    return trimmed.length > 0 ? trimmed : null;
+}
+
+/**
+ * Parse a list.single_line_text field containing Google Maps embed codes.
+ * Each entry may be either a full <iframe> HTML string (from the Google Maps
+ * "Embed a map" share flow) or a bare embed src URL.
+ * The extracted src URL is what the <iframe> element's src attribute receives.
+ * Returns [] when the field is absent, empty, or malformed.
+ */
+function parseEmbedUrlList(field: MetaobjectField | undefined): string[] {
+    if (!field?.value) return [];
+    try {
+        const parsed = JSON.parse(field.value) as unknown;
+        if (Array.isArray(parsed) && parsed.every((item): item is string => typeof item === "string")) {
+            return parsed.flatMap(item => {
+                const src = extractIframeSrc(item);
+                return src ? [src] : [];
+            });
+        }
+        return [];
+    } catch {
+        return [];
     }
 }
 
@@ -1034,6 +1096,13 @@ export function parseSiteSettings(rawData: unknown): SiteSettings {
         testimonials: parsedTestimonials,
         faqItems: parsedFaqItems.length > 0 ? parsedFaqItems : DEFAULT_SITE_SETTINGS.faqItems,
         instagramMedia: parsedInstagramMedia,
+
+        // Shop Locations (Google Maps)
+        // google_maps_embed: list.single_line_text — each entry is the full <iframe> HTML from
+        //   Google Maps "Share > Embed a map". Parser extracts the src URL from the HTML.
+        // google_maps_link: list.url — each entry is the maps.app.goo.gl/… share URL.
+        googleMapsEmbedUrls: parseEmbedUrlList(data.googleMapsEmbed),
+        googleMapsLinks: parseUrlList(data.googleMapsLink),
 
         // Favicon - extracted from file reference
         faviconUrl: extractImageUrl(data.favicon),

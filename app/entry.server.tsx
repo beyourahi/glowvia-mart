@@ -107,6 +107,8 @@ export default async function handleRequest(
             // or when ad blockers are active. This is expected and does not affect
             // storefront functionality — Shopify analytics is best-effort telemetry.
         ],
+        // Allow Google Maps embeds in <iframe> (ShopLocation section)
+        frameSrc: ["https://www.google.com/"],
         // Prevent clickjacking by blocking all iframe embedding
         frameAncestors: ["'none'"]
     });

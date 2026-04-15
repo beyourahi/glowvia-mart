@@ -235,6 +235,19 @@ export function useInstagramMedia(): InstagramMedia[] {
     return useSiteSettings().instagramMedia;
 }
 
+/**
+ * Hook to access shop location data (Google Maps embeds + share links).
+ * Returns index-paired arrays — consumers zip them and skip incomplete pairs.
+ * Both arrays are empty when no locations are configured in Shopify Admin.
+ */
+export function useShopLocations(): {embedUrls: string[]; shareLinks: string[]} {
+    const settings = useSiteSettings();
+    return {
+        embedUrls: settings.googleMapsEmbedUrls,
+        shareLinks: settings.googleMapsLinks
+    };
+}
+
 // =============================================================================
 // HOOKS FOR THEME CUSTOMIZATION
 // =============================================================================

@@ -6,7 +6,7 @@
  * Uses Workbox 7.0.0 for intelligent caching strategies optimized for e-commerce.
  * Five distinct strategies balance performance with data freshness.
  *
- * Update flow: New SW installs → waits → user accepts update → skipWaiting → reload
+ * Update flow: New SW installs → skipWaiting → activates immediately → clients claimed
  *
  * @see https://developer.chrome.com/docs/workbox/
  */
@@ -283,9 +283,10 @@ if (!workbox) {
     // SERVICE WORKER LIFECYCLE
     // ==========================================================================
 
-    // Install: Precache offline page (user-controlled skipWaiting via message)
+    // Install: Precache offline page and immediately activate (no waiting)
     self.addEventListener("install", event => {
         console.log("[SW] Installing service worker...");
+        self.skipWaiting();
 
         event.waitUntil(
             // Precache the offline fallback page
@@ -293,8 +294,6 @@ if (!workbox) {
                 console.log("[SW] Precaching offline page");
                 return cache.add(OFFLINE_PAGE);
             })
-            // Note: skipWaiting() is NOT called automatically
-            // User must accept update via SKIP_WAITING message
         );
     });
 

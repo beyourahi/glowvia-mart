@@ -92,6 +92,7 @@ import {NetworkStatusIndicator} from "~/components/NetworkStatusIndicator";
 import {ServiceWorkerUpdateBanner} from "~/components/pwa/ServiceWorkerUpdateBanner";
 import {OpenInAppButton} from "~/components/pwa/OpenInAppButton";
 import {FloatingChatWidget} from "~/components/FloatingChatWidget";
+import {useFooterClearance} from "~/hooks/useFooterClearance";
 import {withTimeoutAndFallback, TIMEOUT_DEFAULTS} from "~/lib/promise-utils";
 
 export type RootLoader = typeof loader;
@@ -527,11 +528,68 @@ export default function App() {
                     </PageLayout>
                     <GoogleTagManager />
                     <ServiceWorkerRegistration />
-                    <OpenInAppButton variant="desktop-fixed" />
-                    <FloatingChatWidget />
+                    <FloatingButtonStack />
                 </Analytics.Provider>
             </WishlistProvider>
         </SiteContentProvider>
+    );
+}
+
+// ================================================================================
+// Floating Button Stack
+// ================================================================================
+
+/**
+ * FloatingButtonStack — unified fixed-position container for all floating action buttons.
+ *
+ * Owns the `fixed bottom-4 right-4 z-[102]` stacking context so that the
+ * PWA install button and chat widget can share a single offset computation
+ * instead of each maintaining independently hardcoded `bottom-*` values.
+ *
+ * Footer clearance:
+ *   When `#footer-bottom-bar` scrolls into the viewport, `useFooterClearance`
+ *   returns its visible pixel height. That value is applied as `translateY(-Xpx)`
+ *   on this container, lifting the entire button stack by exactly the amount needed
+ *   to clear the footer's copyright/attribution block.
+ *
+ * CSS transition:
+ *   `transition-transform duration-300 ease-in-out` animates the lift smoothly.
+ *   `motion-reduce:transition-none` skips the animation when the user has requested
+ *   reduced motion (WCAG 2.3.3 / prefers-reduced-motion).
+ *
+ * Stack order (bottom → top, flex-col in a bottom-anchored container):
+ *   ① PWA install button  — last DOM child → lowest in visual stack (lg+ only)
+ *   ② Messenger           — bottom of FloatingChatWidget's own flex-col
+ *   ③ WhatsApp            — top of FloatingChatWidget's own flex-col
+ *
+ * Mobile behaviour:
+ *   OpenInAppButton renders `hidden lg:flex` so only the two chat buttons are
+ *   visible on viewports narrower than 1024 px.
+ *
+ * @see useFooterClearance   — IO-based dynamic offset hook
+ * @see FloatingChatWidget   — Messenger + WhatsApp buttons (no own positioning)
+ * @see OpenInAppButton      — PWA install button (no own positioning when variant="desktop-fixed")
+ */
+function FloatingButtonStack() {
+    const offset = useFooterClearance();
+
+    return (
+        <div
+            className={[
+                "fixed bottom-4 right-4 z-[102]",
+                "flex flex-col items-end gap-3",
+                // Smooth lift when footer bar enters viewport.
+                // Only the transform axis is transitioned — no opacity/scale side-effects.
+                // motion-reduce: instant reposition is acceptable per WCAG 2.3.3.
+                "transition-transform duration-300 ease-in-out motion-reduce:transition-none"
+            ].join(" ")}
+            style={offset > 0 ? {transform: `translateY(-${offset}px)`} : undefined}
+        >
+            {/* Chat widget first → sits above the PWA button in the visual stack */}
+            <FloatingChatWidget />
+            {/* PWA install button last → lowest in the stack, desktop only (hidden lg:flex) */}
+            <OpenInAppButton variant="desktop-fixed" />
+        </div>
     );
 }
 

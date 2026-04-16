@@ -104,11 +104,9 @@ export function OpenInAppButton({variant = "menu-item"}: OpenInAppButtonProps) {
                 className={cn(
                     "gap-3",
                     // Fixed variant: hidden on mobile (use menu-item via FullScreenMenu instead),
-                    // visible bottom-right on large screens only. bottom-24 (96px) clears the
-                    // ~72px footer copyright bar at lg+ with a 24px buffer above it.
+                    // visible on large screens only. Positioning is handled by the parent
+                    // FloatingButtonStack container in root.tsx — no fixed/z-index needed here.
                     isFixed && [
-                        "fixed right-6 bottom-24",
-                        "z-[102]",
                         "hidden lg:flex",
                         "animate-slide-up-fade opacity-0"
                     ],

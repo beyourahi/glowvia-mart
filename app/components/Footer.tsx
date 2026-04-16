@@ -90,8 +90,11 @@ export function Footer({footer: footerPromise, header: _header}: FooterProps) {
                         {/* Contact Strip: Email + Phone — rendered only when at least one is configured */}
                         <FooterContactStrip />
 
-                        {/* Bottom Section: Copyright - stays at bottom */}
-                        <div className="mt-auto border-t border-primary-foreground/10">
+                        {/* Bottom Section: Copyright - stays at bottom.
+                             id="footer-bottom-bar" is the IntersectionObserver target used by
+                             useFooterClearance (app/hooks/useFooterClearance.ts) to lift the
+                             floating button stack when this block enters the viewport. */}
+                        <div id="footer-bottom-bar" className="mt-auto border-t border-primary-foreground/10">
                             {/* Responsive padding matching Container and all homepage sections
                                  px-container uses --container-padding: clamp(0.5rem, 0.75vw, 0.75rem)
                                  This ensures footer padding matches homepage sections exactly.

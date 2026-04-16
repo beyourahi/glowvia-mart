@@ -213,39 +213,40 @@ export function StickyMobileGetNow({
                 type="button"
                 onClick={handleClick}
                 className={cn(
-                    "w-full inline-flex select-none items-center px-6 gap-4",
+                    "w-full inline-flex select-none items-center px-6 gap-5",
                     "bg-primary text-primary-foreground",
+                    "border-t border-primary-foreground/[0.07]",
                     "outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-primary",
-                    price ? "min-h-16 py-3" : "min-h-14 justify-between"
+                    price ? "min-h-16" : "min-h-14 justify-between"
                 )}
                 aria-label="Scroll to product purchase section"
             >
                 {price ? (
                     <>
-                        {/* Price block — left */}
+                        {/* Price block — dominant left anchor */}
                         <div className="flex flex-col items-start min-w-0 shrink-0">
-                            <span className="text-base font-semibold leading-tight tabular-nums">
+                            <span className="text-xl font-bold leading-none tabular-nums">
                                 {formatShopifyMoney(price)}
                             </span>
                             {hasDiscount && compareAtPrice && (
-                                <span className="flex items-center gap-1.5 mt-0.5">
-                                    <span className="text-xs text-primary-foreground/45 line-through tabular-nums leading-none">
+                                <span className="flex items-center gap-2 mt-1">
+                                    <span className="text-[11px] text-primary-foreground/40 line-through tabular-nums leading-none">
                                         {formatShopifyMoney(compareAtPrice)}
                                     </span>
-                                    <span className="text-[10px] font-medium tracking-wide text-primary-foreground/65 leading-none">
-                                        −{discountPct}%
+                                    <span className="inline-flex items-center rounded-full bg-discount-bg px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-discount-text leading-none">
+                                        -{discountPct}%
                                     </span>
                                 </span>
                             )}
                         </div>
 
-                        {/* Vertical separator */}
-                        <div className="self-stretch w-px bg-primary-foreground/15 shrink-0" aria-hidden="true" />
+                        {/* Vertical separator — inset for breathing room */}
+                        <div className="w-px my-3 self-stretch bg-primary-foreground/10 shrink-0" aria-hidden="true" />
 
-                        {/* CTA label + icon — right, takes remaining space */}
+                        {/* CTA label + icon — subordinate action side */}
                         <div className="flex flex-1 items-center justify-between">
-                            <span className="text-lg font-medium">{buttonText}</span>
-                            <ChevronUp className="size-6" />
+                            <span className="text-base font-medium">{buttonText}</span>
+                            <ChevronUp className="size-5 opacity-70" />
                         </div>
                     </>
                 ) : (

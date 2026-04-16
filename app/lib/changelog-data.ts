@@ -30,6 +30,13 @@ import type {ChangelogEntry} from "~/lib/types/changelog";
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
         date: "2026-04-16",
+        headline: "Option group names now appear on products with multiple choices",
+        summary:
+            "On product pages with more than one type of option — such as both a size and a bundle size — each group now shows its name above the choices so it's clear what you're selecting. Products with only one type of option are unchanged: the label stays out of the way and the page remains clean.",
+        category: "Improvement"
+    },
+    {
+        date: "2026-04-16",
         headline: "Review layout adapts intelligently to the number of reviews",
         summary:
             "The customer reviews section on product pages now adjusts its layout based on how many reviews a product has. A single review gets a focused, featured card with a quote accent. Two reviews appear in a balanced two-column layout. Three reviews fill a clean three-column row. Four or more reviews display in a swipeable carousel with dot navigation and keyboard support — all without wasted space or orphaned cards at any screen size.",

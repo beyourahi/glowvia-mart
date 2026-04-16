@@ -220,6 +220,8 @@ export function ProductForm({
 
     // Check if this is a single variant product and get the variant info
     const isSingleVariant = !hasDisplayableVariants;
+    // Show option group name labels only when multiple groups are visible — single-group products stay label-free
+    const showOptionLabels = filteredOptions.filter(o => o.optionValues.length > 1).length > 1;
     const singleVariantLabel =
         isSingleVariant && selectedVariant?.title && selectedVariant.title !== "Default Title"
             ? selectedVariant.title
@@ -421,7 +423,13 @@ export function ProductForm({
                     if (option.optionValues.length === 1) return null;
 
                     return (
-                        <div key={option.name} className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                        <div key={option.name} className="space-y-1.5">
+                            {showOptionLabels && (
+                                <p className="text-[10px] font-semibold tracking-widest uppercase text-muted-foreground">
+                                    {option.name}
+                                </p>
+                            )}
+                            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                             {option.optionValues.map(value => {
                                 const {
                                     name,
@@ -491,6 +499,7 @@ export function ProductForm({
                                     </button>
                                 );
                             })}
+                            </div>
                         </div>
                     );
                 })}

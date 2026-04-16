@@ -26,8 +26,6 @@
  * - Date group headers: <h2> for correct heading hierarchy
  */
 
-import {useState, useEffect} from "react";
-import {Button} from "~/components/ui/button";
 import {Skeleton} from "~/components/ui/skeleton";
 import {Empty, EmptyHeader, EmptyTitle, EmptyDescription} from "~/components/ui/empty";
 import {ChangelogEntryCard} from "~/components/changelog/ChangelogEntry";
@@ -48,8 +46,6 @@ const ALL_CATEGORIES: ChangelogCategory[] = [
     "Design"
 ];
 
-const INITIAL_VISIBLE = 100;
-const LOAD_MORE_INCREMENT = 50;
 
 // =============================================================================
 // HELPERS
@@ -81,15 +77,6 @@ function groupEntriesByDate(entries: ChangelogEntryType[]): DateGroup[] {
 export function ChangelogPage({entries}: ChangelogLoaderData) {
     const {filteredEntries, setCategory, activeCategory, isEmpty} = useChangelogFilter(entries);
 
-    const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE);
-
-    // Reset visible count whenever the user changes the category filter
-    useEffect(() => {
-        setVisibleCount(INITIAL_VISIBLE);
-    }, [activeCategory]);
-
-    const visibleEntries = filteredEntries.slice(0, visibleCount);
-    const hasMore = visibleCount < filteredEntries.length;
 
     return (
         <div className="bg-[var(--surface-canvas)] px-4 sm:px-6 lg:px-8">
@@ -163,7 +150,7 @@ export function ChangelogPage({entries}: ChangelogLoaderData) {
                             let globalStaggerIndex = 0;
                             return (
                                 <div>
-                                    {groupEntriesByDate(visibleEntries).map(group => {
+                                    {groupEntriesByDate(filteredEntries).map(group => {
                                         return (
                                         <div key={group.date} className="mb-10 sm:mb-12 lg:flex">
                                             {/* Mobile sticky date header — full-bleed, hidden on desktop */}
@@ -218,17 +205,6 @@ export function ChangelogPage({entries}: ChangelogLoaderData) {
                         })()
                     )}
 
-                    {/* Load more */}
-                    {hasMore && !isEmpty && (
-                        <div className="mt-8 flex justify-center">
-                            <Button
-                                variant="outline"
-                                onClick={() => setVisibleCount(c => c + LOAD_MORE_INCREMENT)}
-                            >
-                                Load more updates
-                            </Button>
-                        </div>
-                    )}
                 </div>
             </section>
         </div>

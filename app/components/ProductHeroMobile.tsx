@@ -137,6 +137,9 @@ export function ProductHeroMobile({
         option => !(option.optionValues.length === 1 && option.optionValues[0].name === "Default Title")
     );
 
+    // Show group name labels only when multiple option groups are visible (mirrors ProductForm logic)
+    const showOptionLabels = visibleOptions.filter(o => o.optionValues.length > 1).length > 1;
+
     // Determine purchase mode and pricing
     const isSubscriptionMode = new URLSearchParams(search).has("selling_plan");
     const subscriptionPrice =
@@ -183,7 +186,13 @@ export function ProductHeroMobile({
             {visibleOptions.length > 0 && (
                 <div className="space-y-3 mb-32">
                     {visibleOptions.map(option => (
-                        <div key={option.name} className="flex flex-wrap gap-3">
+                        <div key={option.name} className="space-y-1.5">
+                            {showOptionLabels && (
+                                <p className="text-[10px] font-semibold tracking-widest uppercase text-primary-foreground/70">
+                                    {option.name}
+                                </p>
+                            )}
+                            <div className="flex flex-wrap gap-3">
                             {option.optionValues.map(value => {
                                 const {
                                     name,
@@ -261,6 +270,7 @@ export function ProductHeroMobile({
                                     </button>
                                 );
                             })}
+                            </div>
                         </div>
                     ))}
                 </div>

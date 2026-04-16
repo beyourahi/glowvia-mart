@@ -30,6 +30,13 @@ import type {ChangelogEntry} from "~/lib/types/changelog";
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
         date: "2026-04-17",
+        headline: "Option group labels now appear on mobile product pages",
+        summary:
+            "When browsing a product with multiple option types — like Size and Color — the label above each group (e.g. \"Size\", \"Color\") was only showing on desktop. On mobile, you'd see the option buttons with no indication of what they were. Labels now appear on mobile too, so it's always clear what you're choosing.",
+        category: "Fix"
+    },
+    {
+        date: "2026-04-17",
         headline: "Products with no variants no longer show a stray option label",
         summary:
             "Some products don't have selectable options like size or color — but Shopify was still showing a placeholder label called \"Default Title\" on their product pages. That label is now hidden across all screen sizes, including the full-height mobile section, so single-variant products look clean and uncluttered without breaking add-to-cart.",

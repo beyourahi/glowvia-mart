@@ -451,9 +451,9 @@ export default function Product() {
                 </div>
             </div>
 
-            <RelatedProducts products={recommendations} />
-
             <ProductReviews reviews={reviews} />
+
+            <RelatedProducts products={recommendations} />
 
             <Analytics.ProductView
                 data={{

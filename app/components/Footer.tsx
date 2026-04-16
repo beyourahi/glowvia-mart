@@ -103,13 +103,32 @@ export function Footer({footer: footerPromise, header: _header}: FooterProps) {
                                  At md+ the button is hidden (md:hidden) so normal pb-6 is restored. */}
                             <div className="pt-4 sm:pt-6 pb-[calc(3.5rem+env(safe-area-inset-bottom,0px)+0.75rem)] md:pb-6 px-container flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-2">
                                 <Copyright shopName={brandName || "Store"} />
+                                {/* Developer credit — Slash Cut badge.
+                                     Contrast rationale (bg-primary runtime ≈ L 84%):
+                                     text-primary-foreground/90 → ~11.2:1 ✓ (label)
+                                     text-primary-foreground/75 → ~5.8:1  ✓ (slash separator)
+                                     text-primary-foreground    → ~12.4:1 ✓ (name)
+                                     Visual hierarchy via size (10px vs 14px) + weight + case,
+                                     not opacity — avoids contrast collapse on the light surface.
+                                     brand-accent removed: runtime theme neutralizes it to gray. */}
                                 <a
                                     href="https://beyourahi.com"
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="inline-flex items-center text-sm text-primary-foreground/60 hover:text-primary-foreground hover:no-underline cursor-pointer"
+                                    className="group motion-link inline-flex self-start items-center rounded-[3px] border border-primary-foreground/30 bg-primary-foreground/[0.03] text-sm transition-[border-color,background-color] duration-[220ms] ease-[var(--motion-ease-standard)] hover:border-primary-foreground/55 hover:bg-primary-foreground/[0.07] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-foreground/50 focus-visible:ring-offset-1 focus-visible:ring-offset-primary"
                                 >
-                                    Designed by Rahi Khan
+                                    <span className="px-2.5 py-1.5 text-[10px] font-medium uppercase tracking-[0.15em] text-primary-foreground/90 transition-colors duration-[220ms] ease-[var(--motion-ease-standard)] group-hover:text-primary-foreground">
+                                        Designed by
+                                    </span>
+                                    <span
+                                        aria-hidden="true"
+                                        className="select-none text-sm font-light text-primary-foreground/75 transition-colors duration-[220ms] ease-[var(--motion-ease-standard)] group-hover:text-primary-foreground"
+                                    >
+                                        /
+                                    </span>
+                                    <span className="px-2.5 py-1.5 font-semibold text-primary-foreground transition-colors duration-[220ms] ease-[var(--motion-ease-standard)] group-hover:text-primary-foreground">
+                                        Rahi Khan
+                                    </span>
                                 </a>
                             </div>
                         </div>
@@ -390,7 +409,7 @@ function Copyright({shopName}: {shopName: string}) {
     const currentYear = new Date().getFullYear();
 
     return (
-        <div className="inline-flex items-center gap-1 text-base font-medium text-primary-foreground/60">
+        <div className="inline-flex items-center gap-1 text-sm font-medium text-primary-foreground/60">
             <CopyrightIcon size={16} className="shrink-0" />
             <span>
                 {currentYear} {shopName}. All rights reserved.

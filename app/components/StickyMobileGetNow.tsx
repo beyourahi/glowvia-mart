@@ -197,15 +197,11 @@ export function StickyMobileGetNow({
     return (
         <div
             className={cn(
-                // Mobile only
                 "md:hidden",
-                // Fixed at bottom
                 "fixed bottom-0 left-0 right-0 z-[103]",
-                // Safe area for notch phones
                 "pb-[env(safe-area-inset-bottom)]",
-                // Transition for show/hide
+                "shadow-[0_-16px_48px_oklch(0_0_0/0.22)]",
                 "transition-all duration-300 ease-out",
-                // Visibility state
                 isVisible ? "translate-y-0 opacity-100" : "translate-y-full opacity-0 pointer-events-none"
             )}
         >
@@ -213,48 +209,45 @@ export function StickyMobileGetNow({
                 type="button"
                 onClick={handleClick}
                 className={cn(
-                    "w-full inline-flex select-none items-center px-6 gap-5",
+                    "w-full flex items-center select-none",
                     "bg-primary text-primary-foreground",
-                    "border-t border-primary-foreground/[0.07]",
-                    "outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-primary",
-                    price ? "min-h-16" : "min-h-14 justify-between"
+                    "border-t border-primary-foreground/[0.08]",
+                    "outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-primary",
+                    price ? "px-5 gap-3 min-h-[66px]" : "px-6 gap-4 min-h-14"
                 )}
                 aria-label="Scroll to product purchase section"
             >
-                {price ? (
-                    <>
-                        {/* Price block — dominant left anchor */}
-                        <div className="flex flex-col items-start min-w-0 shrink-0">
-                            <span className="text-xl font-bold leading-none tabular-nums">
-                                {formatShopifyMoney(price)}
-                            </span>
-                            {hasDiscount && compareAtPrice && (
-                                <span className="flex items-center gap-2 mt-1">
-                                    <span className="text-[11px] text-primary-foreground/40 line-through tabular-nums leading-none">
-                                        {formatShopifyMoney(compareAtPrice)}
-                                    </span>
-                                    <span className="inline-flex items-center rounded-full bg-discount-bg px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-discount-text leading-none">
-                                        -{discountPct}%
-                                    </span>
+                {/* CTA label — flex-1 anchors it to the left and fills remaining space */}
+                <span className={cn("flex-1 text-left font-semibold leading-none tracking-[-0.01em]", price ? "text-[17px]" : "text-lg")}>
+                    {buttonText}
+                </span>
+
+                {/* Price block — shrink-0 keeps it compact on the right */}
+                {price && (
+                    <div className="flex flex-col items-end gap-[5px] shrink-0">
+                        <span className="text-xl font-bold leading-none tabular-nums">
+                            {formatShopifyMoney(price)}
+                        </span>
+                        {hasDiscount && compareAtPrice && (
+                            <span className="flex items-center gap-1.5">
+                                <span className="text-[11px] text-primary-foreground/40 line-through tabular-nums leading-none">
+                                    {formatShopifyMoney(compareAtPrice)}
                                 </span>
-                            )}
-                        </div>
-
-                        {/* Vertical separator — inset for breathing room */}
-                        <div className="w-px my-3 self-stretch bg-primary-foreground/10 shrink-0" aria-hidden="true" />
-
-                        {/* CTA label + icon — subordinate action side */}
-                        <div className="flex flex-1 items-center justify-between">
-                            <span className="text-base font-medium">{buttonText}</span>
-                            <ChevronUp className="size-5 opacity-70" />
-                        </div>
-                    </>
-                ) : (
-                    <>
-                        <span className="text-lg font-medium">{buttonText}</span>
-                        <ChevronUp className="ml-auto size-6" />
-                    </>
+                                <span className="inline-flex items-center rounded-full bg-discount-bg px-1.5 py-[3px] text-[9px] font-semibold uppercase tracking-wide text-discount-text leading-none">
+                                    -{discountPct}%
+                                </span>
+                            </span>
+                        )}
+                    </div>
                 )}
+
+                {/* Arrow pill — frosted circle at the far right edge */}
+                <div
+                    className="flex items-center justify-center size-9 rounded-full bg-primary-foreground/[0.13] shrink-0"
+                    aria-hidden="true"
+                >
+                    <ChevronUp className="size-[17px]" />
+                </div>
             </button>
         </div>
     );

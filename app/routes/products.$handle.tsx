@@ -85,6 +85,7 @@ import {hasSpecialTag} from "~/lib/product-tags";
 import {countDiscountedProducts, type LightweightProduct} from "~/lib/discounts";
 import {formatShopifyMoney} from "~/lib/currency-formatter";
 import {parseProductTitle} from "~/lib/product";
+import {ProductReviews, type ReviewNode} from "~/components/ProductReviews";
 
 // =============================================================================
 // META FUNCTION
@@ -200,8 +201,12 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
         }
     }
 
+    // Extract reviews from the metafield references — cast to ReviewNode[] for the component
+    const reviews = ((product as any).reviews?.references?.nodes ?? []) as ReviewNode[];
+
     return {
         product,
+        reviews,
         selectedSellingPlan,
         collectionsWithCounts,
         totalProductCount,
@@ -239,6 +244,7 @@ export default function Product() {
     const {
         product,
         recommendations,
+        reviews,
         collectionsWithCounts,
         totalProductCount,
         discountCount,
@@ -447,6 +453,8 @@ export default function Product() {
 
             <RelatedProducts products={recommendations} />
 
+            <ProductReviews reviews={reviews} />
+
             <Analytics.ProductView
                 data={{
                     products: [
@@ -569,6 +577,19 @@ const PRODUCT_FRAGMENT = `#graphql
     encodedVariantAvailability
     sizeChart: metafield(namespace: "custom", key: "size_chart") {
       value
+    }
+    reviews: metafield(namespace: "custom", key: "reviews") {
+      references(first: 20) {
+        nodes {
+          ... on Metaobject {
+            reviewerName: field(key: "reviewer_name") { value }
+            rating: field(key: "rating") { value }
+            reviewTitle: field(key: "review_title") { value }
+            body: field(key: "body") { value }
+            date: field(key: "date") { value }
+          }
+        }
+      }
     }
     collections(first: 10) {
       nodes {

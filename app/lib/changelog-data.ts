@@ -29,6 +29,13 @@ import type {ChangelogEntry} from "~/lib/types/changelog";
 // Newest entries at the top. Add new entries here in the same commit that ships the change.
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
+        date: "2026-04-16",
+        headline: "Product pages now show customer reviews",
+        summary:
+            "Each product page now displays reviews left by customers — including a star rating, review title, and written feedback. An aggregate rating summary shows the overall score and how ratings are distributed at a glance.",
+        category: "New Feature"
+    },
+    {
         date: "2026-04-15",
         time: "7pm",
         headline: "Search button label in the hero is now visible on all devices",

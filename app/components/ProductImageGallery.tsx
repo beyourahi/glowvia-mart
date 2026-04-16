@@ -52,6 +52,7 @@ import {Skeleton} from "~/components/ui/skeleton";
 import {Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext} from "~/components/ui/carousel";
 import {ProductLightbox} from "~/components/ProductLightbox";
 import {Maximize2} from "lucide-react";
+import {ProductImagePlaceholder} from "~/components/ProductImagePlaceholder";
 
 // =============================================================================
 // HELPERS
@@ -482,11 +483,7 @@ export function ProductImageGallery({images, selectedVariantImage, media, isAvai
     // =============================================================================
 
     if (galleryMedia.length === 0) {
-        return (
-            <div className="aspect-square w-full rounded-lg bg-muted flex items-center justify-center">
-                <span className="text-muted-foreground">No media available</span>
-            </div>
-        );
+        return <ProductImagePlaceholder aspectRatio="4/5" className="w-full rounded-lg" />;
     }
 
     return (

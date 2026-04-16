@@ -43,6 +43,7 @@ import {Image} from "@shopify/hydrogen";
 import {Carousel, CarouselContent, CarouselItem, type CarouselApi} from "~/components/ui/carousel";
 import {ArrowLeft, ArrowRight} from "lucide-react";
 import {cn} from "~/lib/utils";
+import {ProductImagePlaceholder} from "~/components/ProductImagePlaceholder";
 
 type ProductImage = {
     id?: string | null;
@@ -85,7 +86,7 @@ export function ProductImageCarousel({images, productTitle, loading = "lazy", cl
     if (images.length <= 1) {
         const image = images[0];
         if (!image) {
-            return <div className={cn("aspect-4/5 bg-muted/50 rounded-lg", className)} />;
+            return <ProductImagePlaceholder aspectRatio="4/5" className={cn("rounded-lg", className)} />;
         }
 
         return (

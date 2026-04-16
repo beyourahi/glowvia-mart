@@ -60,6 +60,7 @@ import {OUT_OF_STOCK_LABEL} from "~/lib/product/product-card-utils";
 import {cn} from "~/lib/utils";
 import type {GridColumns} from "~/lib/gridColumns";
 import {usePointerCapabilities} from "~/hooks/usePointerCapabilities";
+import {ProductImagePlaceholder} from "~/components/ProductImagePlaceholder";
 
 // =============================================================================
 // TYPOGRAPHY UTILITIES
@@ -444,7 +445,7 @@ export function ProductItem({
                             )}
                         />
                     ) : (
-                        <div className="w-full h-full bg-muted/50 rounded-lg" />
+                        <ProductImagePlaceholder compact className="w-full h-full rounded-lg" />
                     )}
                     {/* Hover overlay for list variant */}
                     <div className={cn(
@@ -672,7 +673,7 @@ export function ProductItem({
                 {productImages.length > 0 ? (
                     <ProductImageCarousel images={productImages} productTitle={product.title} loading={loading} isOutOfStock={isOutOfStock} />
                 ) : (
-                    <div className="aspect-4/5 bg-muted/50" />
+                    <ProductImagePlaceholder aspectRatio="4/5" />
                 )}
 
                 {/* OOS image treatment: semi-transparent overlay + diagonal strike-through */}

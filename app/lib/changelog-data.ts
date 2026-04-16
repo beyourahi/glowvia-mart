@@ -30,6 +30,20 @@ import type {ChangelogEntry} from "~/lib/types/changelog";
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
         date: "2026-04-16",
+        headline: "Review layout adapts intelligently to the number of reviews",
+        summary:
+            "The customer reviews section on product pages now adjusts its layout based on how many reviews a product has. A single review gets a focused, featured card with a quote accent. Two reviews appear in a balanced two-column layout. Three reviews fill a clean three-column row. Four or more reviews display in a swipeable carousel with dot navigation and keyboard support — all without wasted space or orphaned cards at any screen size.",
+        category: "Design"
+    },
+    {
+        date: "2026-04-16",
+        headline: "Products without images now display a branded placeholder",
+        summary:
+            "Products that don't yet have an image now show a clean, on-brand placeholder instead of a broken or blank space — on both the product grid and the product detail page. The placeholder uses the storefront's visual identity so the layout stays consistent no matter what.",
+        category: "Design"
+    },
+    {
+        date: "2026-04-16",
         headline: "Product pages now play videos directly in the gallery",
         summary:
             "Product galleries now support all Shopify media types. Videos hosted on Shopify play inline with native controls — hover to preview, or click expand to watch fullscreen. YouTube and Vimeo embeds open in a fullscreen lightbox. 3D model previews show the product thumbnail. Mixed galleries (photos + videos) are fully supported.",

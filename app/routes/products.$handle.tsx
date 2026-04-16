@@ -609,6 +609,7 @@ const PRODUCT_FRAGMENT = `#graphql
     media(first: 20) {
       nodes {
         __typename
+        mediaContentType
         ... on MediaImage {
           id
           alt
@@ -626,7 +627,30 @@ const PRODUCT_FRAGMENT = `#graphql
           sources {
             url
             mimeType
+            height
+            width
           }
+          previewImage {
+            url
+            altText
+            width
+            height
+          }
+        }
+        ... on ExternalVideo {
+          id
+          alt
+          embedUrl
+          previewImage {
+            url
+            altText
+            width
+            height
+          }
+        }
+        ... on Model3d {
+          id
+          alt
           previewImage {
             url
             altText

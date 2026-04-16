@@ -54,19 +54,39 @@ interface LightboxThumbnailsProps {
 // =============================================================================
 
 /**
- * Extract thumbnail URL from media item
- *
- * @param item - Product media item
- * @returns URL string or null if no thumbnail available
+ * Extract thumbnail URL from media item.
+ * All four Shopify media types are handled:
+ * - MediaImage: the image URL directly
+ * - Video / ExternalVideo / Model3d: the previewImage supplied by Shopify
  */
 function getThumbnailUrl(item: ProductMediaItem): string | null {
     if (item.__typename === "MediaImage" && item.image) {
         return item.image.url;
     }
-    if (item.__typename === "Video" && item.previewImage) {
+    if (
+        (item.__typename === "Video" ||
+            item.__typename === "ExternalVideo" ||
+            item.__typename === "Model3d") &&
+        item.previewImage
+    ) {
         return item.previewImage.url;
     }
     return null;
+}
+
+/**
+ * Returns a short human-readable label for the media type, used in aria-labels.
+ */
+function getMediaTypeLabel(item: ProductMediaItem): string {
+    switch (item.__typename) {
+        case "Video":
+        case "ExternalVideo":
+            return "video";
+        case "Model3d":
+            return "3D model";
+        default:
+            return "image";
+    }
 }
 
 // =============================================================================
@@ -127,7 +147,9 @@ export function LightboxThumbnails({media, currentIndex, onSelect}: LightboxThum
                 {media.map((item, index) => {
                     const thumbnailUrl = getThumbnailUrl(item);
                     const isActive = index === currentIndex;
-                    const isVideo = item.__typename === "Video";
+                    const typeLabel = getMediaTypeLabel(item);
+                    const isVideo = item.__typename === "Video" || item.__typename === "ExternalVideo";
+                    const is3d = item.__typename === "Model3d";
 
                     return (
                         <button
@@ -143,7 +165,7 @@ export function LightboxThumbnails({media, currentIndex, onSelect}: LightboxThum
                             type="button"
                             role="tab"
                             aria-selected={isActive}
-                            aria-label={`View ${isVideo ? "video" : "image"} ${index + 1} of ${media.length}`}
+                            aria-label={`View ${typeLabel} ${index + 1} of ${media.length}`}
                             className={cn(
                                 // Base sizing - responsive
                                 // Portrait 4:5 ratio thumbnails
@@ -175,10 +197,20 @@ export function LightboxThumbnails({media, currentIndex, onSelect}: LightboxThum
                                 </div>
                             )}
 
-                            {/* Video indicator overlay */}
+                            {/* Video indicator overlay (Video + ExternalVideo) */}
                             {isVideo && (
                                 <div className="absolute inset-0 flex items-center justify-center bg-dark/40">
                                     <PlayIcon className="size-4 md:size-5 text-light" />
+                                </div>
+                            )}
+
+                            {/* 3D model indicator overlay */}
+                            {is3d && (
+                                <div className="absolute inset-0 flex items-center justify-center bg-dark/40">
+                                    <svg width="16" height="16" viewBox="0 0 12 12" aria-hidden="true" fill="none" stroke="white" strokeWidth="1" className="md:w-5 md:h-5">
+                                        <path d="M6 0.5L11 3.25V8.75L6 11.5L1 8.75V3.25L6 0.5Z" />
+                                        <path d="M6 0.5V6M6 6L11 3.25M6 6L1 3.25M6 6V11.5" strokeWidth="0.75" />
+                                    </svg>
                                 </div>
                             )}
                         </button>

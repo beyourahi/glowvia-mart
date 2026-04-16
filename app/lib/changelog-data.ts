@@ -30,6 +30,13 @@ import type {ChangelogEntry} from "~/lib/types/changelog";
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
         date: "2026-04-16",
+        headline: "Product pages now play videos directly in the gallery",
+        summary:
+            "Product galleries now support all Shopify media types. Videos hosted on Shopify play inline with native controls — hover to preview, or click expand to watch fullscreen. YouTube and Vimeo embeds open in a fullscreen lightbox. 3D model previews show the product thumbnail. Mixed galleries (photos + videos) are fully supported.",
+        category: "New Feature"
+    },
+    {
+        date: "2026-04-16",
         headline: "Product pages now show customer reviews",
         summary:
             "Each product page now displays reviews left by customers — including a star rating, review title, and written feedback. An aggregate rating summary shows the overall score and how ratings are distributed at a glance.",

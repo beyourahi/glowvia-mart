@@ -1,167 +1,154 @@
 /**
- * @fileoverview Product detail page image gallery with responsive layouts and lightbox
+ * @fileoverview Product detail page image gallery with responsive layouts, inline video, and lightbox
  *
  * @description
- * Dual-mode image gallery that adapts between mobile carousel and desktop vertical stack.
- * Handles loading states, variant image scrolling, and responsive image sizing.
- * Clicking any image opens a full-screen lightbox for detailed viewing.
+ * Dual-mode gallery (mobile carousel / desktop vertical stack) that renders all Shopify
+ * media types in the correct visual treatment:
+ *   - MediaImage  → static image with skeleton + hover scale
+ *   - Video       → inline HTML5 player (muted, hover-autoplay, native controls)
+ *   - ExternalVideo → poster + play overlay → opens lightbox with sandboxed iframe
+ *   - Model3d     → previewImage + 3D badge → opens lightbox (3D viewer out of scope)
+ *
+ * @key-architecture
+ * `galleryMedia` is the single source of truth for BOTH gallery rendering AND lightbox
+ * indexing. Using the same array for both eliminates the index misalignment that would
+ * occur if the gallery renders from `images` (a subset) while the lightbox reads from
+ * `media` (the full set including videos).
  *
  * @features
  * - Mobile: Horizontal swipeable carousel with drag-free scrolling
- * - Desktop: Vertical stack of all images
- * - Individual loading skeletons for each image
- * - Smooth scroll to variant image when selection changes
+ * - Desktop: Vertical stack of all media items
+ * - Individual loading skeletons for image items
+ * - Smooth scroll to variant image when variant selection changes
  * - Responsive image sizing with srcset
  * - Eager loading for first image (LCP optimization)
- * - Lazy loading for subsequent images
- * - 4:5 aspect ratio for all images
- * - Wheel gesture support for carousel
- * - Full-screen lightbox on image click
+ * - Lazy loading for subsequent media
+ * - Muted autoplay on hover for Video items (browser policy permits muted)
+ * - Play/expand badge overlays distinguish video items from images
+ * - Full-screen lightbox on click (images) or expand button (videos)
  *
- * @props
- * - images: Array of product images to display
- * - selectedVariantImage: Currently selected variant's featured image (triggers scroll)
- * - media: Optional array of product media (images + videos) for lightbox
+ * @video-behaviour
+ * - Hover → muted playback starts via HTMLVideoElement.play()
+ * - Mouse leave → pause (position held, no reset)
+ * - Native controls visible for user-driven interaction
+ * - `muted`, `playsinline`, `preload="metadata"` always set
+ * - Explicit `controls` attribute for in-gallery playback
  *
- * @state
- * - loadedImages: Set of loaded image IDs for skeleton hiding
- * - imageRefs: Map of image elements for scrollIntoView
- * - lightboxOpen: Whether lightbox is currently open
- * - lightboxIndex: Index of media to show in lightbox
- *
- * @loading-strategy
- * - Uses native Image API for preloading (avoids SSR hydration issues)
- * - Shows skeleton while loading
- * - Fades in image when loaded
- * - Handles load errors gracefully
- *
- * @scroll-behavior
- * When selectedVariantImage changes:
- * 1. Finds corresponding image ref by ID
- * 2. Scrolls to image with smooth behavior
- * 3. Centers image in viewport (desktop only)
- *
- * @responsive-layout
- * - Mobile (<md): Carousel with 90% basis, arrows
- * - Desktop (>=md): Vertical stack, gap-2, no carousel
- *
- * @lightbox
- * - Click any image to open full-screen lightbox
- * - Lightbox uses media array (includes videos if available)
- * - Natural aspect ratio display in lightbox
- * - Arrow/keyboard/swipe navigation
+ * @lightbox-alignment
+ * Gallery index === lightboxMedia index because both use `galleryMedia`.
+ * Clicking item at gallery[i] opens lightbox at lightboxMedia[i]. No mapping needed.
  *
  * @related
- * - ProductImageCarousel.tsx - Card carousel (different use case)
  * - ~/routes/products.$handle.tsx - Product detail page
  * - ~/components/ProductLightbox - Full-screen media viewer
  * - Carousel components - Embla carousel wrappers
  */
 
-import {useState, useEffect, useRef} from "react";
+import {useState, useEffect, useRef, useMemo} from "react";
 import {Image} from "@shopify/hydrogen";
 import type {ProductImageGalleryProps, ProductMediaItem} from "types";
 import {cn} from "~/lib/utils";
 import {Skeleton} from "~/components/ui/skeleton";
 import {Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext} from "~/components/ui/carousel";
 import {ProductLightbox} from "~/components/ProductLightbox";
+import {Maximize2} from "lucide-react";
+
+// =============================================================================
+// HELPERS
+// =============================================================================
+
+/**
+ * Type guard — checks if a raw media node is a fully handled ProductMediaItem.
+ * Accepts all four Shopify media types; unrecognised types are silently dropped.
+ */
+function isKnownMediaItem(item: unknown): item is ProductMediaItem {
+    if (typeof item !== "object" || item === null) return false;
+    const obj = item as Record<string, unknown>;
+    return (
+        obj.__typename === "MediaImage" ||
+        obj.__typename === "Video" ||
+        obj.__typename === "ExternalVideo" ||
+        obj.__typename === "Model3d"
+    );
+}
+
+/**
+ * Normalise a raw Shopify media node into a strongly-typed ProductMediaItem.
+ * All four types are handled; the fallback is the Model3d shape (preview-only).
+ */
+function normaliseMediaItem(raw: ProductMediaItem): ProductMediaItem {
+    if (raw.__typename === "MediaImage") {
+        return {
+            __typename: "MediaImage",
+            id: raw.id,
+            alt: raw.alt ?? null,
+            image: raw.image
+                ? {
+                      id: raw.image.id,
+                      url: raw.image.url,
+                      altText: raw.image.altText ?? null,
+                      width: raw.image.width ?? 0,
+                      height: raw.image.height ?? 0
+                  }
+                : null
+        };
+    }
+
+    if (raw.__typename === "Video") {
+        return {
+            __typename: "Video",
+            id: raw.id,
+            alt: raw.alt ?? null,
+            sources: raw.sources ?? [],
+            previewImage: raw.previewImage ?? null
+        };
+    }
+
+    if (raw.__typename === "ExternalVideo") {
+        return {
+            __typename: "ExternalVideo",
+            id: raw.id,
+            alt: raw.alt ?? null,
+            embedUrl: raw.embedUrl,
+            previewImage: raw.previewImage ?? null
+        };
+    }
+
+    // Model3d
+    return {
+        __typename: "Model3d",
+        id: raw.id,
+        alt: raw.alt ?? null,
+        previewImage: raw.previewImage ?? null
+    };
+}
 
 // =============================================================================
 // PRODUCT IMAGE GALLERY
 // =============================================================================
 
 /**
- * ProductImageGallery - Responsive product image display with lightbox.
+ * ProductImageGallery — Responsive product media gallery with inline video and lightbox.
  *
- * Features:
- * - Mobile: Swipeable carousel (no arrows/dots)
- * - Desktop: All images visible in vertical stack
- * - Smooth scroll to variant image when variant selection changes (desktop)
- * - Individual loading states for each image
- * - Responsive sizing across all screen sizes
- * - Full-screen lightbox on image click
+ * Gallery and lightbox both use the same `galleryMedia` array so indices always align.
+ * Falls back to converting the `images` array when no `media` prop is supplied.
  */
 export function ProductImageGallery({images, selectedVariantImage, media, isAvailableForSale = true}: ProductImageGalleryProps) {
     // =============================================================================
-    // STATE MANAGEMENT
+    // GALLERY MEDIA — single source of truth
     // =============================================================================
 
-    // Track loaded state for each image independently
-    const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set());
-
-    // Refs for scrolling to specific images
-    const imageRefs = useRef<Map<string, HTMLDivElement>>(new Map());
-
-    // =============================================================================
-    // LIGHTBOX STATE
-    // =============================================================================
-
-    // Lightbox open/closed state
-    const [lightboxOpen, setLightboxOpen] = useState(false);
-
-    // Index of media item to show in lightbox
-    const [lightboxIndex, setLightboxIndex] = useState(0);
-
     /**
-     * Open lightbox at specific index
-     * Maps image index to corresponding media index
+     * Build the unified media list from `media` nodes when available.
+     * Unknown `__typename` values are silently filtered out (graceful degradation).
+     * Falls back to converting the plain `images` array to MediaImage format.
      */
-    const openLightbox = (index: number) => {
-        setLightboxIndex(index);
-        setLightboxOpen(true);
-    };
-
-    /**
-     * Close lightbox
-     */
-    const closeLightbox = () => {
-        setLightboxOpen(false);
-    };
-
-    /**
-     * Get media array for lightbox
-     * Filters to only supported types (MediaImage, Video) and normalizes the data
-     * Falls back to converting images to media format if media prop not provided
-     */
-    const lightboxMedia: ProductMediaItem[] = (() => {
-        // Type guard for checking if item is a valid media object
-        const isMediaItem = (item: unknown): item is ProductMediaItem => {
-            if (typeof item !== "object" || item === null) return false;
-            const obj = item as Record<string, unknown>;
-            return obj.__typename === "MediaImage" || obj.__typename === "Video";
-        };
-
-        // If media array provided, filter and normalize it
+    const galleryMedia: ProductMediaItem[] = useMemo(() => {
         if (media && media.length > 0) {
-            return media.filter(isMediaItem).map(item => {
-                if (item.__typename === "MediaImage") {
-                    return {
-                        __typename: "MediaImage" as const,
-                        id: item.id ?? "",
-                        alt: item.alt ?? null,
-                        image: item.image
-                            ? {
-                                  id: item.image.id ?? "",
-                                  url: item.image.url,
-                                  altText: item.image.altText ?? null,
-                                  width: item.image.width ?? 0,
-                                  height: item.image.height ?? 0
-                              }
-                            : null
-                    };
-                }
-                // Video type
-                return {
-                    __typename: "Video" as const,
-                    id: item.id ?? "",
-                    alt: item.alt ?? null,
-                    sources: item.sources ?? [],
-                    previewImage: item.previewImage ?? null
-                };
-            });
+            return (media as unknown[]).filter(isKnownMediaItem).map(normaliseMediaItem);
         }
 
-        // Fallback: convert images array to media format
+        // Fallback: images array → MediaImage shape
         return images.map(img => ({
             __typename: "MediaImage" as const,
             id: img.id ?? "",
@@ -174,42 +161,58 @@ export function ProductImageGallery({images, selectedVariantImage, media, isAvai
                 height: img.height ?? 0
             }
         }));
-    })();
+    }, [media, images]);
 
     // =============================================================================
-    // IMAGE PRELOADING
+    // STATE MANAGEMENT
     // =============================================================================
 
-    // Preload images using native Image API (fixes SSR hydration issue with Hydrogen Image onLoad)
+    // Track loaded state per MediaImage item (keyed by item.id)
+    const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set());
+
+    // Refs for scroll-to-variant behaviour (keyed by underlying image.id)
+    const imageRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+
+    // Refs for per-video hover-autoplay
+    const videoRefs = useRef<Map<string, HTMLVideoElement>>(new Map());
+
+    // =============================================================================
+    // LIGHTBOX STATE
+    // =============================================================================
+
+    const [lightboxOpen, setLightboxOpen] = useState(false);
+    const [lightboxIndex, setLightboxIndex] = useState(0);
+
+    const openLightbox = (index: number) => {
+        setLightboxIndex(index);
+        setLightboxOpen(true);
+    };
+
+    const closeLightbox = () => setLightboxOpen(false);
+
+    // =============================================================================
+    // IMAGE PRELOADING (MediaImage only)
+    // =============================================================================
+
+    // Preload images using native Image API (avoids SSR hydration mismatch with onLoad)
     useEffect(() => {
-        // Mark an image as loaded (defined inside useEffect to avoid dependency warning)
-        const markImageLoaded = (imageKey: string) => {
+        const markLoaded = (key: string) => {
             setLoadedImages(prev => {
-                if (prev.has(imageKey)) return prev;
-                return new Set(prev).add(imageKey);
+                if (prev.has(key)) return prev;
+                return new Set(prev).add(key);
             });
         };
 
         const cleanupFns: (() => void)[] = [];
 
-        images.forEach((image, index) => {
-            if (!image.url) return;
-
-            const imageKey = image.id ?? `image-${index}`;
+        galleryMedia.forEach(item => {
+            if (item.__typename !== "MediaImage" || !item.image?.url) return;
+            const key = item.id;
             const img = new window.Image();
-
-            const handleLoad = () => markImageLoaded(imageKey);
-            const handleError = () => markImageLoaded(imageKey); // Show content even on error
-
-            img.onload = handleLoad;
-            img.onerror = handleError;
-            img.src = image.url;
-
-            // If already cached, complete will be true synchronously
-            if (img.complete) {
-                markImageLoaded(imageKey);
-            }
-
+            img.onload = () => markLoaded(key);
+            img.onerror = () => markLoaded(key);
+            img.src = item.image.url;
+            if (img.complete) markLoaded(key);
             cleanupFns.push(() => {
                 img.onload = null;
                 img.onerror = null;
@@ -217,62 +220,59 @@ export function ProductImageGallery({images, selectedVariantImage, media, isAvai
         });
 
         return () => cleanupFns.forEach(fn => fn());
-    }, [images]);
+    }, [galleryMedia]);
 
     // =============================================================================
     // VARIANT IMAGE SCROLL
     // =============================================================================
 
-    // Scroll to variant image when selection changes
+    // When the selected variant changes, scroll its image into view (desktop only).
+    // Refs are stored by the underlying image.id (not MediaImage node id) so they
+    // match selectedVariantImage.id which comes from the variant fragment.
     useEffect(() => {
         if (!selectedVariantImage?.id) return;
-
         const targetRef = imageRefs.current.get(selectedVariantImage.id);
         if (targetRef) {
-            targetRef.scrollIntoView({
-                behavior: "smooth",
-                block: "center"
-            });
+            targetRef.scrollIntoView({behavior: "smooth", block: "center"});
         }
     }, [selectedVariantImage?.id]);
 
-    // Store ref for an image element
-    const setImageRef = (imageId: string, element: HTMLDivElement | null) => {
-        if (element) {
-            imageRefs.current.set(imageId, element);
+    const setImageRef = (imageId: string, el: HTMLDivElement | null) => {
+        if (el) imageRefs.current.set(imageId, el);
+        else imageRefs.current.delete(imageId);
+    };
+
+    // =============================================================================
+    // VIDEO HOVER AUTOPLAY
+    // =============================================================================
+
+    const handleVideoHover = (videoId: string, entering: boolean) => {
+        const video = videoRefs.current.get(videoId);
+        if (!video) return;
+        if (entering) {
+            void video.play().catch(() => {
+                // Autoplay blocked by browser policy — silently ignore.
+                // User can still play via native controls.
+            });
         } else {
-            imageRefs.current.delete(imageId);
+            video.pause();
         }
     };
 
     // =============================================================================
-    // RENDER
+    // RENDER — MediaImage
     // =============================================================================
 
-    // Fallback when no images
-    if (!images.length) {
-        return (
-            <div className="aspect-square w-full rounded-lg bg-muted flex items-center justify-center">
-                <span className="text-muted-foreground">No image available</span>
-            </div>
-        );
-    }
-
-    // Reusable image item component
-    //
-    // L-09: Lightbox-based gallery is an intentional design choice — each image in the
-    // PDP gallery shows a full-size product photo (not a generic button label) and acts
-    // as a lightbox trigger. The lightbox itself has a dedicated thumbnail strip for
-    // quick navigation (see LightboxThumbnails.tsx). This pattern follows the luxury
-    // e-commerce convention of large hero images → fullscreen detail view.
-    const renderImageItem = (image: (typeof images)[0], index: number, forCarousel = false) => {
-        const imageKey = image.id ?? `image-${index}`;
-        const isLoaded = loadedImages.has(imageKey);
+    // L-09: Clicking an image opens the lightbox rather than navigating.
+    // This is intentional luxury e-commerce UX: large hero images → fullscreen detail.
+    const renderImageItem = (item: ProductMediaItem & {__typename: "MediaImage"}, index: number, forCarousel = false) => {
+        const isLoaded = loadedImages.has(item.id);
+        const imageId = item.image?.id ?? item.id;
 
         return (
             <div
-                key={imageKey}
-                ref={forCarousel ? undefined : el => setImageRef(imageKey, el)}
+                key={item.id}
+                ref={forCarousel ? undefined : el => setImageRef(imageId, el)}
                 className="relative w-full overflow-hidden rounded-lg cursor-pointer group"
                 onClick={() => openLightbox(index)}
                 onKeyDown={e => {
@@ -283,65 +283,258 @@ export function ProductImageGallery({images, selectedVariantImage, media, isAvai
                 }}
                 role="button"
                 tabIndex={0}
-                aria-label={`View ${image.altText || `image ${index + 1}`} in fullscreen`}
+                aria-label={`View ${item.alt || item.image?.altText || `image ${index + 1}`} in fullscreen`}
             >
-                {/* Image Container - 4:5 portrait aspect ratio */}
                 <div className="relative w-full aspect-4/5">
-                    {/* Loading Skeleton */}
+                    {/* Loading skeleton */}
                     {!isLoaded && <Skeleton className="absolute inset-0 z-10" />}
 
-                    {/* Product Image - first image eager for LCP, rest lazy */}
-                    <Image
-                        alt={image.altText || `Product image ${index + 1}`}
-                        data={image}
-                        loading={index === 0 ? "eager" : "lazy"}
-                        sizes="(min-width: 45em) 50vw, 100vw"
+                    {/* Product image — first eager for LCP, rest lazy */}
+                    {item.image && (
+                        <Image
+                            alt={item.alt || item.image.altText || `Product image ${index + 1}`}
+                            data={item.image}
+                            loading={index === 0 ? "eager" : "lazy"}
+                            sizes="(min-width: 45em) 50vw, 100vw"
+                            className={cn(
+                                "sleek product-image w-full h-full object-cover",
+                                !isLoaded && "opacity-0",
+                                isAvailableForSale && "hover:scale-105"
+                            )}
+                        />
+                    )}
+
+                    {/* Subtle hover overlay signals clickability */}
+                    <div
                         className={cn(
-                            "sleek product-image w-full h-full object-cover",
-                            !isLoaded && "opacity-0",
-                            isAvailableForSale && "hover:scale-105"
+                            "absolute inset-0 bg-dark/0 motion-overlay pointer-events-none",
+                            isAvailableForSale && "group-hover:bg-dark/5"
                         )}
                     />
-
-                    {/* Hover overlay - subtle darkening to indicate clickability */}
-                    <div className={cn(
-                        "absolute inset-0 bg-dark/0 motion-overlay pointer-events-none",
-                        isAvailableForSale && "group-hover:bg-dark/5"
-                    )} />
                 </div>
             </div>
         );
     };
 
+    // =============================================================================
+    // RENDER — Video (Shopify-hosted)
+    // =============================================================================
+
+    const renderVideoItem = (item: ProductMediaItem & {__typename: "Video"}, index: number) => {
+        // Prefer MP4 for broadest browser support; fall back to first available source
+        const source = item.sources.find(s => s.mimeType === "video/mp4") ?? item.sources[0];
+
+        return (
+            <div
+                key={item.id}
+                className="relative w-full overflow-hidden rounded-lg group"
+                onMouseEnter={() => handleVideoHover(item.id, true)}
+                onMouseLeave={() => handleVideoHover(item.id, false)}
+            >
+                {/*
+                 * Natural video dimensions — no fixed aspect ratio wrapper.
+                 * `w-full h-auto` lets the video element render at whatever aspect ratio
+                 * was uploaded in Shopify. Do not add aspect-* classes here.
+                 */}
+                {source ? (
+                    <video
+                        ref={el => {
+                            if (el) videoRefs.current.set(item.id, el);
+                            else videoRefs.current.delete(item.id);
+                        }}
+                        src={source.url}
+                        poster={item.previewImage?.url}
+                        className="w-full h-auto block"
+                        muted
+                        playsInline
+                        preload="metadata"
+                        controls
+                        aria-label={item.alt || `Product video ${index + 1}`}
+                    >
+                        <source src={source.url} type={source.mimeType} />
+                    </video>
+                ) : (
+                    /* Fallback when no sources present — use fixed aspect as placeholder */
+                    <div className="w-full aspect-4/5 bg-muted flex items-center justify-center">
+                        <span className="text-muted-foreground text-sm">Video unavailable</span>
+                    </div>
+                )}
+
+                {/* Video badge — pure SVG, no icon import */}
+                <div className="absolute top-2 left-2 z-10 flex items-center gap-1.5 rounded-full px-2.5 py-1 bg-dark/75 text-light text-xs font-medium pointer-events-none select-none">
+                    <svg width="8" height="9" viewBox="0 0 8 9" aria-hidden="true" fill="currentColor">
+                        <path d="M0 0L8 4.5L0 9V0Z" />
+                    </svg>
+                    VIDEO
+                </div>
+
+                {/* Expand button — opens fullscreen lightbox without conflicting with video clicks */}
+                <button
+                    type="button"
+                    className="absolute top-2 right-2 z-10 size-8 flex items-center justify-center rounded-full bg-dark/60 hover:bg-dark/80 text-light opacity-0 group-hover:opacity-100 sleek focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-light"
+                    onClick={() => openLightbox(index)}
+                    aria-label="Open video in fullscreen"
+                >
+                    <Maximize2 className="size-4" aria-hidden="true" />
+                </button>
+            </div>
+        );
+    };
+
+    // =============================================================================
+    // RENDER — ExternalVideo (YouTube / Vimeo)
+    // =============================================================================
+
+    // ExternalVideo items show their poster image with a play overlay.
+    // Clicking opens the lightbox which renders a sandboxed iframe.
+    const renderExternalVideoItem = (item: ProductMediaItem & {__typename: "ExternalVideo"}, index: number) => {
+        return (
+            <div
+                key={item.id}
+                className="relative w-full overflow-hidden rounded-lg cursor-pointer group"
+                onClick={() => openLightbox(index)}
+                onKeyDown={e => {
+                    if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        openLightbox(index);
+                    }
+                }}
+                role="button"
+                tabIndex={0}
+                aria-label={`Play ${item.alt || "external video"}`}
+            >
+                <div className="relative w-full aspect-4/5">
+                    {item.previewImage ? (
+                        <img
+                            src={item.previewImage.url}
+                            alt={item.alt || `Video thumbnail ${index + 1}`}
+                            className={cn("w-full h-full object-cover sleek", isAvailableForSale && "group-hover:scale-105")}
+                            loading="lazy"
+                        />
+                    ) : (
+                        <div className="w-full h-full bg-muted" />
+                    )}
+
+                    {/* Centred play circle — pure SVG */}
+                    <div className="absolute inset-0 flex items-center justify-center bg-dark/20 group-hover:bg-dark/35 sleek pointer-events-none">
+                        <div className="size-16 rounded-full bg-dark/70 flex items-center justify-center">
+                            <svg width="20" height="24" viewBox="0 0 20 24" aria-hidden="true" className="text-light ml-1.5">
+                                <path d="M0 0L20 12L0 24V0Z" fill="currentColor" />
+                            </svg>
+                        </div>
+                    </div>
+
+                    {/* Video badge */}
+                    <div className="absolute top-2 left-2 z-10 flex items-center gap-1.5 rounded-full px-2.5 py-1 bg-dark/75 text-light text-xs font-medium pointer-events-none select-none">
+                        <svg width="8" height="9" viewBox="0 0 8 9" aria-hidden="true" fill="currentColor">
+                            <path d="M0 0L8 4.5L0 9V0Z" />
+                        </svg>
+                        VIDEO
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    // =============================================================================
+    // RENDER — Model3d
+    // =============================================================================
+
+    // 3D models render their previewImage as a fallback.
+    // Clicking opens the lightbox which also renders the previewImage (3D viewer OOS).
+    const renderModel3dItem = (item: ProductMediaItem & {__typename: "Model3d"}, index: number) => {
+        return (
+            <div
+                key={item.id}
+                className="relative w-full overflow-hidden rounded-lg cursor-pointer group"
+                onClick={() => openLightbox(index)}
+                onKeyDown={e => {
+                    if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        openLightbox(index);
+                    }
+                }}
+                role="button"
+                tabIndex={0}
+                aria-label={`View 3D model ${index + 1}`}
+            >
+                <div className="relative w-full aspect-4/5">
+                    {item.previewImage ? (
+                        <img
+                            src={item.previewImage.url}
+                            alt={item.alt || `3D model ${index + 1}`}
+                            className={cn("w-full h-full object-cover sleek", isAvailableForSale && "group-hover:scale-105")}
+                            loading="lazy"
+                        />
+                    ) : (
+                        <div className="w-full h-full bg-muted" />
+                    )}
+
+                    {/* 3D badge — hexagon SVG icon */}
+                    <div className="absolute top-2 left-2 z-10 flex items-center gap-1.5 rounded-full px-2.5 py-1 bg-dark/75 text-light text-xs font-medium pointer-events-none select-none">
+                        <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1">
+                            <path d="M6 0.5L11 3.25V8.75L6 11.5L1 8.75V3.25L6 0.5Z" />
+                            <path d="M6 0.5V6M6 6L11 3.25M6 6L1 3.25M6 6V11.5" strokeWidth="0.75" />
+                        </svg>
+                        3D
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    // =============================================================================
+    // RENDER DISPATCHER
+    // =============================================================================
+
+    const renderGalleryItem = (item: ProductMediaItem, index: number, forCarousel = false): React.ReactNode => {
+        switch (item.__typename) {
+            case "MediaImage":
+                return renderImageItem(item, index, forCarousel);
+            case "Video":
+                return renderVideoItem(item, index);
+            case "ExternalVideo":
+                return renderExternalVideoItem(item, index);
+            case "Model3d":
+                return renderModel3dItem(item, index);
+        }
+    };
+
+    // =============================================================================
+    // RENDER
+    // =============================================================================
+
+    if (galleryMedia.length === 0) {
+        return (
+            <div className="aspect-square w-full rounded-lg bg-muted flex items-center justify-center">
+                <span className="text-muted-foreground">No media available</span>
+            </div>
+        );
+    }
+
     return (
         <>
-            {/* Mobile Carousel - swipeable, arrows hidden at 320px, visible at sm+ */}
+            {/* Mobile Carousel — swipeable, arrows hidden at 320px, visible at sm+ */}
             <div className="md:hidden">
                 <Carousel
-                    opts={{
-                        align: "start",
-                        loop: true,
-                        dragFree: true
-                    }}
+                    opts={{align: "start", loop: true, dragFree: true}}
                     className="w-full"
                 >
-                    {/* Reduced left margin for 320px viewport */}
                     <CarouselContent className="-ml-1.5 sm:-ml-2 md:-ml-3">
-                        {images.map((image, index) => (
+                        {galleryMedia.map((item, index) => (
                             <CarouselItem
-                                key={image.id ?? `carousel-${index}`}
+                                key={item.id}
                                 className={cn(
                                     "pl-1.5 sm:pl-2 md:pl-3",
-                                    images.length === 1
+                                    galleryMedia.length === 1
                                         ? "basis-full"
                                         : "basis-[92%] sm:basis-[45%] lg:basis-[32%] xl:basis-[27%] 2xl:basis-[22%]"
                                 )}
                             >
-                                {renderImageItem(image, index, true)}
+                                {renderGalleryItem(item, index, true)}
                             </CarouselItem>
                         ))}
                     </CarouselContent>
-                    {/* Navigation arrows - smaller positioning for 320px */}
                     <CarouselPrevious className="left-1 sm:left-2 size-8 sm:size-10" />
                     <CarouselNext className="right-1 sm:right-2 size-8 sm:size-10" />
                 </Carousel>
@@ -349,18 +542,16 @@ export function ProductImageGallery({images, selectedVariantImage, media, isAvai
 
             {/* Desktop Vertical Stack */}
             <div className="hidden md:flex flex-col gap-2">
-                {images.map((image, index) => renderImageItem(image, index, false))}
+                {galleryMedia.map((item, index) => renderGalleryItem(item, index, false))}
             </div>
 
-            {/* Full-screen Lightbox */}
-            {lightboxMedia.length > 0 && (
-                <ProductLightbox
-                    media={lightboxMedia}
-                    initialIndex={lightboxIndex}
-                    isOpen={lightboxOpen}
-                    onClose={closeLightbox}
-                />
-            )}
+            {/* Full-screen Lightbox — uses same galleryMedia array so indices align */}
+            <ProductLightbox
+                media={galleryMedia}
+                initialIndex={lightboxIndex}
+                isOpen={lightboxOpen}
+                onClose={closeLightbox}
+            />
         </>
     );
 }

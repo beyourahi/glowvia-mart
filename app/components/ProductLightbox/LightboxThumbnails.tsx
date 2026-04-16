@@ -137,11 +137,14 @@ export function LightboxThumbnails({media, currentIndex, onSelect}: LightboxThum
             {/* Horizontal scrollable container */}
             <div
                 className={cn(
-                    "flex gap-2 md:gap-3 overflow-x-auto pb-2",
+                    "flex gap-2 md:gap-3 overflow-x-auto py-2",
                     // Hide scrollbar but keep scroll functionality
                     "scrollbar-hide",
                     // Center thumbnails on all screen sizes
-                    "justify-center"
+                    "justify-center",
+                    // Suppress browser-native focus ring on the scrollable container;
+                    // individual thumbnail buttons retain their own focus-visible indicator
+                    "outline-none"
                 )}
             >
                 {media.map((item, index) => {

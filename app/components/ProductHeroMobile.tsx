@@ -188,7 +188,7 @@ export function ProductHeroMobile({
                     {visibleOptions.map(option => (
                         <div key={option.name} className="space-y-1.5">
                             {showOptionLabels && (
-                                <p className="text-[10px] font-semibold tracking-widest uppercase text-primary-foreground/70">
+                                <p className="text-[11px] font-semibold tracking-widest uppercase text-primary-foreground/70">
                                     {option.name}
                                 </p>
                             )}

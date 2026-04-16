@@ -425,7 +425,7 @@ export function ProductForm({
                     return (
                         <div key={option.name} className="space-y-1.5">
                             {showOptionLabels && (
-                                <p className="text-[10px] font-semibold tracking-widest uppercase text-muted-foreground">
+                                <p className="text-[11px] sm:text-[10px] font-semibold tracking-widest uppercase text-muted-foreground">
                                     {option.name}
                                 </p>
                             )}

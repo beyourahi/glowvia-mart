@@ -115,7 +115,7 @@ export function Footer({footer: footerPromise, header: _header}: FooterProps) {
                                     href="https://beyourahi.com"
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="group motion-link flex w-full justify-center items-center rounded-[var(--radius-xs-raw)] border border-primary-foreground/30 bg-primary-foreground/[0.03] text-sm transition-[border-color,background-color] duration-[220ms] ease-[var(--motion-ease-standard)] hover:border-primary-foreground/55 hover:bg-primary-foreground/[0.07] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-foreground/50 focus-visible:ring-offset-1 focus-visible:ring-offset-primary sm:inline-flex sm:w-auto sm:self-start"
+                                    className="group uppercase motion-link flex w-full justify-center items-center rounded-[var(--radius-xs-raw)] border border-primary-foreground/30 bg-primary-foreground/[0.03] text-sm transition-[border-color,background-color] duration-[220ms] ease-[var(--motion-ease-standard)] hover:border-primary-foreground/55 hover:bg-primary-foreground/[0.07] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-foreground/50 focus-visible:ring-offset-1 focus-visible:ring-offset-primary sm:inline-flex sm:w-auto sm:self-start"
                                 >
                                     <span className="px-2.5 py-1.5 text-sm font-medium tracking-[0.15em] text-primary-foreground/90 transition-colors duration-[220ms] ease-[var(--motion-ease-standard)] group-hover:text-primary-foreground">
                                         Designed by
@@ -149,12 +149,14 @@ export function Footer({footer: footerPromise, header: _header}: FooterProps) {
 function FooterLogo() {
     const {brandName} = useSiteSettings();
     return (
-        <NavLink to="/" prefetch="viewport" className="block motion-link hover:opacity-80 hover:no-underline cursor-pointer">
+        <NavLink
+            to="/"
+            prefetch="viewport"
+            className="block motion-link hover:opacity-80 hover:no-underline cursor-pointer"
+        >
             {/* Fluid display sizing via text-fluid-display — scales continuously using clamp(),
                  defined in app/styles/tailwind.css */}
-            <span className="font-serif text-fluid-display font-normal tracking-wide uppercase">
-                {brandName}
-            </span>
+            <span className="font-serif text-fluid-display font-normal tracking-wide uppercase">{brandName}</span>
         </NavLink>
     );
 }

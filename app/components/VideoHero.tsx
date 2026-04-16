@@ -52,6 +52,19 @@ const SEARCH_LABELS = [
     "Discover something great",
 ];
 
+/**
+ * Shorter equivalents for mobile viewports (< 640px / sm breakpoint).
+ * The pill button's label region fits ~14 chars at text-sm on a 320px screen;
+ * these stay under that budget while preserving the originals' intent.
+ */
+const SEARCH_LABELS_MOBILE = [
+    "Looking for?",
+    "Find something",
+    "Search here",
+    "Explore more",
+    "Discover more",
+];
+
 /** Milliseconds between label changes */
 const LABEL_ROTATION_INTERVAL = 2000;
 
@@ -231,6 +244,8 @@ export function VideoHero({randomCollection}: {randomCollection?: HeroCollection
     // "large screen" = desktop breakpoint (≥ 1024px / lg); below lg = mobile + tablet
     const {screenSize, isHydrated} = useScreenSize();
     const isLargeScreen = isHydrated && screenSize === "desktop";
+    // Switch to shorter labels only after hydration so the initial render matches SSR (avoids hydration mismatch)
+    const activeLabels = isHydrated && screenSize === "mobile" ? SEARCH_LABELS_MOBILE : SEARCH_LABELS;
 
     // Generate tagline from first 3 brand words
     const heroTagline = brandWords.slice(0, 3).join(" · ");
@@ -422,7 +437,7 @@ export function VideoHero({randomCollection}: {randomCollection?: HeroCollection
                                             key={`search-out-${labelState.tickKey}`}
                                             className="absolute inset-0 flex items-center pl-2 whitespace-nowrap font-sans text-sm font-medium search-label-exit"
                                         >
-                                            {SEARCH_LABELS[labelState.prevIndex]}
+                                            {activeLabels[labelState.prevIndex]}
                                         </span>
                                     )}
 
@@ -432,7 +447,7 @@ export function VideoHero({randomCollection}: {randomCollection?: HeroCollection
                                         key={`search-in-${labelState.tickKey}`}
                                         className={`absolute inset-0 flex items-center pl-2 whitespace-nowrap font-sans text-sm font-medium${labelState.tickKey > 0 ? " search-label-enter" : ""}`}
                                     >
-                                        {SEARCH_LABELS[labelState.currentIndex]}
+                                        {activeLabels[labelState.currentIndex]}
                                     </span>
                                 </span>
                             </span>

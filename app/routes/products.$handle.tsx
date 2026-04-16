@@ -475,6 +475,7 @@ export default function Product() {
             <StickyMobileGetNow
                 targetId="product-hero-mobile"
                 buttonText={hasSpecialTag(product.tags, "preorder") ? "Pre Order" : "Get it Now"}
+                selectedVariant={selectedVariant}
             />
         </>
     );

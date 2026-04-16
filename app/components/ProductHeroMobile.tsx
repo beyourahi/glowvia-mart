@@ -130,6 +130,13 @@ export function ProductHeroMobile({
         }))
         .filter(option => option.optionValues.length > 0);
 
+    // Suppress Shopify's synthetic "Default Title" placeholder — products without real
+    // variants have a single option named "Title" with one value "Default Title". Hide it
+    // from the UI while selectedVariant keeps it programmatically active for cart/checkout.
+    const visibleOptions = filteredOptions.filter(
+        option => !(option.optionValues.length === 1 && option.optionValues[0].name === "Default Title")
+    );
+
     // Determine purchase mode and pricing
     const isSubscriptionMode = new URLSearchParams(search).has("selling_plan");
     const subscriptionPrice =
@@ -173,9 +180,9 @@ export function ProductHeroMobile({
             {sizeChartButton && <div className="mb-4">{sizeChartButton}</div>}
 
             {/* Variant Options - each option type on its own line */}
-            {filteredOptions.length > 0 && (
+            {visibleOptions.length > 0 && (
                 <div className="space-y-3 mb-32">
-                    {filteredOptions.map(option => (
+                    {visibleOptions.map(option => (
                         <div key={option.name} className="flex flex-wrap gap-3">
                             {option.optionValues.map(value => {
                                 const {

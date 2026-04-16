@@ -123,15 +123,24 @@
 import {useEffect, useState} from "react";
 import {ChevronUp} from "lucide-react";
 import {cn} from "~/lib/utils";
+import {formatShopifyMoney} from "~/lib/currency-formatter";
+import {calculateVariantDiscountPercentage} from "~/lib/discounts";
+
+interface StickyVariantPricing {
+    price: {amount: string; currencyCode: string};
+    compareAtPrice?: {amount: string; currencyCode: string} | null;
+}
 
 // Header height in pixels (4rem = 64px, from --header-height CSS variable)
 const HEADER_HEIGHT = 80;
 export function StickyMobileGetNow({
     targetId = "product-hero-mobile",
-    buttonText = "Get it Now"
+    buttonText = "Get it Now",
+    selectedVariant
 }: {
     targetId?: string;
     buttonText?: string;
+    selectedVariant?: StickyVariantPricing | null;
 }) {
     const [isVisible, setIsVisible] = useState(false);
 
@@ -180,6 +189,11 @@ export function StickyMobileGetNow({
         });
     };
 
+    const price = selectedVariant?.price;
+    const compareAtPrice = selectedVariant?.compareAtPrice;
+    const discountPct = calculateVariantDiscountPercentage(selectedVariant);
+    const hasDiscount = discountPct > 0 && !!compareAtPrice;
+
     return (
         <div
             className={cn(
@@ -199,19 +213,47 @@ export function StickyMobileGetNow({
                 type="button"
                 onClick={handleClick}
                 className={cn(
-                    // Full width button with content at extremes
-                    "w-full min-h-14 inline-flex select-none items-center justify-between px-6",
-                    // Primary styling
+                    "w-full inline-flex select-none items-center px-6 gap-4",
                     "bg-primary text-primary-foreground",
-                    // Typography
-                    "text-lg font-medium",
-                    // Suppress outline-based focus (handled by box-shadow ring below)
-                    "outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-primary"
+                    "outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-primary",
+                    price ? "min-h-16 py-3" : "min-h-14 justify-between"
                 )}
                 aria-label="Scroll to product purchase section"
             >
-                <span>{buttonText}</span>
-                <ChevronUp className="size-6" />
+                {price ? (
+                    <>
+                        {/* Price block — left */}
+                        <div className="flex flex-col items-start min-w-0 shrink-0">
+                            <span className="text-base font-semibold leading-tight tabular-nums">
+                                {formatShopifyMoney(price)}
+                            </span>
+                            {hasDiscount && compareAtPrice && (
+                                <span className="flex items-center gap-1.5 mt-0.5">
+                                    <span className="text-xs text-primary-foreground/45 line-through tabular-nums leading-none">
+                                        {formatShopifyMoney(compareAtPrice)}
+                                    </span>
+                                    <span className="text-[10px] font-medium tracking-wide text-primary-foreground/65 leading-none">
+                                        −{discountPct}%
+                                    </span>
+                                </span>
+                            )}
+                        </div>
+
+                        {/* Vertical separator */}
+                        <div className="self-stretch w-px bg-primary-foreground/15 shrink-0" aria-hidden="true" />
+
+                        {/* CTA label + icon — right, takes remaining space */}
+                        <div className="flex flex-1 items-center justify-between">
+                            <span className="text-lg font-medium">{buttonText}</span>
+                            <ChevronUp className="size-6" />
+                        </div>
+                    </>
+                ) : (
+                    <>
+                        <span className="text-lg font-medium">{buttonText}</span>
+                        <ChevronUp className="ml-auto size-6" />
+                    </>
+                )}
             </button>
         </div>
     );

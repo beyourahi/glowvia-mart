@@ -29,6 +29,27 @@ import type {ChangelogEntry} from "~/lib/types/changelog";
 // Newest entries at the top. Add new entries here in the same commit that ships the change.
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
+        date: "2026-04-17",
+        headline: "Products with no variants no longer show a stray option label",
+        summary:
+            "Some products don't have selectable options like size or color — but Shopify was still showing a placeholder label called \"Default Title\" on their product pages. That label is now hidden across all screen sizes, including the full-height mobile section, so single-variant products look clean and uncluttered without breaking add-to-cart.",
+        category: "Fix"
+    },
+    {
+        date: "2026-04-17",
+        headline: "Search button labels no longer overflow on small screens",
+        summary:
+            "On phones with narrow screens, the rotating labels inside the search button on the homepage were getting clipped mid-word. The button now shows shorter, equally clear labels on mobile — so the text always fits neatly within the pill without looking broken.",
+        category: "Fix"
+    },
+    {
+        date: "2026-04-16",
+        headline: "Price and discount now appear on the mobile quick-buy bar",
+        summary:
+            "When you scroll past the product details on mobile, the sticky button at the bottom now shows the price alongside the call-to-action label. If the product is on sale, the original price appears crossed out next to the discount percentage — so you always know what you're getting and how much you're saving before you tap. The price updates instantly when you switch between variants.",
+        category: "Improvement"
+    },
+    {
         date: "2026-04-16",
         headline: "Option group names now appear on products with multiple choices",
         summary:

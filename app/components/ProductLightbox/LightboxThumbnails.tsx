@@ -133,11 +133,11 @@ export function LightboxThumbnails({media, currentIndex, onSelect}: LightboxThum
     // ==========================================================================
 
     return (
-        <div className="pt-2 px-4 md:px-8" role="tablist" aria-label="Product media thumbnails">
+        <div className="px-4 md:px-8" role="tablist" aria-label="Product media thumbnails">
             {/* Horizontal scrollable container */}
             <div
                 className={cn(
-                    "flex gap-2 md:gap-3 overflow-x-auto py-2",
+                    "flex gap-2 md:gap-3 overflow-x-auto pb-2",
                     // Hide scrollbar but keep scroll functionality
                     "scrollbar-hide",
                     // Center thumbnails on all screen sizes

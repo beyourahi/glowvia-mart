@@ -576,7 +576,7 @@ function FloatingButtonStack() {
     return (
         <div
             className={[
-                "fixed bottom-4 right-4 z-[102]",
+                "fixed bottom-[calc(3.5rem+env(safe-area-inset-bottom)+1rem)] md:bottom-4 right-4 z-[102]",
                 "flex flex-col items-end gap-3",
                 // Smooth lift when footer bar enters viewport.
                 // Only the transform axis is transitioned — no opacity/scale side-effects.

@@ -115,7 +115,7 @@ export function Footer({footer: footerPromise, header: _header}: FooterProps) {
                                     href="https://beyourahi.com"
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="group motion-link inline-flex self-start items-center rounded-[var(--radius-xs-raw)] border border-primary-foreground/30 bg-primary-foreground/[0.03] text-sm transition-[border-color,background-color] duration-[220ms] ease-[var(--motion-ease-standard)] hover:border-primary-foreground/55 hover:bg-primary-foreground/[0.07] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-foreground/50 focus-visible:ring-offset-1 focus-visible:ring-offset-primary"
+                                    className="group motion-link flex w-full justify-center items-center rounded-[var(--radius-xs-raw)] border border-primary-foreground/30 bg-primary-foreground/[0.03] text-sm transition-[border-color,background-color] duration-[220ms] ease-[var(--motion-ease-standard)] hover:border-primary-foreground/55 hover:bg-primary-foreground/[0.07] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-foreground/50 focus-visible:ring-offset-1 focus-visible:ring-offset-primary sm:inline-flex sm:w-auto sm:self-start"
                                 >
                                     <span className="px-2.5 py-1.5 text-[10px] font-medium uppercase tracking-[0.15em] text-primary-foreground/90 transition-colors duration-[220ms] ease-[var(--motion-ease-standard)] group-hover:text-primary-foreground">
                                         Designed by

@@ -40,7 +40,7 @@
  * - useLightboxKeyboard.ts - Keyboard navigation hook
  */
 
-import {useState, useEffect, useRef} from "react";
+import {useState, useEffect} from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import {cn} from "~/lib/utils";
 import {useScrollLock} from "~/hooks/useScrollLock";
@@ -85,19 +85,14 @@ export function ProductLightbox({media, initialIndex, isOpen, onClose}: ProductL
     // Current media index - loops continuously
     const [currentIndex, setCurrentIndex] = useState(initialIndex);
 
-    // Video playback state - pause when navigating
-    const [isVideoPlaying, setIsVideoPlaying] = useState(false);
-    const videoRef = useRef<HTMLVideoElement>(null);
-
     // ==========================================================================
     // RESET ON OPEN
     // ==========================================================================
 
-    // Reset to initial index and stop video when opening
+    // Reset to initial index when opening
     useEffect(() => {
         if (isOpen) {
             setCurrentIndex(initialIndex);
-            setIsVideoPlaying(false);
         }
     }, [isOpen, initialIndex]);
 
@@ -114,45 +109,17 @@ export function ProductLightbox({media, initialIndex, isOpen, onClose}: ProductL
     // ==========================================================================
 
     /**
-     * Navigate to next media with continuous looping
-     * Pauses any playing video before navigation
+     * Navigate to next media with continuous looping.
+     * Videos unmount on navigation (only currentMedia is rendered) so no
+     * explicit pause needed — the new video autoPlays on mount.
      */
-    const goToNext = () => {
-        // Pause video if playing
-        if (videoRef.current && !videoRef.current.paused) {
-            videoRef.current.pause();
-        }
-        setIsVideoPlaying(false);
-        // Loop to first when at end
-        setCurrentIndex(prev => (prev + 1) % media.length);
-    };
+    const goToNext = () => setCurrentIndex(prev => (prev + 1) % media.length);
 
-    /**
-     * Navigate to previous media with continuous looping
-     * Pauses any playing video before navigation
-     */
-    const goToPrevious = () => {
-        // Pause video if playing
-        if (videoRef.current && !videoRef.current.paused) {
-            videoRef.current.pause();
-        }
-        setIsVideoPlaying(false);
-        // Loop to last when at beginning
-        setCurrentIndex(prev => (prev - 1 + media.length) % media.length);
-    };
+    /** Navigate to previous media with continuous looping */
+    const goToPrevious = () => setCurrentIndex(prev => (prev - 1 + media.length) % media.length);
 
-    /**
-     * Jump to specific index (from thumbnail click)
-     * Pauses any playing video before navigation
-     */
-    const goToIndex = (index: number) => {
-        // Pause video if playing
-        if (videoRef.current && !videoRef.current.paused) {
-            videoRef.current.pause();
-        }
-        setIsVideoPlaying(false);
-        setCurrentIndex(index);
-    };
+    /** Jump to specific index (from thumbnail click) */
+    const goToIndex = (index: number) => setCurrentIndex(index);
 
     // ==========================================================================
     // KEYBOARD NAVIGATION
@@ -278,13 +245,7 @@ export function ProductLightbox({media, initialIndex, isOpen, onClose}: ProductL
                             onKeyDown={e => e.stopPropagation()}
                             role="presentation"
                         >
-                            <LightboxMedia
-                                media={currentMedia}
-                                isVideoPlaying={isVideoPlaying}
-                                onVideoPlay={() => setIsVideoPlaying(true)}
-                                onVideoPause={() => setIsVideoPlaying(false)}
-                                videoRef={videoRef}
-                            />
+                            <LightboxMedia media={currentMedia} />
                         </div>
                     </div>
 

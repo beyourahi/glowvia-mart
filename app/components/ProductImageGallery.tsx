@@ -173,9 +173,6 @@ export function ProductImageGallery({images, selectedVariantImage, media, isAvai
     // Refs for scroll-to-variant behaviour (keyed by underlying image.id)
     const imageRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
-    // Refs for per-video hover-autoplay
-    const videoRefs = useRef<Map<string, HTMLVideoElement>>(new Map());
-
     // =============================================================================
     // LIGHTBOX STATE
     // =============================================================================
@@ -242,22 +239,7 @@ export function ProductImageGallery({images, selectedVariantImage, media, isAvai
         else imageRefs.current.delete(imageId);
     };
 
-    // =============================================================================
-    // VIDEO HOVER AUTOPLAY
-    // =============================================================================
-
-    const handleVideoHover = (videoId: string, entering: boolean) => {
-        const video = videoRefs.current.get(videoId);
-        if (!video) return;
-        if (entering) {
-            void video.play().catch(() => {
-                // Autoplay blocked by browser policy — silently ignore.
-                // User can still play via native controls.
-            });
-        } else {
-            video.pause();
-        }
-    };
+    // (Hover-autoplay removed — videos use autoPlay + loop instead)
 
     // =============================================================================
     // RENDER — MediaImage
@@ -328,27 +310,22 @@ export function ProductImageGallery({images, selectedVariantImage, media, isAvai
             <div
                 key={item.id}
                 className="relative w-full overflow-hidden rounded-lg group"
-                onMouseEnter={() => handleVideoHover(item.id, true)}
-                onMouseLeave={() => handleVideoHover(item.id, false)}
             >
                 {/*
                  * Natural video dimensions — no fixed aspect ratio wrapper.
                  * `w-full h-auto` lets the video element render at whatever aspect ratio
                  * was uploaded in Shopify. Do not add aspect-* classes here.
+                 * autoPlay + loop + muted: plays immediately, repeats, no controls shown.
                  */}
                 {source ? (
                     <video
-                        ref={el => {
-                            if (el) videoRefs.current.set(item.id, el);
-                            else videoRefs.current.delete(item.id);
-                        }}
                         src={source.url}
                         poster={item.previewImage?.url}
                         className="w-full h-auto block"
+                        autoPlay
+                        loop
                         muted
                         playsInline
-                        preload="metadata"
-                        controls
                         aria-label={item.alt || `Product video ${index + 1}`}
                     >
                         <source src={source.url} type={source.mimeType} />

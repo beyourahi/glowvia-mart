@@ -207,29 +207,32 @@ export function StickyMobileGetNow({
             <button
                 type="button"
                 onClick={handleClick}
-                className="w-full flex items-center min-h-[62px] rounded-[20px] bg-[oklch(0.12_0.012_250)] text-white select-none shadow-[0_20px_64px_oklch(0_0_0/0.55),0_4px_16px_oklch(0_0_0/0.28)] ring-1 ring-white/[0.07] overflow-hidden outline-none focus-visible:ring-2 focus-visible:ring-white/60 active:scale-[0.99] transition-transform duration-100"
+                className="w-full flex items-center min-h-[62px] rounded-[20px] bg-white text-gray-900 select-none shadow-[0_8px_32px_oklch(0_0_0/0.18),0_2px_8px_oklch(0_0_0/0.1)] ring-1 ring-black/[0.06] overflow-hidden outline-none focus-visible:ring-2 focus-visible:ring-gray-900/40 active:scale-[0.99] transition-transform duration-100"
                 aria-label="Scroll to product purchase section"
             >
-                {/* Dark zone — frosted arrow circle + CTA label */}
+                {/* Light zone — soft arrow circle + CTA label + optional sale badge */}
                 <div className="flex-1 flex items-center gap-3 pl-4 pr-3">
-                    <div className="flex items-center justify-center size-8 rounded-full bg-white/[0.11] shrink-0" aria-hidden="true">
+                    <div className="flex items-center justify-center size-8 rounded-full bg-black/[0.07] shrink-0" aria-hidden="true">
                         <ChevronUp className="size-[14px]" />
                     </div>
-                    <span className="text-[17px] font-semibold tracking-[-0.015em] leading-none">
+                    <span className="text-[17px] font-semibold tracking-[-0.015em] leading-none text-gray-900">
                         {buttonText}
                     </span>
+                    {hasDiscount && (
+                        <span className="rounded-[4px] bg-[oklch(0.58_0.18_160)] text-white text-[9px] font-bold tracking-wide px-[5px] py-[3px] leading-none shrink-0">
+                            −{discountPct}%
+                        </span>
+                    )}
                 </div>
 
-                {/* White chip — pure price info, no action indicator */}
+                {/* Dark chip — price info inverted */}
                 {price ? (
-                    <div className="m-2 px-4 self-stretch flex flex-col items-start justify-center gap-[7px] rounded-[13px] bg-white/[0.94] shrink-0">
-                        {/* Row 1: current price */}
-                        <span className="text-[17px] font-bold leading-none tabular-nums text-gray-900">
+                    <div className="m-2 px-4 self-stretch flex items-center justify-center gap-2 rounded-[13px] bg-[oklch(0.13_0.012_250)] shrink-0">
+                        <span className="text-[17px] font-bold leading-none tabular-nums text-white">
                             {formatShopifyMoney(price)}
                         </span>
-                        {/* Row 2: original price, strikethrough only */}
                         {hasDiscount && compareAtPrice && (
-                            <span className="text-[10px] text-gray-400 line-through tabular-nums leading-none">
+                            <span className="text-[11px] text-white/40 line-through tabular-nums leading-none">
                                 {formatShopifyMoney(compareAtPrice)}
                             </span>
                         )}

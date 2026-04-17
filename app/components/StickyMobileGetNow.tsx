@@ -199,8 +199,7 @@ export function StickyMobileGetNow({
             className={cn(
                 "md:hidden",
                 "fixed bottom-0 left-0 right-0 z-[103]",
-                "pb-[env(safe-area-inset-bottom)]",
-                "shadow-[0_-16px_48px_oklch(0_0_0/0.22)]",
+                "px-2 pb-[max(16px,env(safe-area-inset-bottom))]",
                 "transition-all duration-300 ease-out",
                 isVisible ? "translate-y-0 opacity-100" : "translate-y-full opacity-0 pointer-events-none"
             )}
@@ -208,46 +207,36 @@ export function StickyMobileGetNow({
             <button
                 type="button"
                 onClick={handleClick}
-                className={cn(
-                    "w-full flex items-center select-none",
-                    "bg-primary text-primary-foreground",
-                    "border-t border-primary-foreground/[0.08]",
-                    "outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-primary",
-                    price ? "px-5 gap-3 min-h-[66px]" : "px-6 gap-4 min-h-14"
-                )}
+                className="w-full flex items-center min-h-[62px] rounded-[20px] bg-[oklch(0.12_0.012_250)] text-white select-none shadow-[0_20px_64px_oklch(0_0_0/0.55),0_4px_16px_oklch(0_0_0/0.28)] ring-1 ring-white/[0.07] overflow-hidden outline-none focus-visible:ring-2 focus-visible:ring-white/60 active:scale-[0.99] transition-transform duration-100"
                 aria-label="Scroll to product purchase section"
             >
-                {/* CTA label — flex-1 anchors it to the left and fills remaining space */}
-                <span className={cn("flex-1 text-left font-semibold leading-none tracking-[-0.01em]", price ? "text-[17px]" : "text-lg")}>
-                    {buttonText}
-                </span>
+                {/* Dark zone — frosted arrow circle + CTA label */}
+                <div className="flex-1 flex items-center gap-3 pl-4 pr-3">
+                    <div className="flex items-center justify-center size-8 rounded-full bg-white/[0.11] shrink-0" aria-hidden="true">
+                        <ChevronUp className="size-[14px]" />
+                    </div>
+                    <span className="text-[17px] font-semibold tracking-[-0.015em] leading-none">
+                        {buttonText}
+                    </span>
+                </div>
 
-                {/* Price block — shrink-0 keeps it compact on the right */}
-                {price && (
-                    <div className="flex flex-col items-end gap-[5px] shrink-0">
-                        <span className="text-xl font-bold leading-none tabular-nums">
+                {/* White chip — pure price info, no action indicator */}
+                {price ? (
+                    <div className="m-2 px-4 self-stretch flex flex-col items-start justify-center gap-[7px] rounded-[13px] bg-white/[0.94] shrink-0">
+                        {/* Row 1: current price */}
+                        <span className="text-[17px] font-bold leading-none tabular-nums text-gray-900">
                             {formatShopifyMoney(price)}
                         </span>
+                        {/* Row 2: original price, strikethrough only */}
                         {hasDiscount && compareAtPrice && (
-                            <span className="flex items-center gap-1.5">
-                                <span className="text-[11px] text-primary-foreground/40 line-through tabular-nums leading-none">
-                                    {formatShopifyMoney(compareAtPrice)}
-                                </span>
-                                <span className="inline-flex items-center rounded-full bg-discount-bg px-1.5 py-[3px] text-[9px] font-semibold uppercase tracking-wide text-discount-text leading-none">
-                                    -{discountPct}%
-                                </span>
+                            <span className="text-[10px] text-gray-400 line-through tabular-nums leading-none">
+                                {formatShopifyMoney(compareAtPrice)}
                             </span>
                         )}
                     </div>
+                ) : (
+                    <div className="mr-4" aria-hidden="true" />
                 )}
-
-                {/* Arrow pill — frosted circle at the far right edge */}
-                <div
-                    className="flex items-center justify-center size-9 rounded-full bg-primary-foreground/[0.13] shrink-0"
-                    aria-hidden="true"
-                >
-                    <ChevronUp className="size-[17px]" />
-                </div>
             </button>
         </div>
     );

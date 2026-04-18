@@ -45,6 +45,7 @@
  */
 
 import {useState, useEffect, useRef, useMemo} from "react";
+import {usePointerCapabilities} from "~/hooks/usePointerCapabilities";
 import {Image} from "@shopify/hydrogen";
 import type {ProductImageGalleryProps, ProductMediaItem} from "types";
 import {cn} from "~/lib/utils";
@@ -135,6 +136,8 @@ function normaliseMediaItem(raw: ProductMediaItem): ProductMediaItem {
  * Falls back to converting the `images` array when no `media` prop is supplied.
  */
 export function ProductImageGallery({images, selectedVariantImage, media, isAvailableForSale = true}: ProductImageGalleryProps) {
+    const {canHover} = usePointerCapabilities();
+
     // =============================================================================
     // GALLERY MEDIA — single source of truth
     // =============================================================================
@@ -347,9 +350,14 @@ export function ProductImageGallery({images, selectedVariantImage, media, isAvai
                 </div>
 
                 {/* Expand button — opens fullscreen lightbox without conflicting with video clicks */}
+                {/* Expand button — always visible on touch; appears on hover for pointer devices */}
                 <button
                     type="button"
-                    className="absolute top-2 right-2 z-10 size-8 flex items-center justify-center rounded-full bg-dark/60 hover:bg-dark/80 text-light opacity-0 group-hover:opacity-100 sleek focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-light"
+                    className={cn(
+                        "absolute top-2 right-2 z-10 size-8 flex items-center justify-center rounded-full bg-dark/60 hover:bg-dark/80 text-light sleek",
+                        canHover ? "opacity-0 group-hover:opacity-100" : "opacity-100",
+                        "focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-light"
+                    )}
                     onClick={() => openLightbox(index)}
                     aria-label="Open video in fullscreen"
                 >

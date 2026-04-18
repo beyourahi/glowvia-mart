@@ -29,6 +29,13 @@ import type {ChangelogEntry} from "~/lib/types/changelog";
 // Newest entries at the top. Add new entries here in the same commit that ships the change.
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
+        date: "2026-04-18",
+        headline: "Hover effects disabled on touch — smoother mobile experience",
+        summary:
+            "On phones and tablets, hover animations no longer trigger on tap — eliminating ghost hover states and reducing unnecessary style recalculation. Content that was previously only visible on hover (gallery overlays, expand buttons) is now always visible on touch screens.",
+        category: "Performance"
+    },
+    {
         date: "2026-04-17",
         headline: "Option group labels now appear on mobile product pages",
         summary:

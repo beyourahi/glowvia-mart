@@ -266,23 +266,6 @@ function ReviewCard({
 // =============================================================================
 
 export function ProductReviews({reviews}: {reviews: ReviewNode[]}) {
-    if (!reviews.length) return null;
-
-    const count = reviews.length;
-    // Single computed value drives all layout decisions
-    const variant = getLayoutVariant(count);
-
-    // Aggregate stats
-    const ratings = reviews.map(r => parseRating(r.rating?.value));
-    const avg = ratings.reduce((s, r) => s + r, 0) / ratings.length;
-    const roundedAvg = Math.round(avg * 10) / 10;
-
-    const distribution: Record<string, number> = {"5": 0, "4": 0, "3": 0, "2": 0, "1": 0};
-    ratings.forEach(r => {
-        const bucket = String(Math.round(r));
-        if (bucket in distribution) distribution[bucket]++;
-    });
-
     // Carousel state — always declared (React hook rules), only active in "carousel" variant.
     // Initial values (false / []) produce a safe SSR render; Embla hydrates on the client
     // and fires "reInit" + "select" to sync state without layout shift.
@@ -308,6 +291,23 @@ export function ProductReviews({reviews}: {reviews: ReviewNode[]}) {
             carouselApi.off("reInit", syncState);
         };
     }, [carouselApi]);
+
+    if (!reviews.length) return null;
+
+    const count = reviews.length;
+    // Single computed value drives all layout decisions
+    const variant = getLayoutVariant(count);
+
+    // Aggregate stats
+    const ratings = reviews.map(r => parseRating(r.rating?.value));
+    const avg = ratings.reduce((s, r) => s + r, 0) / ratings.length;
+    const roundedAvg = Math.round(avg * 10) / 10;
+
+    const distribution: Record<string, number> = {"5": 0, "4": 0, "3": 0, "2": 0, "1": 0};
+    ratings.forEach(r => {
+        const bucket = String(Math.round(r));
+        if (bucket in distribution) distribution[bucket]++;
+    });
 
     // Grid class for 1–3 card variants — no grid needed for single
     const gridClass =

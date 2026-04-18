@@ -15,6 +15,7 @@
 import type {GalleryImageData} from "~/lib/gallery";
 import {cn} from "~/lib/utils";
 import {parseProductTitle} from "~/lib/product";
+import {usePointerCapabilities} from "~/hooks/usePointerCapabilities";
 
 // =============================================================================
 // TYPES
@@ -51,6 +52,7 @@ export function GalleryImageCard({image, priority = false, index = 0}: GalleryIm
     // DERIVED STATE
     // =============================================================================
 
+    const {canHover} = usePointerCapabilities();
     const {primary, secondary} = parseProductTitle(image.productTitle);
 
     /**
@@ -76,13 +78,15 @@ export function GalleryImageCard({image, priority = false, index = 0}: GalleryIm
                     loading={priority ? "eager" : "lazy"}
                     width={image.width}
                     height={image.height}
-                    className="absolute inset-0 h-full w-full object-cover motion-image group-hover:scale-105"
+                    className={cn("absolute inset-0 h-full w-full object-cover motion-image", canHover && "group-hover:scale-105")}
                 />
 
                 {/* Hover Overlay - slides up from bottom */}
+                {/* Overlay — always visible on touch; slides up on hover for pointer devices */}
                 <div
                     className={cn(
-                        "absolute inset-x-0 bottom-0 translate-y-full group-hover:translate-y-0",
+                        "absolute inset-x-0 bottom-0",
+                        canHover ? "translate-y-full group-hover:translate-y-0" : "translate-y-0",
                         "transition-transform duration-300 ease-out",
                         "bg-gradient-to-t from-dark/80 via-dark/50 to-transparent",
                         "p-2 pt-8 sm:p-3 sm:pt-10"

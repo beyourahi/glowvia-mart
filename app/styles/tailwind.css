@@ -6,6 +6,24 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "lenis/dist/lenis.css";
+
+/* ─────────────────────────────────────────────────────────────────────
+ * can-hover: custom variant — restricts hover styles to devices that
+ * genuinely support hover (mouse/trackpad). Prevents "sticky" hover
+ * states on touch screens that emulate :hover after a tap.
+ *
+ * Usage in Tailwind classes: can-hover:bg-primary, can-hover:opacity-80
+ * For raw CSS, use the media query directly:
+ *   @media (hover: hover) and (pointer: fine) { ... }
+ * ───────────────────────────────────────────────────────────────────── */
+@custom-variant can-hover {
+    @media (hover: hover) and (pointer: fine) {
+        &:hover {
+            @slot;
+        }
+    }
+}
+
 /*---break---
  */
 
@@ -762,9 +780,12 @@ body {
 }
 
 /* Parent-triggered breathe - only animates when card is hovered
-   Uses group-hover pattern from Tailwind */
-.group:hover .group-hover\:animate-heart-breathe {
-    animation: heart-breathe 1.8s ease-in-out infinite;
+   Uses group-hover pattern from Tailwind.
+   Guarded behind hover media query to prevent sticky animation on touch devices. */
+@media (hover: hover) and (pointer: fine) {
+    .group:hover .group-hover\:animate-heart-breathe {
+        animation: heart-breathe 1.8s ease-in-out infinite;
+    }
 }
 
 /* ==========================================
@@ -1139,8 +1160,11 @@ body {
         transition-timing-function: var(--motion-ease-standard);
     }
 
-    .motion-lift:hover {
-        transform: translateY(calc(var(--motion-hover-lift) * -1));
+    /* Hover lift — only on devices with a real hover capability */
+    @media (hover: hover) and (pointer: fine) {
+        .motion-lift:hover {
+            transform: translateY(calc(var(--motion-hover-lift) * -1));
+        }
     }
 
     .motion-press:active {
@@ -1407,10 +1431,13 @@ video,
     transform: translateZ(0);
 }
 
-/* Group hover base timing — exclude elements with their own motion override */
-.group:hover:not(.motion-interactive-strong) {
-    transition-duration: var(--motion-duration-standard);
-    transition-timing-function: var(--motion-ease-standard);
+/* Group hover base timing — exclude elements with their own motion override.
+   Guarded behind hover media query to prevent sticky states on touch devices. */
+@media (hover: hover) and (pointer: fine) {
+    .group:hover:not(.motion-interactive-strong) {
+        transition-duration: var(--motion-duration-standard);
+        transition-timing-function: var(--motion-ease-standard);
+    }
 }
 
 /* Button press feedback */
@@ -1420,11 +1447,14 @@ button:active {
     transition-timing-function: var(--motion-ease-standard);
 }
 
-/* Input hover states — visible hover-distinct-from-focus feedback */
-input:not([type="range"]):not(:disabled):not(:focus):hover,
-textarea:not(:disabled):not(:focus):hover,
-select:not(:disabled):not(:focus):hover {
-    border-color: var(--ring);
+/* Input hover states — visible hover-distinct-from-focus feedback.
+   Guarded so touch users don't get sticky border-ring after tapping. */
+@media (hover: hover) and (pointer: fine) {
+    input:not([type="range"]):not(:disabled):not(:focus):hover,
+    textarea:not(:disabled):not(:focus):hover,
+    select:not(:disabled):not(:focus):hover {
+        border-color: var(--ring);
+    }
 }
 
 /* ==========================================
@@ -1432,11 +1462,25 @@ select:not(:disabled):not(:focus):hover {
    Expanding underline from center on hover
    ========================================== */
 
+/* Cool underline base — non-hover declarations only.
+   Hover color + underline width changes are extracted below and guarded
+   behind the hover media query to prevent sticky states on touch devices. */
 .cool-underline {
-    @apply after:bg-primary hover:text-primary relative transform-gpu after:absolute after:-bottom-0 after:left-1/2 after:h-[2px] after:w-0 after:-translate-x-1/2 hover:after:w-[35%];
+    @apply after:bg-primary relative transform-gpu after:absolute after:-bottom-0 after:left-1/2 after:h-[2px] after:w-0 after:-translate-x-1/2;
     transition-property: color, opacity, transform;
     transition-duration: var(--motion-duration-standard);
     transition-timing-function: var(--motion-ease-standard);
+}
+
+/* Hover-only states — restricted to real pointer devices */
+@media (hover: hover) and (pointer: fine) {
+    .cool-underline:hover {
+        @apply text-primary;
+    }
+
+    .cool-underline:hover::after {
+        width: 35%;
+    }
 }
 
 .cool-underline::after {
@@ -1627,9 +1671,11 @@ select:not(:disabled):not(:focus):hover {
     transition: all 0.2s ease;
 }
 
-.policy-content a:hover {
-    @apply text-primary/80;
-    text-decoration-thickness: 2px;
+@media (hover: hover) and (pointer: fine) {
+    .policy-content a:hover {
+        @apply text-primary/80;
+        text-decoration-thickness: 2px;
+    }
 }
 
 /* Lists */
@@ -1740,8 +1786,10 @@ select:not(:disabled):not(:focus):hover {
     border-bottom: 1px solid var(--border);
 }
 
-.policy-content tbody tr:hover {
-    @apply bg-muted/50;
+@media (hover: hover) and (pointer: fine) {
+    .policy-content tbody tr:hover {
+        @apply bg-muted/50;
+    }
 }
 
 .policy-content tbody tr:last-child td {
@@ -1833,7 +1881,13 @@ select:not(:disabled):not(:focus):hover {
 }
 
 .policy-content summary {
-    @apply cursor-pointer p-4 font-medium text-primary hover:bg-muted/50 transition-colors;
+    @apply cursor-pointer p-4 font-medium text-primary transition-colors;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .policy-content summary:hover {
+        @apply bg-muted/50;
+    }
 }
 
 .policy-content details[open] summary {
@@ -1886,8 +1940,10 @@ select:not(:disabled):not(:focus):hover {
     @apply text-primary-foreground underline;
 }
 
-.policy-content-dark a:hover {
-    @apply text-primary-foreground/70;
+@media (hover: hover) and (pointer: fine) {
+    .policy-content-dark a:hover {
+        @apply text-primary-foreground/70;
+    }
 }
 
 /* List markers - subtle */
@@ -1937,8 +1993,10 @@ select:not(:disabled):not(:focus):hover {
     @apply bg-primary-foreground/5;
 }
 
-.policy-content-dark tbody tr:hover {
-    @apply bg-primary-foreground/5;
+@media (hover: hover) and (pointer: fine) {
+    .policy-content-dark tbody tr:hover {
+        @apply bg-primary-foreground/5;
+    }
 }
 
 /* Secondary text - lowest in hierarchy */
@@ -1965,8 +2023,10 @@ select:not(:disabled):not(:focus):hover {
     @apply border-b-primary-foreground/15;
 }
 
-.policy-content-dark summary:hover {
-    @apply bg-primary-foreground/5;
+@media (hover: hover) and (pointer: fine) {
+    .policy-content-dark summary:hover {
+        @apply bg-primary-foreground/5;
+    }
 }
 
 .policy-content-dark kbd {
@@ -2041,9 +2101,11 @@ select:not(:disabled):not(:focus):hover {
     word-break: break-all;
 }
 
-.article-content a:hover {
-    @apply text-primary/80;
-    text-decoration-thickness: 2px;
+@media (hover: hover) and (pointer: fine) {
+    .article-content a:hover {
+        @apply text-primary/80;
+        text-decoration-thickness: 2px;
+    }
 }
 
 /* -- Blockquotes ------------------------------------- */
@@ -2144,8 +2206,10 @@ select:not(:disabled):not(:focus):hover {
     @apply text-left border-b border-border p-2;
 }
 
-.article-content tbody tr:hover {
-    @apply bg-muted/30;
+@media (hover: hover) and (pointer: fine) {
+    .article-content tbody tr:hover {
+        @apply bg-muted/30;
+    }
 }
 
 /* ==========================================
@@ -2340,9 +2404,23 @@ input[type="search"] {
     transition: background-color 0.2s;
 }
 
-.route-error-fallback a:hover {
-    /* Hover darkens button, maintaining contrast */
-    /* white on #6d5a45 = ~5.8:1 (WCAG AA) ✓ */
-    background-color: var(--primary, #6d5a45);
-    filter: brightness(0.85);
+@media (hover: hover) and (pointer: fine) {
+    .route-error-fallback a:hover {
+        /* Hover darkens button, maintaining contrast */
+        /* white on #6d5a45 = ~5.8:1 (WCAG AA) ✓ */
+        background-color: var(--primary, #6d5a45);
+        filter: brightness(0.85);
+    }
+}
+
+/* ==========================================
+   Touch Device Cursor Reset
+   On coarse-pointer (touch) devices, custom cursor styles (pointer, etc.)
+   applied via Tailwind or component CSS are meaningless and can confuse
+   browsers that show a cursor briefly on tap. Reset to auto for all elements.
+   ========================================== */
+@media (hover: none) and (pointer: coarse) {
+    * {
+        cursor: auto !important;
+    }
 }

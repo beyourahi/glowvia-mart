@@ -30,6 +30,7 @@ import {useAside} from "~/components/Aside";
 import {ParallaxLayer} from "~/components/motion/ParallaxLayer";
 import {useSiteSettings} from "~/lib/site-content-context";
 import {useScreenSize, BREAKPOINTS} from "~/hooks/useScreenSize";
+import {usePointerCapabilities} from "~/hooks/usePointerCapabilities";
 import {truncateText} from "~/lib/utils";
 import type {HeroMedia} from "types";
 
@@ -243,7 +244,9 @@ export function VideoHero({randomCollection}: {randomCollection?: HeroCollection
     const searchIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
     // "large screen" = desktop breakpoint (≥ 1024px / lg); below lg = mobile + tablet
     const {screenSize, isHydrated} = useScreenSize();
-    const isLargeScreen = isHydrated && screenSize === "desktop";
+    // Pointer capability detection — true only for devices that support hover (mouse/trackpad).
+    // Used to gate hover-dependent listeners and the search label expand effect.
+    const {canHover} = usePointerCapabilities();
     // Switch to shorter labels only after hydration so the initial render matches SSR (avoids hydration mismatch)
     const activeLabels = isHydrated && screenSize === "mobile" ? SEARCH_LABELS_MOBILE : SEARCH_LABELS;
 
@@ -287,10 +290,12 @@ export function VideoHero({randomCollection}: {randomCollection?: HeroCollection
         return () => setIsHomePage(false);
     }, [setIsHomePage]);
 
-    // Mobile / tablet (< lg): label rotation runs passively from mount — no hover dependency.
-    // Re-runs when the screen size category crosses the lg threshold (e.g. window resize).
+    // Touch / non-hover devices: label rotation runs passively from mount — no hover dependency.
+    // If canHover is true (mouse/trackpad), skip the passive timer; those devices use the
+    // mouseenter/mouseleave handlers on the search button instead.
+    // Re-runs when canHover changes (e.g. Bluetooth mouse connected/disconnected).
     useEffect(() => {
-        if (!isHydrated || isLargeScreen) return;
+        if (!isHydrated || canHover) return;
         searchIntervalRef.current = setInterval(() => dispatchLabel("advance"), LABEL_ROTATION_INTERVAL);
         return () => {
             if (searchIntervalRef.current) {
@@ -298,7 +303,7 @@ export function VideoHero({randomCollection}: {randomCollection?: HeroCollection
                 searchIntervalRef.current = null;
             }
         };
-    }, [isHydrated, isLargeScreen, dispatchLabel]);
+    }, [isHydrated, canHover, dispatchLabel]);
 
     // Safety net: clear any desktop-hover interval still running if the component unmounts
     // before the user moves their mouse off the button.
@@ -408,9 +413,9 @@ export function VideoHero({randomCollection}: {randomCollection?: HeroCollection
                             type="button"
                             onClick={() => openSearch("search")}
                             aria-label="Search"
-                            onMouseEnter={isLargeScreen ? handleSearchMouseEnter : undefined}
-                            onMouseLeave={isLargeScreen ? handleSearchMouseLeave : undefined}
-                            className="group/sb inline-flex items-center justify-center rounded-[var(--radius-pill-raw)] bg-transparent border-2 border-light/40 text-light px-3 md:px-3.5 py-3 md:py-3.5 sleek hover:bg-light/15 hover:border-light/65 active:scale-[0.98] cursor-pointer flex-1 lg:flex-none min-w-0"
+                            onMouseEnter={canHover ? handleSearchMouseEnter : undefined}
+                            onMouseLeave={canHover ? handleSearchMouseLeave : undefined}
+                            className="group/sb inline-flex items-center justify-center rounded-[var(--radius-pill-raw)] bg-transparent border-2 border-light/40 text-light px-3 md:px-3.5 py-3 md:py-3.5 sleek can-hover:bg-light/15 can-hover:border-light/65 active:scale-[0.98] cursor-pointer flex-1 lg:flex-none min-w-0"
                         >
                             <Search className="w-5 h-5 md:w-6 md:h-6 shrink-0" />
 
@@ -423,7 +428,7 @@ export function VideoHero({randomCollection}: {randomCollection?: HeroCollection
                                   (transition-duration: 1ms !important) in tailwind.css. */}
                             <span
                                 aria-hidden="true"
-                                className="search-label-region flex-1 min-w-0 overflow-hidden lg:flex-none lg:w-[14rem] lg:max-w-0 lg:group-hover/sb:max-w-[14rem] lg:transition-[max-width] lg:duration-[260ms] lg:ease-(--motion-ease-emphasized)"
+                                className={`search-label-region flex-1 min-w-0 overflow-hidden lg:flex-none lg:w-[14rem] lg:transition-[max-width] lg:duration-[260ms] lg:ease-(--motion-ease-emphasized) ${canHover ? "lg:max-w-0 lg:group-hover/sb:max-w-[14rem]" : "lg:max-w-[14rem]"}`}
                             >
                                 {/* Fixed-height inner container — clips the Y-axis ticker animation.
                                     Height matches the icon size (h-5 / md:h-6) so the CTA row height

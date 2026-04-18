@@ -103,19 +103,17 @@ export function Footer({footer: footerPromise, header: _header}: FooterProps) {
                                  At md+ the button is hidden (md:hidden) so normal pb-6 is restored. */}
                             <div className="pt-4 sm:pt-6 pb-[calc(3.5rem+env(safe-area-inset-bottom,0px)+0.75rem)] md:pb-6 px-container flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-2">
                                 <Copyright shopName={brandName || "Store"} />
-                                {/* Developer credit — Slash Cut badge.
-                                     Contrast rationale (bg-primary runtime ≈ L 84%):
-                                     text-primary-foreground/90 → ~11.2:1 ✓ (label)
-                                     text-primary-foreground/75 → ~5.8:1  ✓ (slash separator)
-                                     text-primary-foreground    → ~12.4:1 ✓ (name)
-                                     Visual hierarchy via size (10px vs 14px) + weight + case,
-                                     not opacity — avoids contrast collapse on the light surface.
-                                     brand-accent removed: runtime theme neutralizes it to gray. */}
+                                {/* Developer credit — pill badge using primary-foreground surface tokens.
+                                     rounded-full matches the site-wide button pill shape (the primary
+                                     interactivity signal), while bg-primary-foreground/[0.08] keeps it
+                                     subtle on the dark bg-primary footer rather than CTA-weight.
+                                     ExternalLinkIcon confirms off-site destination and reinforces clickability.
+                                     Contrast: text-primary-foreground (#fff) on bg-primary (#1f1f1f) ≥ 14:1 ✓ */}
                                 <a
                                     href="https://beyourahi.com"
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="group uppercase motion-link flex w-full justify-center items-center rounded-[var(--radius-xs-raw)] border border-primary-foreground/30 bg-primary-foreground/[0.03] text-sm transition-[border-color,background-color] duration-[220ms] ease-[var(--motion-ease-standard)] hover:border-primary-foreground/55 hover:bg-primary-foreground/[0.07] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-foreground/50 focus-visible:ring-offset-1 focus-visible:ring-offset-primary sm:inline-flex sm:w-auto sm:self-start"
+                                    className="group uppercase motion-link flex w-full justify-center items-center rounded-full border border-primary-foreground/35 bg-primary-foreground/[0.08] text-sm transition-[border-color,background-color] duration-[220ms] ease-[var(--motion-ease-standard)] hover:border-primary-foreground/55 hover:bg-primary-foreground/[0.14] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-foreground/50 focus-visible:ring-offset-1 focus-visible:ring-offset-primary sm:inline-flex sm:w-auto sm:self-start"
                                 >
                                     <span className="px-2.5 py-1.5 text-sm font-medium tracking-[0.15em] text-primary-foreground/90 transition-colors duration-[220ms] ease-[var(--motion-ease-standard)] group-hover:text-primary-foreground">
                                         Designed by
@@ -126,9 +124,10 @@ export function Footer({footer: footerPromise, header: _header}: FooterProps) {
                                     >
                                         /
                                     </span>
-                                    <span className="px-2.5 py-1.5 font-semibold text-primary-foreground transition-colors duration-[220ms] ease-[var(--motion-ease-standard)] group-hover:text-primary-foreground">
+                                    <span className="pl-2.5 pr-1.5 py-1.5 font-semibold text-primary-foreground transition-colors duration-[220ms] ease-[var(--motion-ease-standard)] group-hover:text-primary-foreground">
                                         Rahi Khan
                                     </span>
+                                    <span aria-hidden="true" className="mr-2.5 text-sm transition-transform duration-[220ms] ease-[var(--motion-ease-standard)] group-hover:scale-125 inline-block">🔥</span>
                                 </a>
                             </div>
                         </div>

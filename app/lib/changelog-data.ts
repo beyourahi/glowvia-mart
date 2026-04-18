@@ -29,6 +29,13 @@ import type {ChangelogEntry} from "~/lib/types/changelog";
 // Newest entries at the top. Add new entries here in the same commit that ships the change.
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
+        date: "2026-04-19",
+        headline: "Quick Add no longer closes immediately after a previous cart add",
+        summary:
+            "Opening the Quick Add selector for a product right after adding something else to your cart used to cause it to close instantly. This has been fixed — the selector now stays open so you can choose your size or variant without interruption.",
+        category: "Fix"
+    },
+    {
         date: "2026-04-18",
         headline: "Product suggestions now appear in your cart at all times",
         summary:

@@ -51,7 +51,7 @@
  * @see {@link https://shopify.dev/docs/api/hydrogen/2024-01/components/cartform}
  */
 
-import {useState, useEffect, useMemo, useCallback} from "react";
+import {useState, useEffect, useMemo, useCallback, useRef} from "react";
 import {useFetcher} from "react-router";
 import {CartForm} from "@shopify/hydrogen";
 import {Loader2, Share2} from "lucide-react";
@@ -453,9 +453,15 @@ function QuickAddCartButton({
     const fetcher = useFetcher({key: "cart-mutation"});
     const isLoading = fetcher.state !== "idle";
 
+    // Guard: only close when THIS instance submitted — not on stale data from prior mutations.
+    // Without this, opening the sheet after a previous add-to-cart fires onSuccess() immediately
+    // because fetcher.data is already truthy from the shared "cart-mutation" key.
+    const hasSubmittedRef = useRef(false);
+
     // Close sheet and open cart on success
     useEffect(() => {
-        if (fetcher.state === "idle" && fetcher.data) {
+        if (fetcher.state === "idle" && fetcher.data && hasSubmittedRef.current) {
+            hasSubmittedRef.current = false;
             onSuccess();
         }
     }, [fetcher.state, fetcher.data, onSuccess]);
@@ -463,6 +469,8 @@ function QuickAddCartButton({
     // Stable handler — only changes when variant.id, quantity, or isLoading changes
     const handleAddToCart = useCallback(() => {
         if (isLoading || !variant.availableForSale) return;
+
+        hasSubmittedRef.current = true;
 
         // CartForm.getFormInput expects: { cartFormInput: JSON.stringify({ action, inputs }) }
         void fetcher.submit(

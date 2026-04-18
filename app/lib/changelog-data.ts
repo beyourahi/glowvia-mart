@@ -30,9 +30,16 @@ import type {ChangelogEntry} from "~/lib/types/changelog";
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
         date: "2026-04-18",
+        headline: "Product suggestions now appear in your cart at all times",
+        summary:
+            "Product suggestions now stay visible in your cart drawer whether it is empty or has items. The section is collapsible — click the heading to hide it, and it resets to open the next time you open the cart.",
+        category: "Improvement"
+    },
+    {
+        date: "2026-04-18",
         headline: "Quick Add dialog now appears correctly over the cart panel",
         summary:
-            "Clicking "Get it now" on a suggested product while the cart is open now shows the variant picker on top of the cart panel, as expected. Previously it rendered behind the cart, making it impossible to interact with.",
+            "Clicking \u201cGet it now\u201d on a suggested product while the cart is open now shows the variant picker on top of the cart panel, as expected. Previously it rendered behind the cart, making it impossible to interact with.",
         category: "Fix"
     },
     {

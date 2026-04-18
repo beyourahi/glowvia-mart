@@ -71,6 +71,7 @@ import {Empty, EmptyHeader, EmptyMedia, EmptyTitle} from "~/components/ui/empty"
 import {Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext} from "~/components/ui/carousel";
 import {Skeleton} from "~/components/ui/skeleton";
 import {cn} from "~/lib/utils";
+import {Accordion, AccordionContent, AccordionItem, AccordionTrigger} from "~/components/ui/accordion";
 import {ProductItem} from "~/components/ProductItem";
 import type {CartSuggestionProductFragment} from "storefrontapi.generated";
 
@@ -98,6 +99,7 @@ export function CartMain({layout, cart: originalCart, isLoggedIn, hasStoreCredit
     const linesCount = Boolean(cart?.lines?.nodes?.length || 0);
     const cartHasItems = cart?.totalQuantity ? cart.totalQuantity > 0 : false;
     const isPage = layout === "page";
+    const rootData = useRouteLoaderData<RootLoader>("root");
 
     // Page layout: two-column grid on desktop, stacked on mobile/tablet
     // Grid scales for ultrawide: summary column grows from 380px to 480px
@@ -156,6 +158,14 @@ export function CartMain({layout, cart: originalCart, isLoggedIn, hasStoreCredit
                             </div>
                         ))}
                     </div>
+                )}
+                {/* Product suggestions — renders for both empty and non-empty cart states */}
+                {rootData?.cartSuggestions && (
+                    <Suspense fallback={<CartSuggestionsSkeleton />}>
+                        <Await resolve={rootData.cartSuggestions}>
+                            {products => <CartSuggestions products={products} layout={layout} />}
+                        </Await>
+                    </Suspense>
                 )}
             </div>
 
@@ -223,7 +233,6 @@ function CartAsideHeader({itemCount}: {itemCount: number}) {
 
 function CartEmpty({hidden = false, layout}: {hidden: boolean; layout: CartLayout}) {
     const {close} = useAside();
-    const rootData = useRouteLoaderData<RootLoader>("root");
     const isPage = layout === "page";
 
     if (hidden) return null;
@@ -264,14 +273,6 @@ function CartEmpty({hidden = false, layout}: {hidden: boolean; layout: CartLayou
                 </Link>
             </Empty>
 
-            {/* Product suggestions carousel - only show in aside context */}
-            {!isPage && rootData?.cartSuggestions && (
-                <Suspense fallback={<CartSuggestionsSkeleton />}>
-                    <Await resolve={rootData.cartSuggestions}>
-                        {products => <CartSuggestions products={products} layout={layout} />}
-                    </Await>
-                </Suspense>
-            )}
         </div>
     );
 }
@@ -339,7 +340,7 @@ function CartSuggestions({products, layout}: CartSuggestionsProps) {
 
     return (
         <section
-            className={cn("pt-4 pb-6 sm:pb-8", layout === "aside" ? "px-3 sm:px-4" : "px-0")}
+            className={cn("pt-2 pb-2 sm:pb-4", layout === "aside" ? "px-3 sm:px-4" : "px-0")}
             onClickCapture={e => {
                 // Close aside when clicking any link within the carousel
                 // But NOT when clicking buttons (like Quick Add) inside the link
@@ -350,57 +351,65 @@ function CartSuggestions({products, layout}: CartSuggestionsProps) {
             }}
             aria-label="Product suggestions"
         >
-            {/* Carousel with navigation controls for desktop users */}
-            <div className="relative">
-                <Carousel
-                    opts={{
-                        align: "start",
-                        loop: true,
-                        dragFree: true,
-                        skipSnaps: false
-                    }}
-
-                    className="w-full"
-                >
-                    <CarouselContent className="-ml-2 md:-ml-3">
-                        {shuffledProducts.map(product => (
-                            <CarouselItem
-                                key={product.id}
-                                className="pl-2 md:pl-3 basis-[70%] sm:basis-[55%] lg:basis-[45%]"
+            <Accordion type="single" defaultValue="suggestions" collapsible>
+                <AccordionItem value="suggestions" className="border-0">
+                    <AccordionTrigger className="py-3 text-sm font-medium tracking-wide text-primary-foreground/80 hover:text-primary-foreground hover:no-underline px-0 [&>svg]:text-primary-foreground/60">
+                        You might also like
+                    </AccordionTrigger>
+                    <AccordionContent className="pb-4 sm:pb-6">
+                        {/* Carousel with navigation controls for desktop users */}
+                        <div className="relative">
+                            <Carousel
+                                opts={{
+                                    align: "start",
+                                    loop: true,
+                                    dragFree: true,
+                                    skipSnaps: false
+                                }}
+                                className="w-full"
                             >
-                                <ProductItem
-                                    product={product}
-                                    loading="lazy"
-                                    variant="card"
-                                    compactMode={true}
-                                    showBadges={false}
-                                    showQuickAdd={true}
-                                    showWishlist={true}
-                                    darkContext={true}
-                                    skipCartOpen={true}
-                                />
-                            </CarouselItem>
-                        ))}
-                    </CarouselContent>
+                                <CarouselContent className="-ml-2 md:-ml-3">
+                                    {shuffledProducts.map(product => (
+                                        <CarouselItem
+                                            key={product.id}
+                                            className="pl-2 md:pl-3 basis-[70%] sm:basis-[55%] lg:basis-[45%]"
+                                        >
+                                            <ProductItem
+                                                product={product}
+                                                loading="lazy"
+                                                variant="card"
+                                                compactMode={true}
+                                                showBadges={false}
+                                                showQuickAdd={true}
+                                                showWishlist={true}
+                                                darkContext={true}
+                                                skipCartOpen={true}
+                                            />
+                                        </CarouselItem>
+                                    ))}
+                                </CarouselContent>
 
-                    {/* Navigation arrows - hidden on mobile, shown on tablet+ */}
-                    {/* Custom styling to fit within aside drawer constraints
-                         WCAG Compliance:
-                         - Size: 40px (size-10) → 44px (md:size-11) meets minimum touch target (WCAG 2.5.5)
-                         - Contrast: primary-foreground (#fff) on primary/90 = ~13:1 (WCAG AAA) ✓
-                         - Icons: 3:1 minimum for UI components (WCAG 1.4.11) - actual: ~13:1 ✓
-                         - Focus ring: Inherits from carousel component (14.68:1 contrast) ✓
-                    */}
-                    <CarouselPrevious
-                        className="left-0 sm:left-1 bg-primary/90 hover:bg-primary text-primary-foreground border-0 size-10 md:size-11"
-                        aria-label="Previous products"
-                    />
-                    <CarouselNext
-                        className="right-0 sm:right-1 bg-primary/90 hover:bg-primary text-primary-foreground border-0 size-10 md:size-11"
-                        aria-label="Next products"
-                    />
-                </Carousel>
-            </div>
+                                {/* Navigation arrows - hidden on mobile, shown on tablet+ */}
+                                {/* Custom styling to fit within aside drawer constraints
+                                     WCAG Compliance:
+                                     - Size: 40px (size-10) → 44px (md:size-11) meets minimum touch target (WCAG 2.5.5)
+                                     - Contrast: primary-foreground (#fff) on primary/90 = ~13:1 (WCAG AAA) ✓
+                                     - Icons: 3:1 minimum for UI components (WCAG 1.4.11) - actual: ~13:1 ✓
+                                     - Focus ring: Inherits from carousel component (14.68:1 contrast) ✓
+                                */}
+                                <CarouselPrevious
+                                    className="left-0 sm:left-1 bg-primary/90 hover:bg-primary text-primary-foreground border-0 size-10 md:size-11"
+                                    aria-label="Previous products"
+                                />
+                                <CarouselNext
+                                    className="right-0 sm:right-1 bg-primary/90 hover:bg-primary text-primary-foreground border-0 size-10 md:size-11"
+                                    aria-label="Next products"
+                                />
+                            </Carousel>
+                        </div>
+                    </AccordionContent>
+                </AccordionItem>
+            </Accordion>
         </section>
     );
 }

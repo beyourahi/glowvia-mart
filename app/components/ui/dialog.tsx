@@ -83,7 +83,7 @@ function DialogOverlay({className, ...props}: React.ComponentProps<typeof Dialog
         <DialogPrimitive.Overlay
             data-slot="dialog-overlay"
             className={cn(
-                "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-200 bg-overlay-dark backdrop-blur-md",
+                "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-20000 bg-overlay-dark backdrop-blur-md",
                 className
             )}
             {...props}
@@ -113,7 +113,7 @@ function DialogContent({
                 data-slot="dialog-content"
                 className={cn(
                     // Base styling and positioning
-                    "bg-background fixed top-[50%] left-[50%] z-200 translate-x-[-50%] translate-y-[-50%]",
+                    "bg-background fixed top-[50%] left-[50%] z-20000 translate-x-[-50%] translate-y-[-50%]",
                     // Sizing with responsive max-width and max-height for scrollable content
                     "grid w-full gap-4 rounded-lg border p-4 sm:p-6 shadow-lg",
                     "max-w-[calc(100%-1.5rem)] sm:max-w-[calc(100%-2rem)] md:max-w-lg",

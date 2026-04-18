@@ -51,6 +51,7 @@
  * - useNetworkStatus - Offline detection
  */
 
+import {useState, useEffect} from "react";
 import {type FetcherWithComponents} from "react-router";
 import {CartForm, type OptimisticCartLineInput} from "@shopify/hydrogen";
 import type {MoneyV2} from "@shopify/hydrogen/storefront-api-types";
@@ -84,19 +85,30 @@ export function AddToCartButton({
     const isOnSale = compareAtPrice && price && parseFloat(compareAtPrice.amount) > parseFloat(price.amount);
     const {isOnline} = useNetworkStatus();
 
+    // Reset fetcher loading state on bfcache restore (back navigation from checkout).
+    const [forceIdle, setForceIdle] = useState(false);
+    useEffect(() => {
+        const onPageShow = (e: PageTransitionEvent) => {
+            if (e.persisted) setForceIdle(true);
+        };
+        window.addEventListener("pageshow", onPageShow);
+        return () => window.removeEventListener("pageshow", onPageShow);
+    }, []);
+
     return (
         <div className="w-full space-y-1.5">
             <CartForm fetcherKey="cart-mutation" route="/cart" inputs={{lines}} action={CartForm.ACTIONS.LinesAdd}>
                 {(fetcher: FetcherWithComponents<any>) => {
-                    // Disable if: explicitly disabled, fetching, OR offline
-                    const isDisabled = disabled ?? (fetcher.state !== "idle" || !isOnline);
+                    // Disable if: explicitly disabled, fetching, OR offline.
+                    // forceIdle overrides a bfcache-frozen fetcher state on back navigation.
+                    const isDisabled = disabled ?? ((!forceIdle && fetcher.state !== "idle") || !isOnline);
                     return (
                         <>
                             <input name="analytics" type="hidden" value={JSON.stringify(analytics)} />
                             <Button
                                 type="submit"
                                 variant="outline"
-                                onClick={onClick}
+                                onClick={() => { setForceIdle(false); onClick?.(); }}
                                 disabled={isDisabled}
                                 className={cn(
                                     "w-full min-h-10 justify-between gap-4 py-1.5 text-base sm:text-lg",

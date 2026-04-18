@@ -30,6 +30,13 @@ import type {ChangelogEntry} from "~/lib/types/changelog";
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
         date: "2026-04-18",
+        headline: "Quick Add dialog now appears correctly over the cart panel",
+        summary:
+            "Clicking "Get it now" on a suggested product while the cart is open now shows the variant picker on top of the cart panel, as expected. Previously it rendered behind the cart, making it impossible to interact with.",
+        category: "Fix"
+    },
+    {
+        date: "2026-04-18",
         headline: "Hover effects disabled on touch — smoother mobile experience",
         summary:
             "On phones and tablets, hover animations no longer trigger on tap — eliminating ghost hover states and reducing unnecessary style recalculation. Content that was previously only visible on hover (gallery overlays, expand buttons) is now always visible on touch screens.",

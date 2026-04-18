@@ -55,8 +55,8 @@ const Toaster = ({...props}: ToasterProps) => {
                     "--normal-text": "var(--popover-foreground)",
                     "--normal-border": "var(--border)",
                     "--border-radius": "var(--radius)",
-                    // Ensure toasts appear above Sheet/Dialog overlays (z-10000)
-                    "--z-index": "10001"
+                    // Ensure toasts appear above Sheet (z-10000) and Dialog (z-20000) overlays
+                    "--z-index": "20001"
                 } as React.CSSProperties
             }
             {...props}

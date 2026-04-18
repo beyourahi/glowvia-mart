@@ -49,7 +49,7 @@
  * @see {@link https://shopify.dev/docs/api/hydrogen/2024-01/components/cartform}
  */
 
-import {useState} from "react";
+import {useState, useEffect} from "react";
 import {Link, useNavigate, useLocation} from "react-router";
 import {CartForm, type MappedProductOptions, type OptimisticCartLineInput} from "@shopify/hydrogen";
 import type {FetcherWithComponents} from "react-router";
@@ -121,6 +121,16 @@ export function ProductHeroMobile({
     const {search} = useLocation();
     const {open} = useAside();
     const [quantity, setQuantity] = useState(1);
+
+    // Reset fetcher loading state on bfcache restore (back navigation from checkout).
+    const [forceIdle, setForceIdle] = useState(false);
+    useEffect(() => {
+        const onPageShow = (e: PageTransitionEvent) => {
+            if (e.persisted) setForceIdle(true);
+        };
+        window.addEventListener("pageshow", onPageShow);
+        return () => window.removeEventListener("pageshow", onPageShow);
+    }, []);
 
     // Filter options to only show available variants
     const filteredOptions = productOptions
@@ -292,12 +302,12 @@ export function ProductHeroMobile({
                             !selectedVariant ||
                             !selectedVariant.availableForSale ||
                             (isSubscriptionMode && !selectedSellingPlan) ||
-                            fetcher.state !== "idle";
+                            (!forceIdle && fetcher.state !== "idle");
 
                         return (
                             <button
                                 type="submit"
-                                onClick={() => open("cart")}
+                                onClick={() => { setForceIdle(false); open("cart"); }}
                                 disabled={isDisabled}
                                 className={cn(
                                     "w-full min-h-14 inline-flex select-none items-center justify-between gap-4 rounded-full bg-primary-foreground px-4 py-3 text-lg font-medium text-primary sleek",

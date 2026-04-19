@@ -72,7 +72,6 @@ import {WheelGesturesPlugin} from "embla-carousel-wheel-gestures";
 import {Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext} from "~/components/ui/carousel";
 import {Skeleton} from "~/components/ui/skeleton";
 import {cn} from "~/lib/utils";
-import {Accordion, AccordionContent, AccordionItem, AccordionTrigger} from "~/components/ui/accordion";
 import {ProductItem} from "~/components/ProductItem";
 import type {CartSuggestionProductFragment} from "storefrontapi.generated";
 
@@ -352,66 +351,60 @@ function CartSuggestions({products, layout}: CartSuggestionsProps) {
             }}
             aria-label="Product suggestions"
         >
-            <Accordion type="single" defaultValue="suggestions" collapsible>
-                <AccordionItem value="suggestions" className="border-0">
-                    <AccordionTrigger className="py-3 text-sm font-medium tracking-wide text-primary-foreground/80 hover:text-primary-foreground hover:no-underline px-0 [&>svg]:text-primary-foreground/60">
-                        You might also like
-                    </AccordionTrigger>
-                    <AccordionContent className="pb-4 sm:pb-6">
-                        {/* Carousel with navigation controls for desktop users */}
-                        <div className="relative">
-                            <Carousel
-                                opts={{
-                                    align: "start",
-                                    loop: true,
-                                    dragFree: false,
-                                    skipSnaps: false
-                                }}
-                                plugins={[WheelGesturesPlugin({forceWheelAxis: "x"})]}
-                                className="w-full"
+            <p className="py-3 text-sm font-medium tracking-wide text-primary-foreground/80 px-0">
+                You might also like
+            </p>
+            {/* Carousel with navigation controls for desktop users */}
+            <div className="relative">
+                <Carousel
+                    opts={{
+                        align: "start",
+                        loop: true,
+                        dragFree: false,
+                        skipSnaps: false
+                    }}
+                    plugins={[WheelGesturesPlugin({forceWheelAxis: "x"})]}
+                    className="w-full"
+                >
+                    <CarouselContent className="-ml-2 md:-ml-3">
+                        {shuffledProducts.map(product => (
+                            <CarouselItem
+                                key={product.id}
+                                className="pl-2 md:pl-3 basis-[56%] sm:basis-[44%] lg:basis-[38%] xl:basis-[35%]"
                             >
-                                <CarouselContent className="-ml-2 md:-ml-3">
-                                    {shuffledProducts.map(product => (
-                                        <CarouselItem
-                                            key={product.id}
-                                            className="pl-2 md:pl-3 basis-[56%] sm:basis-[44%] lg:basis-[38%] xl:basis-[35%]"
-                                        >
-                                            <ProductItem
-                                                product={product}
-                                                loading="lazy"
-                                                variant="card"
-                                                compactMode={true}
-                                                showBadges={false}
-                                                showQuickAdd={true}
-                                                showWishlist={true}
-                                                darkContext={true}
-                                                skipCartOpen={true}
-                                            />
-                                        </CarouselItem>
-                                    ))}
-                                </CarouselContent>
+                                <ProductItem
+                                    product={product}
+                                    loading="lazy"
+                                    variant="card"
+                                    compactMode={true}
+                                    showBadges={false}
+                                    showQuickAdd={true}
+                                    showWishlist={true}
+                                    darkContext={true}
+                                    skipCartOpen={true}
+                                />
+                            </CarouselItem>
+                        ))}
+                    </CarouselContent>
 
-                                {/* Navigation arrows - hidden on mobile, shown on tablet+ */}
-                                {/* Custom styling to fit within aside drawer constraints
-                                     WCAG Compliance:
-                                     - Size: 40px (size-10) → 44px (md:size-11) meets minimum touch target (WCAG 2.5.5)
-                                     - Contrast: primary-foreground (#fff) on primary/90 = ~13:1 (WCAG AAA) ✓
-                                     - Icons: 3:1 minimum for UI components (WCAG 1.4.11) - actual: ~13:1 ✓
-                                     - Focus ring: Inherits from carousel component (14.68:1 contrast) ✓
-                                */}
-                                <CarouselPrevious
-                                    className="left-0 sm:left-1 bg-primary/90 hover:bg-primary text-primary-foreground border-0 size-10 md:size-11"
-                                    aria-label="Previous products"
-                                />
-                                <CarouselNext
-                                    className="right-0 sm:right-1 bg-primary/90 hover:bg-primary text-primary-foreground border-0 size-10 md:size-11"
-                                    aria-label="Next products"
-                                />
-                            </Carousel>
-                        </div>
-                    </AccordionContent>
-                </AccordionItem>
-            </Accordion>
+                    {/* Navigation arrows - hidden on mobile, shown on tablet+ */}
+                    {/* Custom styling to fit within aside drawer constraints
+                         WCAG Compliance:
+                         - Size: 40px (size-10) → 44px (md:size-11) meets minimum touch target (WCAG 2.5.5)
+                         - Contrast: primary-foreground (#fff) on primary/90 = ~13:1 (WCAG AAA) ✓
+                         - Icons: 3:1 minimum for UI components (WCAG 1.4.11) - actual: ~13:1 ✓
+                         - Focus ring: Inherits from carousel component (14.68:1 contrast) ✓
+                    */}
+                    <CarouselPrevious
+                        className="left-0 sm:left-1 bg-primary/90 hover:bg-primary text-primary-foreground border-0 size-10 md:size-11"
+                        aria-label="Previous products"
+                    />
+                    <CarouselNext
+                        className="right-0 sm:right-1 bg-primary/90 hover:bg-primary text-primary-foreground border-0 size-10 md:size-11"
+                        aria-label="Next products"
+                    />
+                </Carousel>
+            </div>
         </section>
     );
 }

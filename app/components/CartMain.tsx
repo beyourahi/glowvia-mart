@@ -57,7 +57,7 @@
  * - root.tsx - Provides cartSuggestions data
  */
 
-import {Suspense, useCallback} from "react";
+import {Suspense, useCallback, useMemo} from "react";
 import {useOptimisticCart, Image} from "@shopify/hydrogen";
 import {ShoppingCart, Sparkles} from "lucide-react";
 import {Button} from "~/components/ui/button";
@@ -331,8 +331,29 @@ interface CartSuggestionsProps {
  * - Screen reader labels on navigation buttons
  * - Touch targets meet 44px minimum (WCAG 2.5.5)
  */
+const EMPTY_CART_HEADINGS = [
+    "You might like these",
+    "Discover something you'll love",
+    "Hand-picked just for you",
+    "Something caught your eye?",
+] as const;
+
+const POPULATED_CART_HEADINGS = [
+    "Pairs well with your picks",
+    "Complete the look",
+    "Others also loved",
+    "Goes great with your choice",
+    "You may also want",
+] as const;
+
 function CartSuggestions({products, layout, cartLines}: CartSuggestionsProps) {
     const {close} = useAside();
+
+    const isEmpty = cartLines.length === 0;
+    const suggestionsHeading = useMemo(() => {
+        const pool = isEmpty ? EMPTY_CART_HEADINGS : POPULATED_CART_HEADINGS;
+        return pool[Math.floor(Math.random() * pool.length)];
+    }, [isEmpty]);
 
     // Close the aside when any product link is clicked — stable so onClickCapture doesn't recreate.
     // Declared before any conditional return to satisfy Rules of Hooks.
@@ -370,7 +391,7 @@ function CartSuggestions({products, layout, cartLines}: CartSuggestionsProps) {
             <div className="flex items-center gap-2 py-3 px-0">
                 <Sparkles className="size-3.5 shrink-0 text-primary-foreground/50" />
                 <p className="text-sm font-semibold tracking-wide text-primary-foreground">
-                    You might also like
+                    {suggestionsHeading}
                 </p>
             </div>
             {/* Carousel with navigation controls for desktop users */}

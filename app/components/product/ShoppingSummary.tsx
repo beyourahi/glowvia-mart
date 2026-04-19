@@ -71,7 +71,7 @@ const SummaryContent = ({
     const hasExistingCart = cartItemCount > 0;
     const newCartTotal = cartTotalAmount + totalPrice;
 
-    const {primary, secondary} = parseProductTitle(product.title);
+    const {primary} = parseProductTitle(product.title);
 
     return (
         <div className="space-y-1.5 sm:space-y-2">
@@ -89,9 +89,6 @@ const SummaryContent = ({
             <div className="flex items-start justify-between gap-3 py-0.5">
                 <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium text-foreground leading-snug">{primary}</p>
-                    {secondary && (
-                        <p className="mt-0.5 truncate text-xs text-muted-foreground">{secondary}</p>
-                    )}
                     <p className="mt-1 text-xs text-muted-foreground">Qty {quantity}</p>
                 </div>
                 <div className="flex shrink-0 flex-col items-end gap-0.5">

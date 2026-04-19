@@ -163,7 +163,13 @@ export function CartMain({layout, cart: originalCart, isLoggedIn, hasStoreCredit
                 {rootData?.cartSuggestions && (
                     <Suspense fallback={<CartSuggestionsSkeleton />}>
                         <Await resolve={rootData.cartSuggestions}>
-                            {products => <CartSuggestions products={products} layout={layout} />}
+                            {products => (
+                                <CartSuggestions
+                                    products={products}
+                                    layout={layout}
+                                    cartLines={cart?.lines?.nodes ?? []}
+                                />
+                            )}
                         </Await>
                     </Suspense>
                 )}
@@ -294,6 +300,7 @@ function shuffleArray<T extends {id: string}>(array: T[]): T[] {
 interface CartSuggestionsProps {
     products: CartSuggestionProductFragment[] | null;
     layout: CartLayout;
+    cartLines: Array<{merchandise: {product: {id: string}}}>;
 }
 
 /**
@@ -324,7 +331,7 @@ interface CartSuggestionsProps {
  * - Screen reader labels on navigation buttons
  * - Touch targets meet 44px minimum (WCAG 2.5.5)
  */
-function CartSuggestions({products, layout}: CartSuggestionsProps) {
+function CartSuggestions({products, layout, cartLines}: CartSuggestionsProps) {
     const {close} = useAside();
 
     // Close the aside when any product link is clicked — stable so onClickCapture doesn't recreate.
@@ -333,8 +340,17 @@ function CartSuggestions({products, layout}: CartSuggestionsProps) {
         close();
     }, [close]);
 
-    // Shuffle products deterministically (consistent ordering across renders)
-    const shuffledProducts = !products || products.length === 0 ? [] : shuffleArray(products).slice(0, 8);
+    // Exclude products already in cart — match on product.id (not variant.id) because
+    // suggestions only fetch variants(first:1), so variant-level matching is unreliable.
+    const cartProductIds = new Set(cartLines.map(line => line.merchandise.product.id));
+
+    // Filter before slicing so we still pull up to 8 non-cart items from the full 16-product pool.
+    const shuffledProducts =
+        !products || products.length === 0
+            ? []
+            : shuffleArray(products)
+                  .filter(p => !cartProductIds.has(p.id))
+                  .slice(0, 8);
 
     if (shuffledProducts.length === 0) return null;
 

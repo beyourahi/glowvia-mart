@@ -29,6 +29,13 @@ import type {ChangelogEntry} from "~/lib/types/changelog";
 // Newest entries at the top. Add new entries here in the same commit that ships the change.
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
+        date: "2026-04-19",
+        category: "Improvement",
+        headline: "Cart suggestions no longer show products already in your bag",
+        summary:
+            "The 'You might also like' carousel now hides any product you've already added to your cart — instantly and without a page refresh. This keeps suggestions fresh and relevant as you shop."
+    },
+    {
         id: "trackpad-horizontal-scroll-carousels",
         date: "2026-04-19",
         version: "1.x",

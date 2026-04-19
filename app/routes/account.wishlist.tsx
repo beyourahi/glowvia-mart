@@ -66,6 +66,7 @@ import {AnimatedSection} from "~/components/AnimatedSection";
 import {useScrollLock} from "~/hooks/useScrollLock";
 import {toast} from "sonner";
 import {cn} from "~/lib/utils";
+import {Spinner} from "~/components/ui/spinner";
 import {buildCanonicalUrl, getSiteUrlFromMatches} from "~/lib/seo";
 import {useScreenSize} from "~/hooks/useScreenSize";
 import {
@@ -836,9 +837,16 @@ function AddAllToCartButtonContent({
     }, [fetcher.state, fetcher.data, lines.length, hasShownToast, setHasShownToast]);
 
     return (
-        <Button type="submit" disabled={isAdding} size="sm" className="gap-2 min-h-10">
-            {isAdding ? <Loader2 className="size-4 animate-spin" /> : <ShoppingCart className="size-4" />}
-            {isAdding ? "Adding..." : "Add All"}
+        <Button type="submit" disabled={isAdding} size="sm" className="relative gap-2 min-h-10">
+            <span className={cn("flex items-center gap-2", isAdding && "invisible")}>
+                <ShoppingCart className="size-4" />
+                <span>Add All</span>
+            </span>
+            {isAdding && (
+                <span className="absolute inset-0 flex items-center justify-center">
+                    <Spinner aria-hidden="true" />
+                </span>
+            )}
         </Button>
     );
 }

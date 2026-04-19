@@ -98,6 +98,7 @@ import {Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription, EmptyConte
 import {useEffect, useRef, useState} from "react";
 import {toast} from "sonner";
 import {useScrollLock} from "~/hooks/useScrollLock";
+import {Spinner} from "~/components/ui/spinner";
 
 // =============================================================================
 // TYPES
@@ -1315,14 +1316,15 @@ function AddressFormModal({
                             <Button type="button" variant="outline" onClick={onClose} className="w-full sm:w-auto">
                                 Cancel
                             </Button>
-                            <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
-                                {isSubmitting
-                                    ? isCreate
-                                        ? "Creating..."
-                                        : "Saving..."
-                                    : isCreate
-                                      ? "Create Address"
-                                      : "Save Changes"}
+                            <Button type="submit" disabled={isSubmitting} className="relative w-full sm:w-auto">
+                                <span className={isSubmitting ? "invisible" : ""}>
+                                    {isCreate ? "Create Address" : "Save Changes"}
+                                </span>
+                                {isSubmitting && (
+                                    <span className="absolute inset-0 flex items-center justify-center">
+                                        <Spinner aria-hidden="true" />
+                                    </span>
+                                )}
                             </Button>
                         </div>
                     </DialogFooter>

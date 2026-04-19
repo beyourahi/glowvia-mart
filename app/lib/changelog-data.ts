@@ -31,6 +31,12 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
         date: "2026-04-19",
         category: "Improvement",
+        headline: "Button loading states now show a clean spinner instead of loading text",
+        summary: "All action buttons (newsletter, address form, wishlist, return request) now display a consistent spinner during loading — no more text swapping between states. Button dimensions stay stable throughout."
+    },
+    {
+        date: "2026-04-19",
+        category: "Improvement",
         headline: "Cart suggestions no longer show products already in your bag",
         summary:
             "The 'You might also like' carousel now hides any product you've already added to your cart — instantly and without a page refresh. This keeps suggestions fresh and relevant as you shop."

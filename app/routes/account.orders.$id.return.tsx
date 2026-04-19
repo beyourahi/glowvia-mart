@@ -49,6 +49,7 @@ import {Checkbox} from "~/components/ui/checkbox";
 import {Accordion, AccordionContent, AccordionItem, AccordionTrigger} from "~/components/ui/accordion";
 import {Clock, CheckCircle, XCircle, Info, RotateCcwIcon, ArrowRightIcon, PackageSearchIcon} from "lucide-react";
 import {AnimatedSection} from "~/components/AnimatedSection";
+import {Spinner} from "~/components/ui/spinner";
 
 export const meta: Route.MetaFunction = ({data}) => {
     return [{title: `Return Request - Order ${data?.order?.name}`}];
@@ -302,8 +303,13 @@ export default function OrderReturnRoute() {
                     </div>
 
                     <div className="mt-6 flex gap-3">
-                        <Button type="submit" size="lg" disabled={isSubmitting} className="h-11 motion-interactive">
-                            {isSubmitting ? "Submitting..." : "Submit Return Request"}
+                        <Button type="submit" size="lg" disabled={isSubmitting} className="relative h-11 motion-interactive">
+                            <span className={isSubmitting ? "invisible" : ""}>Submit Return Request</span>
+                            {isSubmitting && (
+                                <span className="absolute inset-0 flex items-center justify-center">
+                                    <Spinner aria-hidden="true" />
+                                </span>
+                            )}
                         </Button>
                         <Button variant="outline" asChild className="h-11 motion-interactive">
                             <Link to="/account/orders">Cancel</Link>

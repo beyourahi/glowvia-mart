@@ -28,7 +28,8 @@ import {useFetcher} from "react-router";
 import {Input} from "~/components/ui/input";
 import {Button} from "~/components/ui/button";
 import {cn} from "~/lib/utils";
-import {ArrowRight, Check, Loader2} from "lucide-react";
+import {ArrowRight, Check} from "lucide-react";
+import {Spinner} from "~/components/ui/spinner";
 
 // ============================================================================
 // Types
@@ -153,23 +154,21 @@ export function NewsletterForm({variant = "footer", className}: NewsletterFormPr
                             type="submit"
                             disabled={isSubmitting || !email}
                             className={cn(
-                                "h-12 min-w-[140px] rounded-xl font-medium motion-interactive motion-press sleek",
+                                "relative h-12 min-w-[140px] rounded-xl font-medium motion-interactive motion-press sleek",
                                 isFooter
                                     ? "bg-primary-foreground text-primary hover:bg-primary-foreground/90"
                                     : "bg-primary text-primary-foreground hover:bg-primary/90",
                                 !email && "opacity-50 cursor-not-allowed"
                             )}
                         >
-                            {isSubmitting ? (
-                                <>
-                                    <Loader2 className="size-4 animate-spin" />
-                                    <span>Joining...</span>
-                                </>
-                            ) : (
-                                <>
-                                    <span>Subscribe</span>
-                                    <ArrowRight className="size-4" />
-                                </>
+                            <span className={cn("flex items-center gap-2", isSubmitting && "invisible")}>
+                                <span>Subscribe</span>
+                                <ArrowRight className="size-4" />
+                            </span>
+                            {isSubmitting && (
+                                <span className="absolute inset-0 flex items-center justify-center">
+                                    <Spinner aria-hidden="true" />
+                                </span>
                             )}
                         </Button>
                     </div>

@@ -30,6 +30,12 @@ import type {ChangelogEntry} from "~/lib/types/changelog";
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
         date: "2026-04-19",
+        category: "Fix",
+        headline: "Brand name size is now consistent across the site",
+        summary: "The store name in the navigation bar, the scroll animation that brings it up from the hero, and the full-screen menu header all now render at the same size at every screen width. Previously, the scroll animation would settle at a slightly different size than the nav bar, creating a subtle but visible jump."
+    },
+    {
+        date: "2026-04-19",
         category: "Improvement",
         headline: "Button loading states now show a clean spinner instead of loading text",
         summary: "All action buttons (newsletter, address form, wishlist, return request) now display a consistent spinner during loading — no more text swapping between states. Button dimensions stay stable throughout."

@@ -59,7 +59,7 @@
 
 import {Suspense, useCallback} from "react";
 import {useOptimisticCart, Image} from "@shopify/hydrogen";
-import {ShoppingCart} from "lucide-react";
+import {ShoppingCart, Sparkles} from "lucide-react";
 import {Button} from "~/components/ui/button";
 import {Await, Link, useRouteLoaderData} from "react-router";
 import type {CartLayout, CartMainProps} from "types";
@@ -367,9 +367,12 @@ function CartSuggestions({products, layout, cartLines}: CartSuggestionsProps) {
             }}
             aria-label="Product suggestions"
         >
-            <p className="py-3 text-sm font-medium tracking-wide text-primary-foreground/80 px-0">
-                You might also like
-            </p>
+            <div className="flex items-center gap-2 py-3 px-0">
+                <Sparkles className="size-3.5 shrink-0 text-primary-foreground/50" />
+                <p className="text-sm font-semibold tracking-wide text-primary-foreground">
+                    You might also like
+                </p>
+            </div>
             {/* Carousel with navigation controls for desktop users */}
             <div className="relative">
                 <Carousel

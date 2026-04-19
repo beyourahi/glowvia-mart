@@ -53,6 +53,7 @@ import {Button} from "~/components/ui/button";
 import {cn} from "~/lib/utils";
 import {useScrolled} from "~/lib/useScrolled";
 import {useSiteSettings} from "~/lib/site-content-context";
+import {BRAND_NAME_FONT_CLASS} from "~/lib/brand-name-sizes";
 
 const FALLBACK_HEADER_MENU = {
     id: "fallback-menu",
@@ -204,9 +205,8 @@ export function Header({header, cart}: HeaderProps) {
                         to="/"
                         prefetch="viewport"
                         className={cn(
-                            // Responsive logo sizing: text-sm on mobile to prevent overflow,
-                            // scales up to text-lg at sm, text-xl at md+
-                            "pointer-events-auto font-serif text-sm sm:text-lg md:text-xl uppercase tracking-wider motion-link hover:opacity-80 cursor-pointer whitespace-nowrap",
+                            // Responsive logo sizing — canonical token from brand-name-sizes.ts
+                            `pointer-events-auto font-serif ${BRAND_NAME_FONT_CLASS} uppercase tracking-wider motion-link hover:opacity-80 cursor-pointer whitespace-nowrap`,
                             // Dark background pages: always white
                             // Other pages: primary at scroll 0, white after scrolling
                             useLightText || isScrolled ? "text-light" : "text-primary"

@@ -34,6 +34,7 @@ import type {BrandAnimationContextValue, MeasuredPositions} from "types";
 import {useScrollProgress} from "~/lib/useScrollProgress";
 import {useSiteSettings} from "~/lib/site-content-context";
 import {calculateBrandAnimationEndY} from "~/lib/brand-animation-layout";
+import {BRAND_NAME_SIZES_PX, BRAND_NAME_SM_BREAKPOINT, BRAND_NAME_MD_BREAKPOINT} from "~/lib/brand-name-sizes";
 
 // ============================================================================
 // Constants
@@ -58,9 +59,10 @@ const DEFAULT_HEADER_HEIGHT = 68; // 4.25rem = 68px (matches --header-height in 
 const DEFAULT_ANNOUNCEMENT_GAP = 8; // Matches --announcement-gap in tailwind.css (8px)
 const HEADER_PADDING_TOP_SM = 8; // sm:pt-2 (0.5rem = 8px) - only applied at sm+ breakpoint
 const HEADER_PADDING_TOP_MOBILE = 0; // No pt-* on mobile when scrolled (Header.tsx: "px-2 sm:px-3 sm:pt-2")
-const HEADER_TEXT_SIZE_MOBILE = 16; // text-base (1rem) on mobile — matches Header.tsx brand NavLink
-const HEADER_TEXT_SIZE_SM = 20; // text-xl (1.25rem) on sm+ screens — matches Header.tsx md:text-xl
-const SM_BREAKPOINT = 640; // Tailwind sm breakpoint
+// Brand name end-state sizes — imported from shared token (brand-name-sizes.ts).
+// These must stay in sync with the canonical values defined there.
+const SM_BREAKPOINT = BRAND_NAME_SM_BREAKPOINT; // 640px
+const MD_BREAKPOINT = BRAND_NAME_MD_BREAKPOINT; // 768px
 
 // Animation damping - controls how quickly the visual progress catches up to scroll progress
 // Lower values = slower, more decoupled animation (0.02-0.05 for very slow, 0.1-0.2 for moderate)
@@ -301,8 +303,13 @@ export function AnimatedBrandText() {
             // End position: centered in header
             const viewportWidth = window.innerWidth;
 
-            // Calculate scale to reach target header size (responsive to match Header.tsx text-2xl sm:text-3xl)
-            const targetTextSize = viewportWidth < SM_BREAKPOINT ? HEADER_TEXT_SIZE_MOBILE : HEADER_TEXT_SIZE_SM;
+            // Scale end state matches canonical brand name sizes from brand-name-sizes.ts
+            const targetTextSize =
+                viewportWidth < SM_BREAKPOINT
+                    ? BRAND_NAME_SIZES_PX.mobile // 14px — text-sm
+                    : viewportWidth < MD_BREAKPOINT
+                        ? BRAND_NAME_SIZES_PX.sm  // 18px — text-lg
+                        : BRAND_NAME_SIZES_PX.md; // 20px — text-xl
             const endScale = targetTextSize / fontSize;
 
             const scaledWidth = startWidth * endScale;

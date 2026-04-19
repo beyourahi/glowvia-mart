@@ -71,6 +71,7 @@ import {usePointerCapabilities} from "~/hooks/usePointerCapabilities";
 import {useScrollLock} from "~/hooks/useScrollLock";
 import {useSiteSettings} from "~/lib/site-content-context";
 import {OpenInAppButton} from "~/components/pwa/OpenInAppButton";
+import {BRAND_NAME_FONT_CLASS} from "~/lib/brand-name-sizes";
 import type {MenuCollection} from "types";
 
 // ================================================================================
@@ -237,7 +238,7 @@ export function FullScreenMenu({collections, totalCollections, totalProductCount
                             to="/"
                             prefetch="viewport"
                             onClick={close}
-                            className="motion-link absolute left-1/2 -translate-x-1/2 font-serif text-base sm:text-2xl uppercase tracking-wider text-primary whitespace-nowrap cursor-pointer"
+                            className={`motion-link absolute left-1/2 -translate-x-1/2 font-serif ${BRAND_NAME_FONT_CLASS} uppercase tracking-wider text-primary whitespace-nowrap cursor-pointer`}
                         >
                             {brandName}
                         </Link>

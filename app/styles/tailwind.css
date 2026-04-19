@@ -46,9 +46,6 @@ body {
    - UI components/graphical objects: 3:1 minimum (WCAG 2.1 AA)
    - Enhanced (AAA goal): 7:1 for normal text
 
-   OKLCH to sRGB Conversion Reference:
-   - oklch(0 0 0) → #000000 (black)
-   - oklch(1 0 0) → #ffffff (white)
    ========================================== */
 
 :root {
@@ -362,7 +359,6 @@ body {
     }
 }
 
-/* Responsive marquee animation duration */
 :root {
     --marquee-duration: 60s;
 }
@@ -420,7 +416,6 @@ body {
     }
 }
 
-/* Gentle float animation — subtle vertical drift for interactive cards */
 @keyframes float-gentle {
     0%,
     100% {
@@ -436,7 +431,6 @@ body {
    GPU-accelerated, accessible animations
    ========================================== */
 
-/* Product fade-in animation - elegant entry with subtle upward motion */
 @keyframes product-fade-in {
     from {
         opacity: 0;
@@ -452,7 +446,6 @@ body {
     animation: product-fade-in 450ms cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
-/* Slide up fade - for sections entering viewport */
 @keyframes slide-up-fade {
     from {
         opacity: 0;
@@ -468,7 +461,6 @@ body {
     animation: slide-up-fade 500ms cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
-/* Slide down fade - for dropdowns and reveals from top */
 @keyframes slide-down-fade {
     from {
         opacity: 0;
@@ -484,7 +476,6 @@ body {
     animation: slide-down-fade 350ms cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
-/* Slide left fade - for side panels entering from right */
 @keyframes slide-left-fade {
     from {
         opacity: 0;
@@ -500,7 +491,6 @@ body {
     animation: slide-left-fade 400ms cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
-/* Slide right fade - for side panels entering from left */
 @keyframes slide-right-fade {
     from {
         opacity: 0;
@@ -516,7 +506,6 @@ body {
     animation: slide-right-fade 400ms cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
-/* Scale fade - for modals, popups, focus effects */
 @keyframes scale-fade-in {
     from {
         opacity: 0;
@@ -532,7 +521,6 @@ body {
     animation: scale-fade-in 300ms cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
-/* Blur fade - for smooth content loading transitions */
 @keyframes blur-fade-in {
     from {
         opacity: 0;
@@ -548,7 +536,6 @@ body {
     animation: blur-fade-in 400ms cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
-/* Simple fade - for subtle reveals */
 @keyframes fade-in-simple {
     from {
         opacity: 0;
@@ -562,7 +549,6 @@ body {
     animation: fade-in-simple 300ms cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
-/* Hero text reveal - for large headings */
 @keyframes hero-text-reveal {
     from {
         opacity: 0;
@@ -580,7 +566,6 @@ body {
     animation: hero-text-reveal 600ms cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
-/* Section reveal - for scroll-triggered sections */
 @keyframes section-reveal {
     from {
         opacity: 0;
@@ -596,7 +581,6 @@ body {
     animation: section-reveal 600ms cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
-/* Cart item enter animation */
 @keyframes cart-item-enter {
     from {
         opacity: 0;
@@ -612,7 +596,6 @@ body {
     animation: cart-item-enter 350ms cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
-/* Success pulse */
 @keyframes success-pulse {
     0% {
         box-shadow: 0 0 0 0 var(--success);
@@ -688,7 +671,6 @@ body {
     animation: heart-glow 2s ease-in-out infinite;
 }
 
-/* Badge bounce entrance - playful entrance animation */
 @keyframes badge-bounce-in {
     0% {
         opacity: 0;
@@ -1608,7 +1590,6 @@ button:active {
     hyphens: auto;
 }
 
-/* Headings */
 .policy-content h1,
 .policy-content h2,
 .policy-content h3,
@@ -1650,7 +1631,6 @@ button:active {
     margin-top: 0;
 }
 
-/* Paragraphs */
 .policy-content p {
     @apply text-foreground;
     margin-bottom: 1.5rem;
@@ -1662,7 +1642,6 @@ button:active {
     line-height: 1.7;
 }
 
-/* Links */
 .policy-content a {
     @apply text-primary font-medium;
     text-decoration: underline;
@@ -1678,7 +1657,6 @@ button:active {
     }
 }
 
-/* Lists */
 .policy-content ul,
 .policy-content ol {
     margin: 1.5rem 0;
@@ -1720,7 +1698,6 @@ button:active {
     @apply text-primary font-serif font-medium;
 }
 
-/* Nested lists */
 .policy-content ul ul,
 .policy-content ol ol,
 .policy-content ul ol,
@@ -1729,7 +1706,6 @@ button:active {
     margin-bottom: 0.75rem;
 }
 
-/* Blockquotes */
 .policy-content blockquote {
     @apply italic text-muted-foreground;
     margin: 2rem 0;
@@ -1747,7 +1723,6 @@ button:active {
     margin-bottom: 1rem;
 }
 
-/* Horizontal rules */
 .policy-content hr {
     @apply my-12;
     border: none;
@@ -1796,7 +1771,6 @@ button:active {
     border-bottom: none;
 }
 
-/* Code */
 .policy-content code {
     @apply bg-muted text-primary px-2 py-0.5 rounded text-sm font-mono;
 }
@@ -1809,7 +1783,6 @@ button:active {
     @apply bg-transparent p-0;
 }
 
-/* Images */
 .policy-content img {
     @apply rounded-lg my-6 max-w-full h-auto;
     box-shadow: var(--shadow-md);
@@ -1823,7 +1796,6 @@ button:active {
     @apply text-center text-sm text-muted-foreground mt-3 italic;
 }
 
-/* Strong and emphasis */
 .policy-content strong,
 .policy-content b {
     @apply font-semibold text-foreground;
@@ -1834,7 +1806,6 @@ button:active {
     @apply italic;
 }
 
-/* Definition lists */
 .policy-content dl {
     @apply my-6;
 }
@@ -1847,7 +1818,6 @@ button:active {
     @apply ml-4 text-foreground;
 }
 
-/* Addresses */
 .policy-content address {
     @apply not-italic my-4 leading-relaxed;
 }
@@ -1858,18 +1828,15 @@ button:active {
     @apply text-muted-foreground;
 }
 
-/* Abbreviations */
 .policy-content abbr[title] {
     @apply cursor-help;
     text-decoration: underline dotted;
 }
 
-/* Mark/highlight */
 .policy-content mark {
     @apply bg-accent/50 px-1 rounded;
 }
 
-/* Superscript and subscript */
 .policy-content sup,
 .policy-content sub {
     @apply text-xs;
@@ -1898,7 +1865,6 @@ button:active {
     @apply px-4;
 }
 
-/* Keyboard input */
 .policy-content kbd {
     @apply inline-block px-2 py-0.5 text-sm font-mono bg-muted border border-border rounded shadow-sm;
 }
@@ -1909,19 +1875,16 @@ button:active {
     @apply text-primary-foreground/85;
 }
 
-/* Body text - comfortable reading contrast */
 .policy-content-dark p,
 .policy-content-dark li,
 .policy-content-dark dd {
     @apply text-primary-foreground/85;
 }
 
-/* Lead paragraph - slightly more prominent */
 .policy-content-dark > p:first-of-type {
     @apply text-primary-foreground/90;
 }
 
-/* Headings - full contrast for hierarchy */
 .policy-content-dark h1,
 .policy-content-dark h2,
 .policy-content-dark h3,
@@ -1935,7 +1898,6 @@ button:active {
     @apply border-primary-foreground/20;
 }
 
-/* Links - stand out from body text */
 .policy-content-dark a {
     @apply text-primary-foreground underline;
 }
@@ -1946,7 +1908,6 @@ button:active {
     }
 }
 
-/* List markers - subtle */
 .policy-content-dark ul li::before {
     @apply bg-primary-foreground/60;
 }
@@ -1955,18 +1916,15 @@ button:active {
     @apply text-primary-foreground/60;
 }
 
-/* Blockquotes - slightly muted */
 .policy-content-dark blockquote {
     @apply text-primary-foreground/75 border-l-primary-foreground/40 bg-primary-foreground/5;
 }
 
-/* Strong/bold - full contrast to stand out */
 .policy-content-dark strong,
 .policy-content-dark b {
     @apply text-primary-foreground;
 }
 
-/* Code - distinct but readable */
 .policy-content-dark code {
     @apply bg-primary-foreground/10 text-primary-foreground/90;
 }
@@ -1975,12 +1933,10 @@ button:active {
     @apply bg-primary-foreground/5;
 }
 
-/* Dividers */
 .policy-content-dark hr {
     @apply bg-primary-foreground/15;
 }
 
-/* Tables */
 .policy-content-dark th {
     @apply text-primary-foreground border-b-primary-foreground/20;
 }
@@ -1999,18 +1955,15 @@ button:active {
     }
 }
 
-/* Secondary text - lowest in hierarchy */
 .policy-content-dark small,
 .policy-content-dark figcaption {
     @apply text-primary-foreground/50;
 }
 
-/* Definition lists */
 .policy-content-dark dt {
     @apply text-primary-foreground;
 }
 
-/* Details/summary */
 .policy-content-dark summary {
     @apply text-primary-foreground/90;
 }
@@ -2055,8 +2008,6 @@ button:active {
     color: oklch(0.15 0 0 / 0.8); /* foreground/80 */
 }
 
-/* -- Headings ---------------------------------------- */
-
 .article-content h2 {
     @apply font-serif text-xl sm:text-2xl md:text-3xl font-normal leading-snug text-primary;
     margin-top: 2.5rem;
@@ -2075,8 +2026,6 @@ button:active {
     margin-bottom: 0.5rem;
 }
 
-/* -- Paragraphs -------------------------------------- */
-
 .article-content p {
     color: oklch(0.15 0 0 / 0.8); /* foreground/80 */
     margin-bottom: 1.5rem;
@@ -2089,8 +2038,6 @@ button:active {
     color: oklch(0.15 0 0 / 0.7); /* foreground/70 - slightly lighter lead */
     line-height: 1.7;
 }
-
-/* -- Links ------------------------------------------- */
 
 .article-content a {
     @apply text-primary font-medium;
@@ -2108,8 +2055,6 @@ button:active {
     }
 }
 
-/* -- Blockquotes ------------------------------------- */
-
 .article-content blockquote {
     @apply italic text-muted-foreground;
     margin: 2rem 0;
@@ -2121,8 +2066,6 @@ button:active {
 .article-content blockquote p {
     margin-bottom: 0;
 }
-
-/* -- Lists ------------------------------------------- */
 
 .article-content ul {
     list-style: disc;
@@ -2148,14 +2091,10 @@ button:active {
     margin-bottom: 0.5rem;
 }
 
-/* -- Images ------------------------------------------ */
-
 .article-content img {
     @apply h-auto w-full rounded-xl;
     margin: 1.5rem 0 2rem;
 }
-
-/* -- Code -------------------------------------------- */
 
 .article-content code {
     @apply bg-muted px-1.5 py-0.5 rounded text-sm;
@@ -2172,8 +2111,6 @@ button:active {
     word-break: normal;
 }
 
-/* -- Strong / Emphasis ------------------------------- */
-
 .article-content strong {
     @apply text-foreground font-semibold;
 }
@@ -2182,16 +2119,12 @@ button:active {
     font-style: italic;
 }
 
-/* -- Horizontal Rules -------------------------------- */
-
 .article-content hr {
     margin: 2.5rem 0;
     border: none;
     height: 1px;
     background: linear-gradient(to right, transparent, var(--color-border) 20%, var(--color-border) 80%, transparent);
 }
-
-/* -- Tables ------------------------------------------ */
 
 .article-content table {
     @apply w-full border-collapse;

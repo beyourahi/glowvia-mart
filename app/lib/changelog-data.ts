@@ -30,6 +30,13 @@ import type {ChangelogEntry} from "~/lib/types/changelog";
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
         date: "2026-04-19",
+        headline: "Cart drawer no longer cuts off the checkout button on mobile",
+        summary:
+            "On mobile devices, the checkout button was occasionally pushed off-screen when product suggestions were visible in the cart. The cart drawer now correctly keeps the checkout button pinned at the bottom of the screen at all times, and product suggestions in an empty cart are now visible without needing to scroll.",
+        category: "Fix"
+    },
+    {
+        date: "2026-04-19",
         headline: "Sticky buy button now matches your store's color theme",
         summary:
             "The sticky \"Get it Now\" button that appears at the bottom of the screen on product pages now adapts to your store's color settings. On dark-themed stores it was previously showing as a plain white button — it now blends seamlessly with the rest of the page.",

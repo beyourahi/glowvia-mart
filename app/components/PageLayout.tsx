@@ -403,7 +403,7 @@ function CartSheet({
         <Sheet open={isOpen} onOpenChange={open => !open && close()}>
             <SheetContent
                 side="right"
-                className="flex w-full flex-col overflow-hidden border-0 max-w-md lg:max-w-lg xl:max-w-xl 2xl:max-w-2xl bg-primary pb-[max(1rem,env(safe-area-inset-bottom))] inset-0! rounded-none! sm:top-4! sm:bottom-[max(1rem,env(safe-area-inset-bottom))]! sm:right-0! sm:left-auto! sm:rounded-l-3xl!"
+                className="flex w-full flex-col overflow-hidden border-0 max-w-md lg:max-w-lg xl:max-w-xl 2xl:max-w-2xl bg-primary pb-[max(1rem,env(safe-area-inset-bottom))] inset-0! h-dvh! rounded-none! sm:top-4! sm:bottom-[max(1rem,env(safe-area-inset-bottom))]! sm:right-0! sm:left-auto! sm:h-auto! sm:rounded-l-3xl!"
                 hideCloseButton
             >
                 <SheetTitle className="sr-only">Shopping Cart</SheetTitle>

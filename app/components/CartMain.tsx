@@ -139,7 +139,7 @@ export function CartMain({layout, cart: originalCart, isLoggedIn, hasStoreCredit
 
     // Aside layout: fixed header, scrollable items, fixed summary at bottom
     return (
-        <div className="flex h-full flex-col">
+        <div className="flex flex-1 min-h-0 flex-col">
             {/* Fixed header - always visible in both empty and filled cart states */}
             <CartAsideHeader itemCount={cart?.totalQuantity ?? 0} />
 
@@ -239,7 +239,7 @@ function CartEmpty({hidden = false, layout}: {hidden: boolean; layout: CartLayou
 
     return (
         <div className="flex w-full flex-col">
-            <Empty className="border-0 py-8 sm:py-12 md:py-16">
+            <Empty className="border-0 py-8 sm:py-12 md:py-16 flex-none">
                 <EmptyHeader className="gap-3 sm:gap-4">
                     <EmptyMedia>
                         <ShoppingCart

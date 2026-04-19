@@ -77,7 +77,7 @@ Backend behavior, data flow, and Hydrogen conventions **must remain consistent**
 storefront_002/
 ├── app/
 │   ├── routes/              # 49 routes
-│   ├── components/          # 127 components
+│   ├── components/          # 130 components
 │   │   ├── ui/              # 27 shadcn
 │   │   ├── blog/            # 7 blog
 │   │   ├── changelog/       # 2 changelog
@@ -94,7 +94,7 @@ storefront_002/
 │   │   ├── product/         # Product data, variants, pricing
 │   │   ├── types/           # Shared type definitions
 │   │   └── fragments.ts     # GraphQL fragments
-│   ├── hooks/               # 12 hooks
+│   ├── hooks/               # 13 hooks
 │   ├── graphql/customer-account/  # 15 queries
 │   └── styles/tailwind.css  # v4 + animations
 ├── public/sw.js             # Workbox
@@ -334,7 +334,7 @@ Read all comments before editing. Update when changing code. Add for complex log
 
 **Color System**: `lib/color/` - OKLCH parsing, sRGB conversion, dual contrast (WCAG 2.1 + APCA), swatch borders, 500+ color names, `ensureContrastCompliance()`
 
-**Hooks** (12 in `hooks/`): useChangelogFilter, useInView, useNetworkStatus, usePointerCapabilities, usePwaAnalytics, usePwaInstall, useReadingProgress, useRecentSearches, useScreenSize, useScrollLock, useSearchKeyboard, useServiceWorkerUpdate. Additional scroll hooks in `lib/`: useScrolled, useScrollProgress
+**Hooks** (13 in `hooks/`): useChangelogFilter, useFooterClearance, useInView, useNetworkStatus, usePointerCapabilities, usePwaAnalytics, usePwaInstall, useReadingProgress, useRecentSearches, useScreenSize, useScrollLock, useSearchKeyboard, useServiceWorkerUpdate. Additional scroll hooks in `lib/`: useScrolled, useScrollProgress
 
 **Animations**: 23 `@keyframes` in `tailwind.css` - product (fade-in, image-hover), wishlist (heart-beat, heart-glow, burst-ring), hero (shimmer), GPU-accelerated, respects `prefers-reduced-motion`
 

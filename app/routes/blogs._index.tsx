@@ -48,6 +48,7 @@ import {ArticleCard, type ArticleCardData} from "~/components/blog/ArticleCard";
 import {ArticleHero} from "~/components/blog/ArticleHero";
 import {AnimatedSection} from "~/components/AnimatedSection";
 import {Button} from "~/components/ui/button";
+import {WheelGesturesPlugin} from "embla-carousel-wheel-gestures";
 import {Carousel, CarouselContent, CarouselItem} from "~/components/ui/carousel";
 import {cn} from "~/lib/utils";
 import {buildCanonicalUrl, getBrandNameFromMatches, getSiteUrlFromMatches} from "~/lib/seo";
@@ -288,6 +289,7 @@ function ArticleCarousel({articles, categoryHandle}: {articles: ArticleCardData[
                     align: "start",
                     loop: true
                 }}
+                plugins={[WheelGesturesPlugin({forceWheelAxis: "x"})]}
                 className="w-full"
             >
                 <CarouselContent className="-ml-3 sm:-ml-4 md:-ml-6">

@@ -24,6 +24,7 @@
 
 import {Link} from "react-router";
 import type {OrderHistoryProduct} from "~/graphql/customer-account/CustomerOrderHistoryQuery";
+import {WheelGesturesPlugin} from "embla-carousel-wheel-gestures";
 import {Carousel, CarouselContent, CarouselItem} from "~/components/ui/carousel";
 import {Skeleton} from "~/components/ui/skeleton";
 import {Card, CardContent} from "~/components/ui/card";
@@ -95,6 +96,7 @@ export function OrderHistorySection({products, loading = false}: OrderHistorySec
                         loop: true,
                         dragFree: true
                     }}
+                    plugins={[WheelGesturesPlugin({forceWheelAxis: "x"})]}
                     className="w-full"
                 >
                     <CarouselContent className="-ml-2 md:-ml-3">

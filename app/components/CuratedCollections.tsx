@@ -28,6 +28,7 @@ import {Tabs, TabsList, TabsTrigger, TabsContent} from "~/components/ui/tabs";
 import {ProductItem} from "~/components/ProductItem";
 import {Skeleton} from "~/components/ui/skeleton";
 import {Card, CardContent} from "~/components/ui/card";
+import {WheelGesturesPlugin} from "embla-carousel-wheel-gestures";
 import {Carousel, CarouselContent, CarouselItem} from "~/components/ui/carousel";
 
 export type {CuratedCollectionsData, CuratedTab};
@@ -92,6 +93,7 @@ export function CuratedCollections({collections}: CuratedCollectionsProps) {
                                                     loop: true,
                                                     dragFree: true
                                                 }}
+                                                plugins={[WheelGesturesPlugin({forceWheelAxis: "x"})]}
                                                 className="w-full"
                                             >
                                                 {/* pt-4 accommodates pin badge overflow (-top-2 to -top-2.5) */}

@@ -53,6 +53,7 @@ import {AuthRequiredFallback} from "~/components/AuthRequiredFallback";
 import {getOrderStatusVariant, formatOrderStatus} from "~/lib/order-status";
 import {Collapsible, CollapsibleContent, CollapsibleTrigger} from "~/components/ui/collapsible";
 import {Avatar, AvatarFallback} from "~/components/ui/avatar";
+import {WheelGesturesPlugin} from "embla-carousel-wheel-gestures";
 import {Carousel, CarouselContent, CarouselItem} from "~/components/ui/carousel";
 import {ProductItem} from "~/components/ProductItem";
 import {Money} from "~/components/Money";
@@ -1103,7 +1104,7 @@ function RecentlyViewedSection({
 
             <Carousel
                 opts={{align: "start", loop: true, dragFree: true}}
-
+                plugins={[WheelGesturesPlugin({forceWheelAxis: "x"})]}
                 className="w-full"
             >
                 {/* pt-4 accommodates pin badge overflow (-top-2 to -top-2.5) */}
@@ -1150,7 +1151,7 @@ function RecommendedSection({products}: {products: CuratedProductFragment[]}) {
 
             <Carousel
                 opts={{align: "start", loop: true, dragFree: true}}
-
+                plugins={[WheelGesturesPlugin({forceWheelAxis: "x"})]}
                 className="w-full"
             >
                 {/* pt-4 accommodates pin badge overflow (-top-2 to -top-2.5) */}

@@ -50,6 +50,7 @@ import {Image} from "@shopify/hydrogen";
 import type {ProductImageGalleryProps, ProductMediaItem} from "types";
 import {cn} from "~/lib/utils";
 import {Skeleton} from "~/components/ui/skeleton";
+import {WheelGesturesPlugin} from "embla-carousel-wheel-gestures";
 import {Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext} from "~/components/ui/carousel";
 import {ProductLightbox} from "~/components/ProductLightbox";
 import {Maximize2} from "lucide-react";
@@ -500,6 +501,7 @@ export function ProductImageGallery({images, selectedVariantImage, media, isAvai
             <div className="md:hidden">
                 <Carousel
                     opts={{align: "start", loop: true, dragFree: true}}
+                    plugins={[WheelGesturesPlugin({forceWheelAxis: "x"})]}
                     className="w-full"
                 >
                     <CarouselContent className="-ml-1.5 sm:-ml-2 md:-ml-3">

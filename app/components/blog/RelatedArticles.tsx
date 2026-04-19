@@ -38,6 +38,7 @@
 
 import {Suspense} from "react";
 import {Await} from "react-router";
+import {WheelGesturesPlugin} from "embla-carousel-wheel-gestures";
 import {Carousel, CarouselContent, CarouselItem} from "~/components/ui/carousel";
 import {ArticleCard, type ArticleCardData} from "~/components/blog/ArticleCard";
 import {Skeleton} from "~/components/ui/skeleton";
@@ -124,7 +125,7 @@ export function RelatedArticles({articles, title = "Related Articles", className
                             <div className="relative -mx-2 sm:mx-0">
                                 <Carousel
                                     opts={{align: "start", loop: true, dragFree: true}}
-
+                                    plugins={[WheelGesturesPlugin({forceWheelAxis: "x"})]}
                                     className="w-full"
                                 >
                                     {/* Negative margin for full-bleed mobile scrolling */}

@@ -32,6 +32,7 @@ import {useRecentlyViewed, type RecentlyViewedProduct} from "~/lib/recently-view
 import {useScrollLock} from "~/hooks/useScrollLock";
 import {ProductItem} from "~/components/ProductItem";
 import {RecentlyViewedSkeleton} from "~/components/skeletons";
+import {WheelGesturesPlugin} from "embla-carousel-wheel-gestures";
 import {Carousel, CarouselContent, CarouselItem} from "~/components/ui/carousel";
 import {
     Dialog,
@@ -197,6 +198,7 @@ export function RecentlyViewedSection({products, allProducts = [], loading = fal
                             loop: true,
                             dragFree: true
                         }}
+                        plugins={[WheelGesturesPlugin({forceWheelAxis: "x"})]}
                         className="w-full"
                     >
                         {/* pt-4 accommodates pin badge overflow (-top-2 to -top-2.5) */}

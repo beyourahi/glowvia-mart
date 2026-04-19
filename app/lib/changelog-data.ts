@@ -29,6 +29,15 @@ import type {ChangelogEntry} from "~/lib/types/changelog";
 // Newest entries at the top. Add new entries here in the same commit that ships the change.
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
+        id: "trackpad-horizontal-scroll-carousels",
+        date: "2026-04-19",
+        version: "1.x",
+        category: "Improvement",
+        headline: "Two-finger trackpad scroll now works on all product and article carousels",
+        description:
+            "You can now swipe horizontally with two fingers on a trackpad to scroll through product recommendations, curated collections, and related articles — in addition to clicking and dragging."
+    },
+    {
         id: "cart-suggestions-card-sizing",
         date: "2026-04-19",
         version: "1.x",

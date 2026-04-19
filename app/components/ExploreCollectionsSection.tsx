@@ -24,6 +24,7 @@
 import {useState} from "react";
 import {Link} from "react-router";
 import {Image} from "@shopify/hydrogen";
+import {WheelGesturesPlugin} from "embla-carousel-wheel-gestures";
 import {Carousel, CarouselContent, CarouselItem} from "~/components/ui/carousel";
 import {usePointerCapabilities} from "~/hooks/usePointerCapabilities";
 import {cn} from "~/lib/utils";
@@ -121,6 +122,7 @@ export function ExploreCollectionsSection({collections}: ExploreCollectionsSecti
             <div className="lg:hidden">
                 <Carousel
                     opts={{align: "start", dragFree: true, loop: true}}
+                    plugins={[WheelGesturesPlugin({forceWheelAxis: "x"})]}
                     className="w-full"
                 >
                     <CarouselContent className="-ml-3 sm:-ml-4">

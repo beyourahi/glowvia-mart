@@ -68,6 +68,7 @@ import {useAside} from "~/components/Aside";
 import {CartLineItem} from "~/components/CartLineItem";
 import {CartSummary} from "./CartSummary";
 import {Empty, EmptyHeader, EmptyMedia, EmptyTitle} from "~/components/ui/empty";
+import {WheelGesturesPlugin} from "embla-carousel-wheel-gestures";
 import {Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext} from "~/components/ui/carousel";
 import {Skeleton} from "~/components/ui/skeleton";
 import {cn} from "~/lib/utils";
@@ -366,6 +367,7 @@ function CartSuggestions({products, layout}: CartSuggestionsProps) {
                                     dragFree: false,
                                     skipSnaps: false
                                 }}
+                                plugins={[WheelGesturesPlugin({forceWheelAxis: "x"})]}
                                 className="w-full"
                             >
                                 <CarouselContent className="-ml-2 md:-ml-3">

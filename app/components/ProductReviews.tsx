@@ -25,6 +25,7 @@ import {useState, useEffect} from "react";
 import {ArrowLeft, ArrowRight} from "lucide-react";
 
 import {cn} from "~/lib/utils";
+import {WheelGesturesPlugin} from "embla-carousel-wheel-gestures";
 import {
     type CarouselApi,
     Carousel,
@@ -398,6 +399,7 @@ export function ProductReviews({reviews}: {reviews: ReviewNode[]}) {
                     <Carousel
                         setApi={setCarouselApi}
                         opts={{align: "start", containScroll: "keepSnaps"}}
+                        plugins={[WheelGesturesPlugin({forceWheelAxis: "x"})]}
                         aria-label="Customer reviews"
                     >
                         <CarouselContent>

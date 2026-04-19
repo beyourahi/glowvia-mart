@@ -23,6 +23,7 @@
  */
 
 import {Instagram, Play} from "lucide-react";
+import {WheelGesturesPlugin} from "embla-carousel-wheel-gestures";
 import {Carousel, CarouselContent, CarouselItem} from "~/components/ui/carousel";
 import AutoScroll from "embla-carousel-auto-scroll";
 import type {InstagramMedia} from "types";
@@ -97,7 +98,7 @@ export function InstagramSection({media}: InstagramSectionProps) {
                     loop: true,
                     dragFree: true
                 }}
-                plugins={[AutoScroll({speed: 1, stopOnInteraction: false, stopOnMouseEnter: true})]}
+                plugins={[AutoScroll({speed: 1, stopOnInteraction: false, stopOnMouseEnter: true}), WheelGesturesPlugin({forceWheelAxis: "x"})]}
                 className="w-full"
             >
                 <CarouselContent className="ml-0">

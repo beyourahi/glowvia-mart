@@ -50,7 +50,7 @@
  * - Full width with min-h-14 (56px touch target)
  * - bg-primary text-primary-foreground
  * - Horizontal flex with space-between (text left, icon right)
- * - ChevronUp icon (size-6) on right
+ * - ShoppingCart icon (size-6) on left
  * - Focus: outline suppressed, white ring-offset on keyboard focus (:focus-visible)
  *
  * Transitions:
@@ -91,7 +91,7 @@
  *
  * @dependencies
  * - react: useEffect, useState for intersection observer
- * - lucide-react: ChevronUp icon
+ * - lucide-react: ShoppingCart icon
  * - ~/lib/utils: cn utility for className merging
  * - Intersection Observer API (browser native)
  *
@@ -121,7 +121,7 @@
  * visibility detection without scroll event listeners.
  */
 import {useEffect, useState} from "react";
-import {ChevronUp} from "lucide-react";
+import {ShoppingCart} from "lucide-react";
 import {cn} from "~/lib/utils";
 import {formatShopifyMoney} from "~/lib/currency-formatter";
 import {calculateVariantDiscountPercentage} from "~/lib/discounts";
@@ -213,7 +213,7 @@ export function StickyMobileGetNow({
                 {/* Light zone — soft arrow circle + CTA label + optional sale badge */}
                 <div className="flex-1 flex items-center gap-3 pl-4 pr-3">
                     <div className="flex items-center justify-center size-8 rounded-full bg-foreground/[0.07] shrink-0" aria-hidden="true">
-                        <ChevronUp className="size-[14px]" />
+                        <ShoppingCart className="size-[14px]" />
                     </div>
                     <span className="text-[17px] font-semibold tracking-[-0.015em] leading-none text-foreground">
                         {buttonText}

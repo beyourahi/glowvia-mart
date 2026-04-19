@@ -60,7 +60,8 @@ import {
     Meta,
     Scripts,
     ScrollRestoration,
-    useRouteLoaderData
+    useRouteLoaderData,
+    useLocation
 } from "react-router";
 import type {Route} from "./+types/root";
 import {Toaster} from "~/components/ui/sonner";
@@ -585,11 +586,20 @@ export default function App() {
  */
 function FloatingButtonStack() {
     const offset = useFooterClearance();
+    const {pathname} = useLocation();
+
+    // On the product page, the sticky mobile "Get Now" bar (~78px tall) sits at
+    // bottom-0, so the default mobile bottom (72px) overlaps it. Lift to 96px
+    // to clear the bar with comfortable spacing. Desktop is unaffected (md:bottom-4)
+    // because StickyMobileGetNow is md:hidden.
+    const isProductPage = pathname.startsWith("/products/");
 
     return (
         <div
             className={[
-                "fixed bottom-[calc(3.5rem+env(safe-area-inset-bottom)+1rem)] md:bottom-4 right-4 z-[102]",
+                isProductPage
+                    ? "fixed bottom-[calc(6rem+env(safe-area-inset-bottom))] md:bottom-4 right-4 z-[102]"
+                    : "fixed bottom-[calc(3.5rem+env(safe-area-inset-bottom)+1rem)] md:bottom-4 right-4 z-[102]",
                 "flex flex-col items-end gap-3",
                 // Smooth lift when footer bar enters viewport.
                 // Only the transform axis is transitioned — no opacity/scale side-effects.

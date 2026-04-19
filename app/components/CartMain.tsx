@@ -363,7 +363,7 @@ function CartSuggestions({products, layout}: CartSuggestionsProps) {
                                 opts={{
                                     align: "start",
                                     loop: true,
-                                    dragFree: true,
+                                    dragFree: false,
                                     skipSnaps: false
                                 }}
                                 className="w-full"
@@ -372,7 +372,7 @@ function CartSuggestions({products, layout}: CartSuggestionsProps) {
                                     {shuffledProducts.map(product => (
                                         <CarouselItem
                                             key={product.id}
-                                            className="pl-2 md:pl-3 basis-[70%] sm:basis-[55%] lg:basis-[45%]"
+                                            className="pl-2 md:pl-3 basis-[56%] sm:basis-[44%] lg:basis-[38%] xl:basis-[35%]"
                                         >
                                             <ProductItem
                                                 product={product}

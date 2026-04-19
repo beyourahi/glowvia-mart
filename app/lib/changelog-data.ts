@@ -29,6 +29,15 @@ import type {ChangelogEntry} from "~/lib/types/changelog";
 // Newest entries at the top. Add new entries here in the same commit that ships the change.
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
+        id: "cart-suggestions-card-sizing",
+        date: "2026-04-19",
+        version: "1.x",
+        category: "Design",
+        headline: "Cart suggestions are better sized for browsing at all screen sizes",
+        description:
+            "Product cards in the 'You might also like' section now show multiple cards at once on tablet and desktop, with a clear peek of the next card on mobile. Scrolling also snaps cleanly to card boundaries."
+    },
+    {
         date: "2026-04-19",
         headline: "Cart drawer no longer cuts off the checkout button on mobile",
         summary:

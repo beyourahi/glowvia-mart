@@ -1042,6 +1042,18 @@ body {
         @apply mb-2 mt-1 rounded border border-input bg-background p-2 text-base;
     }
 
+    /* Prevent iOS Safari / Android viewport zoom on input focus.
+     * iOS zooms when a focused form element's computed font-size < 16px.
+     * Setting font-size: 1rem (16px) on textarea and select here provides a
+     * safe default for raw elements not wrapped in shadcn components.
+     * Note: utility classes (text-sm, text-xs) in @layer utilities take
+     * precedence over these base rules — any such overrides on mobile
+     * viewports must be fixed at the component level (see CartSummary.tsx). */
+    textarea,
+    select {
+        font-size: 1rem; /* 16px — iOS zoom threshold */
+    }
+
     legend {
         @apply mb-2 font-semibold;
     }

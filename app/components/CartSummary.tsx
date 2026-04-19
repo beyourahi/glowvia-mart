@@ -14,7 +14,6 @@
  * - Loading state on free shipping progress during cart mutations (matches checkout pattern)
  * - Offline detection with disabled state and warning
  * - Responsive layouts for page vs drawer with theme-aware styling
- * - 500 character limit for order notes
  * - Progress milestone markers at 25%, 50%, 75%
  * - Encouraging message when close to free shipping (70%+)
  *
@@ -529,14 +528,12 @@ function CartCheckoutActions({
  * Allows customers to add special instructions for their order.
  */
 function CartOrderNote({note, isPage}: {note?: string | null; isPage: boolean}) {
-    const MAX_CHARS = 500;
     const [value, setValue] = useState(note || "");
     const noteFetcher = useFetcher({key: "note-update"});
     const debounceRef = useRef<NodeJS.Timeout | null>(null);
     const cartContent = FALLBACK_CART_CONTENT;
     const uiMessages = FALLBACK_UI_MESSAGES;
 
-    const charCount = value.length;
     const isLoading = noteFetcher.state !== "idle";
 
     // Cleanup timeout on unmount
@@ -549,33 +546,31 @@ function CartOrderNote({note, isPage}: {note?: string | null; isPage: boolean}) 
     }, []);
 
     const handleChange = (newValue: string) => {
-        if (newValue.length <= MAX_CHARS) {
-            setValue(newValue);
+        setValue(newValue);
 
-            // Debounced auto-save
-            if (debounceRef.current) {
-                clearTimeout(debounceRef.current);
-            }
-
-            debounceRef.current = setTimeout(() => {
-                const formData = new FormData();
-                // CartForm.getFormInput() parses cartFormInput as JSON to extract {action, inputs}
-                // Both action and inputs must be inside the cartFormInput JSON object
-                formData.append(
-                    "cartFormInput",
-                    JSON.stringify({
-                        action: CartForm.ACTIONS.NoteUpdate,
-                        inputs: {}
-                    })
-                );
-                // The note is read directly from formData in the action handler
-                formData.append("note", newValue);
-                void noteFetcher.submit(formData, {
-                    method: "POST",
-                    action: "/cart"
-                });
-            }, 800);
+        // Debounced auto-save
+        if (debounceRef.current) {
+            clearTimeout(debounceRef.current);
         }
+
+        debounceRef.current = setTimeout(() => {
+            const formData = new FormData();
+            // CartForm.getFormInput() parses cartFormInput as JSON to extract {action, inputs}
+            // Both action and inputs must be inside the cartFormInput JSON object
+            formData.append(
+                "cartFormInput",
+                JSON.stringify({
+                    action: CartForm.ACTIONS.NoteUpdate,
+                    inputs: {}
+                })
+            );
+            // The note is read directly from formData in the action handler
+            formData.append("note", newValue);
+            void noteFetcher.submit(formData, {
+                method: "POST",
+                action: "/cart"
+            });
+        }, 800);
     };
 
     return (
@@ -586,29 +581,23 @@ function CartOrderNote({note, isPage}: {note?: string | null; isPage: boolean}) 
                     value={value}
                     onChange={e => handleChange(e.target.value)}
                     placeholder={cartContent.orderNotesPlaceholder}
-                    maxLength={MAX_CHARS}
                     className={cn(
-                        "min-h-16 sm:min-h-20 resize-none text-sm sm:text-base",
+                        "min-h-16 sm:min-h-20 resize-none",
                         !isPage &&
                             "bg-primary-foreground/[0.07] border-primary-foreground/20 text-primary-foreground placeholder:text-primary-foreground/70 focus-visible:border-primary-foreground/50 focus-visible:ring-primary-foreground/30"
                     )}
                 />
-                <div className="flex items-center justify-between text-sm sm:text-sm">
-                    <span className={cn(isPage ? "text-muted-foreground" : "text-primary-foreground/60")}>
-                        {charCount}/{MAX_CHARS}
+                {isLoading && (
+                    <span
+                        className={cn(
+                            "flex items-center gap-1 text-sm",
+                            isPage ? "text-muted-foreground" : "text-primary-foreground/60"
+                        )}
+                    >
+                        <Loader2 className="size-3 animate-spin" />
+                        {uiMessages.loadingSaving}
                     </span>
-                    {isLoading && (
-                        <span
-                            className={cn(
-                                "flex items-center gap-1",
-                                isPage ? "text-muted-foreground" : "text-primary-foreground/60"
-                            )}
-                        >
-                            <Loader2 className="size-3 animate-spin" />
-                            {uiMessages.loadingSaving}
-                        </span>
-                    )}
-                </div>
+                )}
             </div>
         </CartForm>
     );

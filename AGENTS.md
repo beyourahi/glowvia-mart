@@ -48,7 +48,7 @@ Backend behavior, data flow, and Hydrogen conventions **must remain consistent**
 | ------------- | ---------------- | ---------- | ----------------------------------- |
 | **Framework** | React            | 18.3.1     |                                     |
 |               | React Router     | 7.12       | Hydrogen preset, file-based routing |
-|               | Shopify Hydrogen | 2026.4.0   | Storefront + Customer Account APIs  |
+|               | Shopify Hydrogen | 2026.4.1   | Storefront + Customer Account APIs  |
 |               | Storefront API   | 2026-04    | GraphQL API version                 |
 |               | TypeScript       | 5.9        | Strict mode, ES2022 target          |
 |               | Vite             | 6          | Build tooling                       |
@@ -77,7 +77,7 @@ Backend behavior, data flow, and Hydrogen conventions **must remain consistent**
 storefront_002/
 ├── app/
 │   ├── routes/              # 49 routes
-│   ├── components/          # 130 components
+│   ├── components/          # 129 components
 │   │   ├── ui/              # 27 shadcn
 │   │   ├── blog/            # 7 blog
 │   │   ├── changelog/       # 2 changelog

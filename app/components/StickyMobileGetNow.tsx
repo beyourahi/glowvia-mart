@@ -207,19 +207,19 @@ export function StickyMobileGetNow({
             <button
                 type="button"
                 onClick={handleClick}
-                className="w-full flex items-center min-h-[62px] rounded-[20px] bg-white text-gray-900 select-none shadow-[0_8px_32px_oklch(0_0_0/0.18),0_2px_8px_oklch(0_0_0/0.1)] ring-1 ring-black/[0.06] overflow-hidden outline-none focus-visible:ring-2 focus-visible:ring-gray-900/40 active:scale-[0.99] transition-transform duration-100"
+                className="w-full flex items-center min-h-[62px] rounded-[20px] bg-card text-foreground select-none shadow-xl ring-1 ring-border overflow-hidden outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.99] transition-transform duration-100"
                 aria-label="Scroll to product purchase section"
             >
                 {/* Light zone — soft arrow circle + CTA label + optional sale badge */}
                 <div className="flex-1 flex items-center gap-3 pl-4 pr-3">
-                    <div className="flex items-center justify-center size-8 rounded-full bg-black/[0.07] shrink-0" aria-hidden="true">
+                    <div className="flex items-center justify-center size-8 rounded-full bg-foreground/[0.07] shrink-0" aria-hidden="true">
                         <ChevronUp className="size-[14px]" />
                     </div>
-                    <span className="text-[17px] font-semibold tracking-[-0.015em] leading-none text-gray-900">
+                    <span className="text-[17px] font-semibold tracking-[-0.015em] leading-none text-foreground">
                         {buttonText}
                     </span>
                     {hasDiscount && (
-                        <span className="rounded-[4px] bg-[oklch(0.58_0.18_160)] text-white text-[9px] font-bold tracking-wide px-[5px] py-[3px] leading-none shrink-0">
+                        <span className="rounded-[4px] bg-sale-text text-light text-[9px] font-bold tracking-wide px-[5px] py-[3px] leading-none shrink-0">
                             −{discountPct}%
                         </span>
                     )}
@@ -227,12 +227,12 @@ export function StickyMobileGetNow({
 
                 {/* Dark chip — price info inverted */}
                 {price ? (
-                    <div className="m-2 px-4 self-stretch flex items-center justify-center gap-2 rounded-[13px] bg-[oklch(0.13_0.012_250)] shrink-0">
-                        <span className="text-[17px] font-bold leading-none tabular-nums text-white">
+                    <div className="m-2 px-4 self-stretch flex items-center justify-center gap-2 rounded-[13px] bg-foreground shrink-0">
+                        <span className="text-[17px] font-bold leading-none tabular-nums text-background">
                             {formatShopifyMoney(price)}
                         </span>
                         {hasDiscount && compareAtPrice && (
-                            <span className="text-[11px] text-white/40 line-through tabular-nums leading-none">
+                            <span className="text-[11px] text-background/40 line-through tabular-nums leading-none">
                                 {formatShopifyMoney(compareAtPrice)}
                             </span>
                         )}

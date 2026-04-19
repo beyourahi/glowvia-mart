@@ -505,6 +505,19 @@ export default function App() {
         }
     }, [data?.generatedTheme]);
 
+    // Force a clean reload when the browser restores this page from bfcache.
+    // Hydrogen's Analytics.Provider calls Object.defineProperty(window, 'shopify', { configurable: false })
+    // on mount. bfcache preserves that locked property in the JS heap, so when React re-runs effects
+    // on restoration it tries to redefine an already-frozen property — throwing "Cannot redefine
+    // property: shopify" and crashing into the ErrorBoundary as a 500. Reloading resets the heap.
+    useEffect(() => {
+        const onPageShow = (e: PageTransitionEvent) => {
+            if (e.persisted) window.location.reload();
+        };
+        window.addEventListener("pageshow", onPageShow);
+        return () => window.removeEventListener("pageshow", onPageShow);
+    }, []);
+
     if (!data) {
         return <Outlet />;
     }

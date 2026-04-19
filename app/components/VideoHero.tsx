@@ -59,11 +59,11 @@ const SEARCH_LABELS = [
  * these stay under that budget while preserving the originals' intent.
  */
 const SEARCH_LABELS_MOBILE = [
-    "Looking for?",
-    "Find something",
-    "Search here",
-    "Explore more",
-    "Discover more",
+    "What's on your mind?",
+    "Find something new",
+    "Browse the store",
+    "Explore products",
+    "Find your thing",
 ];
 
 /** Milliseconds between label changes */

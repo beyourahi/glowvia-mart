@@ -56,8 +56,7 @@ export default defineConfig({
                 "react/jsx-dev-runtime",
                 "react-router",
                 "use-sync-external-store/shim",
-                "@radix-ui/react-use-is-hydrated",
-                "embla-carousel-autoplay"
+                "@radix-ui/react-use-is-hydrated"
             ],
             exclude: ["@shopify/hydrogen"]
         }

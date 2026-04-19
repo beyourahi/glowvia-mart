@@ -30,6 +30,13 @@ import type {ChangelogEntry} from "~/lib/types/changelog";
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
         date: "2026-04-19",
+        headline: "Sticky buy button now matches your store's color theme",
+        summary:
+            "The sticky \"Get it Now\" button that appears at the bottom of the screen on product pages now adapts to your store's color settings. On dark-themed stores it was previously showing as a plain white button — it now blends seamlessly with the rest of the page.",
+        category: "Design"
+    },
+    {
+        date: "2026-04-19",
         headline: "Quick Add no longer closes immediately after a previous cart add",
         summary:
             "Opening the Quick Add selector for a product right after adding something else to your cart used to cause it to close instantly. This has been fixed — the selector now stays open so you can choose your size or variant without interruption.",

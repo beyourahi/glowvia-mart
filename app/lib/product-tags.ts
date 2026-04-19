@@ -95,12 +95,15 @@ export const TAG_CONFIG = {
  */
 export type SpecialTagType = keyof typeof TAG_CONFIG;
 
+/** Badge-eligible tag types (excludes "pin" which is not displayed as a badge) */
+export type BadgeType = Exclude<SpecialTagType, "pin">;
+
 /**
  * Display configuration for each badge type
  * Used by ProductBadge component for rendering
  */
 export const BADGE_CONFIG: Record<
-    Exclude<SpecialTagType, "pin">,
+    BadgeType,
     {label: string; className: string; ariaLabel: string}
 > = {
     premium: {
@@ -195,7 +198,7 @@ export interface SpecialTagInfo {
     /** Product is on clearance */
     isClearance: boolean;
     /** Array of badge types to display (excludes 'pin') */
-    badgeTypes: Exclude<SpecialTagType, "pin">[];
+    badgeTypes: BadgeType[];
 }
 
 /**

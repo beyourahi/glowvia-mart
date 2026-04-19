@@ -308,10 +308,10 @@ interface CartSuggestionsProps {
  *
  * Carousel configuration optimized for cart aside drawer context:
  * - **Responsive Breakpoints**: Optimized for aside width (narrower than full-page)
- *   - Mobile (< 640px): basis-[85%] - Shows 1 full item + peek of next (~1.2 items visible)
- *   - Tablet (640px+): basis-[48%] - Shows 2 full items + peek (~2.1 items visible)
- *   - Desktop (1024px+): basis-1/2 - Shows exactly 2 items in aside width
- *   - Large (1280px+): basis-1/2 - Maintains 2 items (aside width doesn't grow)
+ *   - Mobile (< 640px): basis-[48%] - Shows 2 full items + peek of 3rd (~2.1 items visible)
+ *   - Tablet (640px+): basis-[38%] - Shows 2.6 items + peek (~2.6 items visible)
+ *   - Desktop (1024px+): basis-[33%] - Shows ~3 items in aside width
+ *   - Large (1280px+): basis-[30%] - Shows ~3.3 items (aside width doesn't grow)
  *
  * Note: Unlike full-page carousels that use basis-[80%] → [45%] → [32%] → [27%] → [22%],
  * this carousel is constrained by the fixed aside width (~400-450px), so breakpoints
@@ -389,7 +389,7 @@ function CartSuggestions({products, layout, cartLines}: CartSuggestionsProps) {
                         {shuffledProducts.map(product => (
                             <CarouselItem
                                 key={product.id}
-                                className="pl-2 md:pl-3 basis-[56%] sm:basis-[44%] lg:basis-[38%] xl:basis-[35%]"
+                                className="pl-2 md:pl-3 basis-[48%] sm:basis-[38%] lg:basis-[33%] xl:basis-[30%]"
                             >
                                 <ProductItem
                                     product={product}

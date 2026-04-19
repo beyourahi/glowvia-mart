@@ -69,6 +69,7 @@ import {toast} from "sonner";
 import {filterDisplayTags, getButtonLabel} from "~/lib/product-tags";
 import {parseProductTitle} from "~/lib/product";
 import {OUT_OF_STOCK_LABEL} from "~/lib/product/product-card-utils";
+import {ProductImagePlaceholder} from "~/components/ProductImagePlaceholder";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Types
@@ -259,11 +260,11 @@ export function QuickAddDialog({product, open, onOpenChange, sizeChart}: QuickAd
             >
                 <div className="flex flex-col md:flex-row h-[60dvh]">
                     {/* Product images - left side with vertical scroll */}
-                    {productImages.length > 0 && (
-                        <div
-                            className="w-full md:w-1/2 shrink-0 h-full overflow-y-auto overscroll-contain [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-                            data-lenis-prevent
-                        >
+                    <div
+                        className="w-full md:w-1/2 shrink-0 h-full overflow-y-auto overscroll-contain [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+                        data-lenis-prevent
+                    >
+                        {productImages.length > 0 ? (
                             <div className="flex flex-col gap-2">
                                 {productImages.map((image, index) => (
                                     <div
@@ -280,8 +281,10 @@ export function QuickAddDialog({product, open, onOpenChange, sizeChart}: QuickAd
                                     </div>
                                 ))}
                             </div>
-                        </div>
-                    )}
+                        ) : (
+                            <ProductImagePlaceholder aspectRatio="4/5" className="rounded-lg" />
+                        )}
+                    </div>
 
                     {/* Product info and options - right side */}
                     <div className="flex-1 p-4 sm:p-6 flex flex-col overflow-y-auto" data-lenis-prevent>

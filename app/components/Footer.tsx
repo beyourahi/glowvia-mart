@@ -52,7 +52,7 @@
  */
 
 import {Suspense} from "react";
-import {Await, NavLink, useRouteLoaderData} from "react-router";
+import {Await, NavLink, useLocation, useRouteLoaderData} from "react-router";
 import {Copyright as CopyrightIcon} from "lucide-react";
 import type {FooterProps} from "types";
 import {NewsletterForm} from "~/components/NewsletterForm";
@@ -65,6 +65,8 @@ import type {RootLoader} from "~/root";
 
 export function Footer({footer: footerPromise, header: _header}: FooterProps) {
     const {brandName} = useSiteSettings();
+    const {pathname} = useLocation();
+    const isProductPage = pathname.startsWith("/products/");
     return (
         <Suspense>
             <Await resolve={footerPromise}>
@@ -98,10 +100,12 @@ export function Footer({footer: footerPromise, header: _header}: FooterProps) {
                             {/* Responsive padding matching Container and all homepage sections
                                  px-container uses --container-padding: clamp(0.5rem, 0.75vw, 0.75rem)
                                  This ensures footer padding matches homepage sections exactly.
-                                 Bottom padding on mobile is enlarged to clear the StickyMobileGetNow button
-                                 (min-h-14 = 3.5rem, plus device safe-area-inset-bottom, plus 0.75rem buffer).
-                                 At md+ the button is hidden (md:hidden) so normal pb-6 is restored. */}
-                            <div className="pt-4 sm:pt-6 pb-[calc(3.5rem+env(safe-area-inset-bottom,0px)+0.75rem)] md:pb-6 px-container flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-2">
+                                 On product pages, mobile pb uses 4.875rem to clear the taller
+                                 StickyMobileGetNow bar (min-h-[62px] + pb-[max(16px,...)] ≈ 78px).
+                                 All other pages use 3.5rem — a safe buffer since the sticky bar
+                                 is absent there. At md+ the button is hidden (md:hidden) so
+                                 normal pb-6 is restored on all pages. */}
+                            <div className={`pt-4 sm:pt-6 ${isProductPage ? "pb-[calc(4.875rem+env(safe-area-inset-bottom,0px)+0.75rem)]" : "pb-[calc(3.5rem+env(safe-area-inset-bottom,0px)+0.75rem)]"} md:pb-6 px-container flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-2`}>
                                 <Copyright shopName={brandName || "Store"} />
                                 {/* Developer credit — pill badge using primary-foreground surface tokens.
                                      rounded-full matches the site-wide button pill shape (the primary

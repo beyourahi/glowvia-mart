@@ -66,6 +66,7 @@ import {
 } from "./SellingPlanSelector";
 import {ColorSwatch, hasSwatch} from "~/components/ui/color-swatch";
 import {hasSpecialTag} from "~/lib/product-tags";
+import {ShoppingSummary} from "~/components/product/ShoppingSummary";
 
 const FALLBACK_PRODUCT_CONTENT = {
     addToCartStandard: "Add to Bag",
@@ -107,6 +108,7 @@ type PurchaseType = "one-time" | "subscription";
 // =============================================================================
 
 export function ProductForm({
+    product,
     productOptions,
     selectedVariant,
     shareButton,
@@ -116,6 +118,7 @@ export function ProductForm({
     selectedSellingPlan,
     tags
 }: {
+    product: any;
     productOptions: MappedProductOptions[];
     selectedVariant: ProductFragment["selectedOrFirstAvailableVariant"];
     shareButton?: React.ReactNode;
@@ -397,6 +400,12 @@ export function ProductForm({
                     </p>
                 )}
 
+                <ShoppingSummary
+                    product={product}
+                    selectedVariant={selectedVariant}
+                    quantity={quantity}
+                />
+
                 {/* Add to Cart + Share + Wishlist button row */}
                 <div className="flex items-center gap-2 sm:gap-3">
                     <div className="flex-1">{addToCartButton}</div>
@@ -520,6 +529,12 @@ export function ProductForm({
                     {shareButton && <div className="shrink-0">{shareButton}</div>}
                 </div>
             </div>
+
+            <ShoppingSummary
+                product={product}
+                selectedVariant={selectedVariant}
+                quantity={quantity}
+            />
 
             {/* Add to Cart button - full width */}
             <div>{addToCartButton}</div>

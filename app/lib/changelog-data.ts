@@ -30,6 +30,30 @@ import type {ChangelogEntry} from "~/lib/types/changelog";
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
         date: "2026-04-19",
+        category: "Design",
+        headline: "Shopping Summary card refreshed to match the store's visual design",
+        summary: "The price breakdown card on product pages has been redesigned with a refined look — tighter spacing, cleaner typography, and styling consistent with the rest of the store. Savings badges now use the same emerald styling as free shipping indicators, and the current-cart row has a subtle pill treatment for better clarity."
+    },
+    {
+        date: "2026-04-19",
+        category: "New Feature",
+        headline: "Shopping Summary now shows your full price breakdown on product pages",
+        summary: "A Shopping Summary card now appears on every product page, showing the item price, any savings if it's on sale, and the updated cart total after adding the item — so you know exactly what you're committing to before you tap Add to Bag."
+    },
+    {
+        date: "2026-04-19",
+        category: "Design",
+        headline: "Cart suggestion cards are now more compact and balanced",
+        summary: "The product suggestions strip inside the cart now shows more cards at once across all screen sizes — giving you a better overview of what's available without needing to scroll as much."
+    },
+    {
+        date: "2026-04-19",
+        category: "New Feature",
+        headline: "Product pages now show tag badges for special items",
+        summary: "Pre-Order, New, Premium, and Clearance products now display a badge above the product title on the product page so you can quickly identify what makes each item special before adding it to your cart."
+    },
+    {
+        date: "2026-04-19",
         category: "Fix",
         headline: "Brand name size is now consistent across the site",
         summary: "The store name in the navigation bar, the scroll animation that brings it up from the hero, and the full-screen menu header all now render at the same size at every screen width. Previously, the scroll animation would settle at a slightly different size than the nav bar, creating a subtle but visible jump."

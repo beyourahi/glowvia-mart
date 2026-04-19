@@ -70,6 +70,7 @@ import {toast} from "sonner";
 import {filterDisplayTags, getButtonLabel} from "~/lib/product-tags";
 import {parseProductTitle} from "~/lib/product";
 import {OUT_OF_STOCK_LABEL} from "~/lib/product/product-card-utils";
+import {ProductImagePlaceholder} from "~/components/ProductImagePlaceholder";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Types
@@ -260,15 +261,17 @@ export function QuickAddSheet({product, open, onOpenChange, sizeChart}: QuickAdd
                 <SheetHeader>
                     <div className="flex items-start gap-3">
                         {/* Product thumbnail */}
-                        {product.featuredImage?.url && (
-                            <div className="w-16 h-20 shrink-0 overflow-hidden rounded-lg bg-muted/50">
+                        <div className="w-16 h-20 shrink-0 overflow-hidden rounded-lg bg-muted/50">
+                            {product.featuredImage?.url ? (
                                 <img
                                     src={product.featuredImage.url}
                                     alt={product.featuredImage.altText || product.title}
                                     className="w-full h-full object-cover"
                                 />
-                            </div>
-                        )}
+                            ) : (
+                                <ProductImagePlaceholder compact className="w-full h-full" />
+                            )}
+                        </div>
 
                         {/* Product title and price */}
                         <div className="flex-1 min-w-0">

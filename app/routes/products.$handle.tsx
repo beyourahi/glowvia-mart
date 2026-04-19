@@ -81,7 +81,8 @@ import {
 import {Badge} from "~/components/ui/badge";
 import {OfflineAwareErrorPage} from "~/components/OfflineAwareErrorPage";
 import {trackErrorBoundary} from "~/hooks/usePwaAnalytics";
-import {hasSpecialTag} from "~/lib/product-tags";
+import {hasSpecialTag, getSpecialTags} from "~/lib/product-tags";
+import {ProductBadgeStack} from "~/components/product/ProductBadge";
 import {countDiscountedProducts, type LightweightProduct} from "~/lib/discounts";
 import {formatShopifyMoney} from "~/lib/currency-formatter";
 import {parseProductTitle} from "~/lib/product";
@@ -307,6 +308,7 @@ export default function Product() {
     }, [product?.id, product?.handle, product?.title, product?.images, selectedVariant, addProduct]);
 
     const {title, descriptionHtml} = product;
+    const {badgeTypes} = getSpecialTags(product.tags);
 
     return (
         <>
@@ -415,6 +417,12 @@ export default function Product() {
                                 )}
                                 style={{animationDelay: "100ms"}}
                             >
+                                {/* Product Tag Badges - desktop only, hidden on mobile */}
+                                {badgeTypes.length > 0 && (
+                                    <div className="hidden items-center gap-2 lg:flex">
+                                        <ProductBadgeStack types={badgeTypes} />
+                                    </div>
+                                )}
                                 {/* Product Title and Discount Badge
                                          Title scales progressively: 30px → 36px → 44px → 48px */}
                                 <div className="space-y-3 mb-12 lg:mb-16 xl:mb-20 2xl:mb-24">
@@ -422,6 +430,7 @@ export default function Product() {
                                     <ProductDiscountBadge selectedVariant={selectedVariant} product={product} />
                                 </div>
                                 <ProductForm
+                                    product={product}
                                     productOptions={productOptions}
                                     selectedVariant={selectedVariant}
                                     sellingPlanGroups={product.sellingPlanGroups}

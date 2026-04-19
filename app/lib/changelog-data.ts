@@ -42,21 +42,17 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
             "The 'You might also like' carousel now hides any product you've already added to your cart — instantly and without a page refresh. This keeps suggestions fresh and relevant as you shop."
     },
     {
-        id: "trackpad-horizontal-scroll-carousels",
         date: "2026-04-19",
-        version: "1.x",
         category: "Improvement",
         headline: "Two-finger trackpad scroll now works on all product and article carousels",
-        description:
+        summary:
             "You can now swipe horizontally with two fingers on a trackpad to scroll through product recommendations, curated collections, and related articles — in addition to clicking and dragging."
     },
     {
-        id: "cart-suggestions-card-sizing",
         date: "2026-04-19",
-        version: "1.x",
         category: "Design",
         headline: "Cart suggestions are better sized for browsing at all screen sizes",
-        description:
+        summary:
             "Product cards in the 'You might also like' section now show multiple cards at once on tablet and desktop, with a clear peek of the next card on mobile. Scrolling also snaps cleanly to card boundaries."
     },
     {

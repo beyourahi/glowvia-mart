@@ -97,6 +97,7 @@ import type {CartApiQueryFragment} from "storefrontapi.generated";
 import {Button} from "~/components/ui/button";
 import {Minus, Plus, X, RefreshCw} from "lucide-react";
 import {cn} from "~/lib/utils";
+import {PriceLoadingIndicator} from "~/components/PriceLoadingIndicator";
 
 type CartLine = OptimisticCartLine<CartApiQueryFragment>;
 
@@ -226,8 +227,15 @@ export function CartLineItem({layout, line}: {layout: CartLayout; line: CartLine
 
                         {/* Bottom Row: Price + Quantity Controls */}
                         <div className="flex items-center justify-between mt-auto pt-0.5">
-                            <span className={cn("font-mono tabular-nums text-base sm:text-lg font-medium text-primary-foreground tracking-tight transition-opacity duration-150", isMutating && "opacity-50")}>
-                                <Money data={merchandise.price} />
+                            <span className="font-mono tabular-nums text-base sm:text-lg font-medium text-primary-foreground tracking-tight">
+                                {isMutating ? (
+                                    <>
+                                        <PriceLoadingIndicator />
+                                        <span className="sr-only">calculating</span>
+                                    </>
+                                ) : (
+                                    <Money data={merchandise.price} />
+                                )}
                             </span>
                             {isChildLine ? (
                                 <span className="text-xs text-primary-foreground/50">Qty: {line.quantity}</span>
@@ -315,8 +323,15 @@ export function CartLineItem({layout, line}: {layout: CartLayout; line: CartLine
 
                     {/* Bottom Row: Price + Quantity Controls */}
                     <div className="flex items-center justify-between mt-auto pt-0.5">
-                        <span className={cn("font-mono tabular-nums text-base sm:text-lg font-medium text-primary tracking-tight transition-opacity duration-150", isMutating && "opacity-50")}>
-                            <ProductPrice price={merchandise.price} />
+                        <span className="font-mono tabular-nums text-base sm:text-lg font-medium text-primary tracking-tight">
+                            {isMutating ? (
+                                <>
+                                    <PriceLoadingIndicator />
+                                    <span className="sr-only">calculating</span>
+                                </>
+                            ) : (
+                                <ProductPrice price={merchandise.price} />
+                            )}
                         </span>
                         {isChildLine ? (
                             <span className="text-xs text-muted-foreground">Qty: {line.quantity}</span>

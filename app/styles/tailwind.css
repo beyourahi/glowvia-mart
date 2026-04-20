@@ -626,6 +626,25 @@ body {
     animation: shimmer 2.5s ease-in-out infinite;
 }
 
+/* Price loading dots — three-dot wave used by PriceLoadingIndicator during
+   cart mutations (checkout button + line items). Each dot peaks in scale and
+   opacity at 45% then rests; a per-dot delay creates the rolling wave. */
+@keyframes price-dot {
+    0%,
+    100% {
+        opacity: 0.25;
+        transform: scale(0.65);
+    }
+    45% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.animate-price-dot {
+    animation: price-dot 1.1s ease-in-out infinite both;
+}
+
 /* ==========================================
    Wishlist Animation System
    Enhanced heart and badge animations for wishlist UI

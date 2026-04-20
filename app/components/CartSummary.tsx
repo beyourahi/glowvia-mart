@@ -82,7 +82,8 @@ import {useEffect, useRef, useState} from "react";
 import {useFetcher} from "react-router";
 import {useCartMutationPending} from "~/lib/cart-utils";
 import {Progress} from "~/components/ui/progress";
-import {Wallet, Check, Truck, Loader2, Sparkles, PartyPopper, WifiOff} from "lucide-react";
+import {Wallet, Check, Truck, Loader2, Sparkles, PartyPopper, WifiOff, ArrowRight} from "lucide-react";
+import {PriceLoadingIndicator} from "~/components/PriceLoadingIndicator";
 import {Textarea} from "~/components/ui/textarea";
 import {cn} from "~/lib/utils";
 import {qualifiesForFreeShipping, remainingForFreeShipping} from "~/lib/shipping";
@@ -461,10 +462,10 @@ function CartCheckoutActions({
                             "-"
                         )}
                     </span>
-                    {/* Checkout text with offline icon */}
+                    {/* Checkout label with offline icon replacing the arrow */}
                     <span className="flex items-center gap-1.5">
-                        <WifiOff className="size-4" aria-hidden="true" />
                         {cartContent.checkoutButton}
+                        <WifiOff className="size-4" aria-hidden="true" />
                     </span>
                 </button>
             </div>
@@ -472,12 +473,12 @@ function CartCheckoutActions({
     }
 
     // Online: Normal checkout link
-    // Price display logic inlined to avoid creating components during render
+    // During mutations: price slot shows shimmer skeleton; label + icon stay visible
     const priceDisplay = isMutating ? (
-        <span className="flex items-center gap-1.5 text-sm sm:text-base opacity-80">
-            <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-            <span>{cartContent.checkoutCalculating}</span>
-        </span>
+        <>
+            <PriceLoadingIndicator />
+            <span className="sr-only">calculating</span>
+        </>
     ) : hasSubtotal ? (
         <Money data={{amount: subtotal.amount!, currencyCode: subtotal.currencyCode!}} />
     ) : (
@@ -490,10 +491,13 @@ function CartCheckoutActions({
             target="_self"
             className={cn(baseStyles, isPage ? "hover:bg-primary/90" : "hover:bg-accent/80")}
         >
-            {/* Price on the left - shows calculating message during mutations */}
+            {/* Price slot — swaps to shimmer during mutations, restores immediately on resolution */}
             <span className="flex items-center font-mono tabular-nums">{priceDisplay}</span>
-            {/* Checkout text on the right */}
-            <span>{cartContent.checkoutButton}</span>
+            {/* Checkout label + icon — always visible, never replaced */}
+            <span className="flex items-center gap-1.5">
+                {cartContent.checkoutButton}
+                <ArrowRight className="size-4" aria-hidden="true" />
+            </span>
         </a>
     );
 }

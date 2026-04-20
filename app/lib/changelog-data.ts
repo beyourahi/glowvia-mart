@@ -30,6 +30,12 @@ import type {ChangelogEntry} from "~/lib/types/changelog";
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
         date: "2026-04-20",
+        category: "Design",
+        headline: "Prices animate gracefully while your cart is updating",
+        summary: "Instead of showing a spinner or going blank, prices in your bag and in the checkout button now display a soft shimmer while a cart change is in progress. The Checkout label and its icon stay visible at all times — only the price itself animates until the updated total arrives."
+    },
+    {
+        date: "2026-04-20",
         category: "Improvement",
         headline: "Cart removals and quantity changes reflect instantly in your bag",
         summary: "Removing an item now hides it immediately — no waiting for the server to confirm. Changing a quantity shows the new number right away. Both changes still sync with Shopify in the background, so your cart is always accurate."

@@ -1098,8 +1098,10 @@ body {
     select:disabled,
     textarea:disabled,
     [aria-disabled="true"],
-    [data-disabled="true"] {
-        @apply cursor-not-allowed;
+    [data-disabled="true"],
+    .disabled,
+    .cursor-not-allowed {
+        cursor: not-allowed !important;
     }
 }
 

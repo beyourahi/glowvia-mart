@@ -489,7 +489,13 @@ function CartCheckoutActions({
         <a
             href={checkoutUrl}
             target="_self"
-            className={cn(baseStyles, isPage ? "hover:bg-primary/90" : "hover:bg-accent/80")}
+            aria-disabled={isMutating || undefined}
+            onClick={isMutating ? e => e.preventDefault() : undefined}
+            className={cn(
+                baseStyles,
+                isPage ? "hover:bg-primary/90" : "hover:bg-accent/80",
+                isMutating && "pointer-events-none opacity-50 cursor-not-allowed"
+            )}
         >
             {/* Price slot — swaps to shimmer during mutations, restores immediately on resolution */}
             <span className="flex items-center font-mono tabular-nums">{priceDisplay}</span>

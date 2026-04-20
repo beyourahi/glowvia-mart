@@ -83,10 +83,11 @@
  */
 import type {CartLineUpdateInput} from "@shopify/hydrogen/storefront-api-types";
 import type {CartLayout} from "~/components/CartMain";
-import {CartForm, Image, type OptimisticCartLine} from "@shopify/hydrogen";
+import {CartForm, Image, OptimisticInput, useOptimisticData, type OptimisticCartLine} from "@shopify/hydrogen";
 import {useVariantUrl} from "~/lib/variants";
 import {useCallback, useMemo} from "react";
 import {Link} from "react-router";
+import {CART_FETCHER_KEY, useCartMutationPending} from "~/lib/cart-utils";
 import {ProductPrice} from "./ProductPrice";
 import {ProductTitle} from "./ProductTitle";
 import {Money} from "~/components/Money";
@@ -110,6 +111,9 @@ export function CartLineItem({layout, line}: {layout: CartLayout; line: CartLine
     const {close} = useAside();
     const {canHover} = usePointerCapabilities();
     const isPage = layout === "page";
+    const isMutating = useCartMutationPending();
+    const optimisticData = useOptimisticData<{action: string; quantity?: number}>(id);
+    const isRemoving = optimisticData?.action === "remove";
 
     // Stable — only changes when layout or close changes
     const handleLinkClick = useCallback(() => {
@@ -150,7 +154,8 @@ export function CartLineItem({layout, line}: {layout: CartLayout; line: CartLine
                 className={cn(
                     "motion-interactive flex flex-col gap-1 py-2 first:pt-0",
                     canHover ? "group/item" : "motion-press",
-                    isChildLine && "ml-5 border-l border-primary-foreground/20 pl-3"
+                    isChildLine && "ml-5 border-l border-primary-foreground/20 pl-3",
+                    isRemoving && "hidden"
                 )}
             >
                 {/* Add-on label for child lines */}
@@ -201,7 +206,7 @@ export function CartLineItem({layout, line}: {layout: CartLayout; line: CartLine
                             >
                                 <ProductTitle title={product.title} variant="cart" darkContext />
                             </Link>
-                            <CartLineRemoveButton lineIds={[id]} disabled={!!line.isOptimistic} compact />
+                            <CartLineRemoveButton lineIds={[id]} disabled={!!line.isOptimistic || isMutating} compact />
                         </div>
 
                         {/* Middle Row: Variant Options - tighter to title */}
@@ -221,7 +226,7 @@ export function CartLineItem({layout, line}: {layout: CartLayout; line: CartLine
 
                         {/* Bottom Row: Price + Quantity Controls */}
                         <div className="flex items-center justify-between mt-auto pt-0.5">
-                            <span className="font-mono tabular-nums text-base sm:text-lg font-medium text-primary-foreground tracking-tight">
+                            <span className={cn("font-mono tabular-nums text-base sm:text-lg font-medium text-primary-foreground tracking-tight transition-opacity duration-150", isMutating && "opacity-50")}>
                                 <Money data={merchandise.price} />
                             </span>
                             {isChildLine ? (
@@ -243,7 +248,8 @@ export function CartLineItem({layout, line}: {layout: CartLayout; line: CartLine
             className={cn(
                 "motion-interactive -mx-2 flex flex-col gap-1 rounded-lg px-2 py-2.5 first:pt-0",
                 canHover ? "group/item hover:bg-muted/20" : "motion-press active:bg-muted/20",
-                isChildLine && "ml-6 border-l border-border pl-4"
+                isChildLine && "ml-6 border-l border-border pl-4",
+                isRemoving && "hidden"
             )}
         >
             {/* Add-on label for child lines */}
@@ -289,7 +295,7 @@ export function CartLineItem({layout, line}: {layout: CartLayout; line: CartLine
                         >
                             <ProductTitle title={product.title} variant="cart" />
                         </Link>
-                        <CartLineRemoveButton lineIds={[id]} disabled={!!line.isOptimistic} compact isPage />
+                        <CartLineRemoveButton lineIds={[id]} disabled={!!line.isOptimistic || isMutating} compact isPage />
                     </div>
 
                     {/* Middle Row: Variant Options - tighter to title */}
@@ -309,7 +315,7 @@ export function CartLineItem({layout, line}: {layout: CartLayout; line: CartLine
 
                     {/* Bottom Row: Price + Quantity Controls */}
                     <div className="flex items-center justify-between mt-auto pt-0.5">
-                        <span className="font-mono tabular-nums text-base sm:text-lg font-medium text-primary tracking-tight">
+                        <span className={cn("font-mono tabular-nums text-base sm:text-lg font-medium text-primary tracking-tight transition-opacity duration-150", isMutating && "opacity-50")}>
                             <ProductPrice price={merchandise.price} />
                         </span>
                         {isChildLine ? (
@@ -339,10 +345,15 @@ export function CartLineItem({layout, line}: {layout: CartLayout; line: CartLine
  * - Respects inventory limits automatically
  */
 function CartLineQuantity({line, isPage, productTitle}: {line: CartLine; isPage: boolean; productTitle: string}) {
+    // Hooks must be called unconditionally — before any early return
+    const isMutating = useCartMutationPending();
+    const optimisticData = useOptimisticData<{action: string; quantity?: number}>(line?.id ?? "");
+
     if (!line || typeof line?.quantity === "undefined") return null;
     const {id: lineId, quantity, isOptimistic, merchandise} = line;
-    const prevQuantity = Number(Math.max(0, quantity - 1).toFixed(0));
-    const nextQuantity = Number((quantity + 1).toFixed(0));
+    const displayQuantity = optimisticData?.quantity ?? quantity;
+    const prevQuantity = Number(Math.max(0, displayQuantity - 1).toFixed(0));
+    const nextQuantity = Number((displayQuantity + 1).toFixed(0));
 
     /**
      * Maximum quantity available for this variant.
@@ -351,13 +362,14 @@ function CartLineQuantity({line, isPage, productTitle}: {line: CartLine; isPage:
      */
     const quantityAvailable = merchandise.quantityAvailable;
 
-    const canDecrement = quantity > 1 && !isOptimistic;
+    const canDecrement = displayQuantity > 1 && !isOptimistic && !isMutating;
     /**
      * Can increment if:
      * 1. Not in optimistic state (waiting for server)
-     * 2. Either inventory is not tracked (null) OR current quantity is below available
+     * 2. Not mid-mutation (global cart operation in flight)
+     * 3. Either inventory is not tracked (null) OR current quantity is below available
      */
-    const canIncrement = !isOptimistic && (quantityAvailable == null || quantity < quantityAvailable);
+    const canIncrement = !isOptimistic && !isMutating && (quantityAvailable == null || displayQuantity < quantityAvailable);
 
     // Compact quantity selector for aside
     // Touch targets: 44px minimum for mobile (size-11), 36px for desktop (sm:size-9)
@@ -382,7 +394,7 @@ function CartLineQuantity({line, isPage, productTitle}: {line: CartLine; isPage:
                     </CartLineUpdateButton>
 
                     <span className="w-9 sm:w-8 text-center text-sm font-medium text-primary-foreground tabular-nums">
-                        {quantity}
+                        {displayQuantity}
                     </span>
 
                     <CartLineUpdateButton lines={[{id: lineId, quantity: nextQuantity}]}>
@@ -426,7 +438,7 @@ function CartLineQuantity({line, isPage, productTitle}: {line: CartLine; isPage:
                     </button>
                 </CartLineUpdateButton>
 
-                <span className="w-9 sm:w-8 text-center text-sm font-medium text-primary tabular-nums">{quantity}</span>
+                <span className="w-9 sm:w-8 text-center text-sm font-medium text-primary tabular-nums">{displayQuantity}</span>
 
                 <CartLineUpdateButton lines={[{id: lineId, quantity: nextQuantity}]}>
                     <button
@@ -466,11 +478,12 @@ function CartLineRemoveButton({
 }) {
     return (
         <CartForm
-            fetcherKey={getUpdateKey(lineIds)}
+            fetcherKey={CART_FETCHER_KEY}
             route="/cart"
             action={CartForm.ACTIONS.LinesRemove}
             inputs={{lineIds}}
         >
+            <OptimisticInput id={lineIds[0]} data={{action: "remove"}} />
             {/* Touch target: 44px minimum for mobile (size-10), 36px for desktop (sm:size-9) */}
             <Button
                 type="submit"
@@ -494,40 +507,16 @@ function CartLineRemoveButton({
 }
 
 function CartLineUpdateButton({children, lines}: {children: React.ReactNode; lines: CartLineUpdateInput[]}) {
-    const lineIds = lines.map(line => line.id);
-
     return (
         <CartForm
-            fetcherKey={getUpdateKey(lineIds)}
+            fetcherKey={CART_FETCHER_KEY}
             route="/cart"
             action={CartForm.ACTIONS.LinesUpdate}
             inputs={{lines}}
         >
+            <OptimisticInput id={lines[0].id} data={{action: "update", quantity: lines[0].quantity}} />
             {children}
         </CartForm>
     );
 }
 
-/**
- * Global fetcher key for ALL cart mutations.
- *
- * Using a single key ensures only one cart operation runs at a time.
- * New submissions cancel any in-flight request, preventing Shopify's
- * "cart conflicted with another request" error.
- *
- * Trade-off: Rapid clicks on different items may lose earlier clicks,
- * but this is better than error states and data inconsistency.
- */
-const CART_FETCHER_KEY = "cart-mutation";
-
-/**
- * Returns the global cart fetcher key.
- * All cart operations (add, update, remove) use the same key
- * to prevent concurrent mutations that cause conflicts.
- *
- * @param _lineIds - Unused, kept for API compatibility during migration
- * @returns Global cart fetcher key
- */
-function getUpdateKey(_lineIds: string[]) {
-    return CART_FETCHER_KEY;
-}

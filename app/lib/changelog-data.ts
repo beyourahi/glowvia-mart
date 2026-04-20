@@ -29,6 +29,36 @@ import type {ChangelogEntry} from "~/lib/types/changelog";
 // Newest entries at the top. Add new entries here in the same commit that ships the change.
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
+        date: "2026-04-20",
+        category: "Improvement",
+        headline: "Cart removals and quantity changes reflect instantly in your bag",
+        summary: "Removing an item now hides it immediately — no waiting for the server to confirm. Changing a quantity shows the new number right away. Both changes still sync with Shopify in the background, so your cart is always accurate."
+    },
+    {
+        date: "2026-04-20",
+        category: "Improvement",
+        headline: "Cart controls freeze instantly while your cart is updating",
+        summary: "Quantity buttons, remove buttons, and quick-add buttons now lock the moment a cart action starts and unlock as soon as it completes. Prices in your bag fade slightly to show they're being recalculated. This prevents double-submissions and makes it immediately obvious that your change is on its way."
+    },
+    {
+        date: "2026-04-19",
+        category: "Fix",
+        headline: "Navigating back no longer crashes the page in some browsers",
+        summary: "On certain browsers, pressing the back button to return to a product or collection page could cause the page to go blank or throw a script error. The page now reloads cleanly in this situation, so browsing back through your history always works as expected."
+    },
+    {
+        date: "2026-04-19",
+        category: "Fix",
+        headline: "Quick Add now shows a clean placeholder for products with no images",
+        summary: "Opening Quick Add on a product that has no product images previously resulted in a broken layout. The variant selector now shows a clean placeholder instead, so you can still choose your size and add the item to your cart without any visual glitches."
+    },
+    {
+        date: "2026-04-19",
+        category: "Fix",
+        headline: "Product page content no longer hides behind the sticky buy bar on mobile",
+        summary: "On mobile, the content near the bottom of a product page — including the footer — was occasionally tucked behind the sticky Add to Cart bar, making it unreachable. The page now has enough bottom spacing to keep all content accessible."
+    },
+    {
         date: "2026-04-19",
         category: "Improvement",
         headline: "Cart suggestions heading rotates based on your cart",

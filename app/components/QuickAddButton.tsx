@@ -56,6 +56,7 @@ import {QuickAddSheet} from "~/components/QuickAddSheet";
 import {QuickAddDialog} from "~/components/QuickAddDialog";
 import {getButtonLabel} from "~/lib/product-tags";
 import {Button} from "~/components/ui/button";
+import {useCartMutationPending} from "~/lib/cart-utils";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Types
@@ -197,6 +198,7 @@ export function QuickAddButton({
     const {open} = useAside();
     const [isSheetOpen, setIsSheetOpen] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
+    const isMutating = useCartMutationPending();
 
     // Get the appropriate button label based on product tags and context
     // Priority: 1. Preorder products → "Pre Order"
@@ -303,7 +305,7 @@ export function QuickAddButton({
                     return (
                         <Button
                             type="submit"
-                            disabled={isLoading}
+                            disabled={isLoading || isMutating}
                             onClick={e => {
                                 e.stopPropagation();
                                 // Open cart drawer on click (form will submit)
@@ -319,6 +321,7 @@ export function QuickAddButton({
                                 "motion-interactive",
                                 "hover:bg-primary", // Override default hover:bg-primary/90 to remove opacity change
                                 isLoading && "opacity-70 cursor-wait",
+                                isMutating && !isLoading && "opacity-60 cursor-not-allowed",
                                 className
                             )}
                             aria-label={`Add ${product.title} to cart`}
@@ -357,6 +360,7 @@ export function QuickAddButton({
         <>
             <Button
                 type="button"
+                disabled={isMutating}
                 onClick={handleClick}
                 className={cn(
                     baseStyles,
@@ -364,6 +368,7 @@ export function QuickAddButton({
                     !fullWidth && "active:scale-95",
                     "motion-interactive",
                     "hover:bg-primary", // Override default hover:bg-primary/90 to remove opacity change
+                    isMutating && "opacity-60 cursor-not-allowed",
                     className
                 )}
                 aria-label={`Select options for ${product.title}`}

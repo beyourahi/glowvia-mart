@@ -156,10 +156,10 @@ function getFontSizes(
             };
         }
 
-        // Card compact mode
+        // Card compact mode (cart suggestions context)
         return {
-            primary: "text-sm md:text-base",
-            secondary: "text-sm"
+            primary: "text-xs sm:text-sm",
+            secondary: "text-xs"
         };
     }
 

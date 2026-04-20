@@ -287,6 +287,13 @@ interface ProductItemProps {
      * @default false
      */
     orderHistoryContext?: boolean;
+    /**
+     * Additional className forwarded directly to QuickAddButton — used for
+     * context-specific overrides (e.g. height reduction in Cart Suggestions).
+     * Merged on top of any compactMode-derived classes.
+     * @default undefined
+     */
+    quickAddClassName?: string;
 }
 
 export function ProductItem({
@@ -317,7 +324,8 @@ export function ProductItem({
     darkContext = false,
     quickAddLargeScreenOnly = false,
     skipCartOpen = false,
-    orderHistoryContext = false
+    orderHistoryContext = false,
+    quickAddClassName
 }: ProductItemProps) {
     // Get dynamic font sizes based on grid columns and variant
     const fontSizes = getProductFontSizes(gridColumns, variant);
@@ -729,6 +737,7 @@ export function ProductItem({
                             largeScreenOnly={quickAddLargeScreenOnly}
                             skipCartOpen={skipCartOpen}
                             orderHistoryContext={orderHistoryContext}
+                            className={cn(compactMode ? "text-sm sm:text-sm" : undefined, quickAddClassName)}
                         />
                     </div>
                 ) : null}

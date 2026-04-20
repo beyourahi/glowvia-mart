@@ -144,7 +144,8 @@ export function CartMain({layout, cart: originalCart, isLoggedIn, hasStoreCredit
             <CartAsideHeader itemCount={cart?.totalQuantity ?? 0} />
 
             {/* Scrollable items area - data-lenis-prevent allows native scroll when Lenis is active */}
-            <div className="flex-1 min-h-0 overflow-y-auto scroll-smooth px-2 sm:px-4 pt-4" data-lenis-prevent>
+            {/* flex flex-col enables mt-auto on the suggestions block to push it toward the bottom */}
+            <div className="flex flex-col flex-1 min-h-0 overflow-y-auto scroll-smooth px-2 sm:px-4 pt-4" data-lenis-prevent>
                 <CartEmpty hidden={linesCount} layout={layout} />
                 {linesCount && (
                     <div role="list" aria-label="Cart items" className="space-y-3">
@@ -159,19 +160,22 @@ export function CartMain({layout, cart: originalCart, isLoggedIn, hasStoreCredit
                         ))}
                     </div>
                 )}
-                {/* Product suggestions — renders for both empty and non-empty cart states */}
+                {/* Product suggestions — mt-auto absorbs remaining flex space, creating a natural gap
+                    above suggestions without hardcoding a fixed margin that would look wrong at every height */}
                 {rootData?.cartSuggestions && (
-                    <Suspense fallback={<CartSuggestionsSkeleton />}>
-                        <Await resolve={rootData.cartSuggestions}>
-                            {products => (
-                                <CartSuggestions
-                                    products={products}
-                                    layout={layout}
-                                    cartLines={cart?.lines?.nodes ?? []}
-                                />
-                            )}
-                        </Await>
-                    </Suspense>
+                    <div className="mt-auto">
+                        <Suspense fallback={<CartSuggestionsSkeleton />}>
+                            <Await resolve={rootData.cartSuggestions}>
+                                {products => (
+                                    <CartSuggestions
+                                        products={products}
+                                        layout={layout}
+                                        cartLines={cart?.lines?.nodes ?? []}
+                                    />
+                                )}
+                            </Await>
+                        </Suspense>
+                    </div>
                 )}
             </div>
 
@@ -410,7 +414,7 @@ function CartSuggestions({products, layout, cartLines}: CartSuggestionsProps) {
                         {shuffledProducts.map(product => (
                             <CarouselItem
                                 key={product.id}
-                                className="pl-2 md:pl-3 basis-[48%] sm:basis-[38%] lg:basis-[33%] xl:basis-[30%]"
+                                className="pl-2 md:pl-3 basis-[60%] sm:basis-[50%] lg:basis-[44%] xl:basis-[40%]"
                             >
                                 <ProductItem
                                     product={product}
@@ -422,6 +426,7 @@ function CartSuggestions({products, layout, cartLines}: CartSuggestionsProps) {
                                     showWishlist={true}
                                     darkContext={true}
                                     skipCartOpen={true}
+                                    quickAddClassName="!h-9"
                                 />
                             </CarouselItem>
                         ))}

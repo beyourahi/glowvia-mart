@@ -54,6 +54,7 @@ import {cn} from "~/lib/utils";
 import {useScrolled} from "~/lib/useScrolled";
 import {useSiteSettings} from "~/lib/site-content-context";
 import {BRAND_NAME_FONT_CLASS} from "~/lib/brand-name-sizes";
+import {useCartMutationPending} from "~/lib/cart-utils";
 
 const FALLBACK_HEADER_MENU = {
     id: "fallback-menu",
@@ -363,6 +364,7 @@ function CartBadge({
 }) {
     const {open} = useAside();
     const {publish, shop, cart, prevCart} = useAnalytics();
+    const isMutating = useCartMutationPending();
     const displayCount = count ?? 0;
     const hasItems = displayCount > 0;
 
@@ -376,6 +378,7 @@ function CartBadge({
                 // min-h-11 ensures 44px tap target for accessibility
                 // text-base font-medium matches Menu button typography
                 "min-h-11 text-base font-medium cursor-pointer motion-interactive hover:bg-transparent hover:text-inherit",
+                isMutating && "opacity-60 pointer-events-none",
                 hasItems
                     ? // Filled cart: horizontal padding for visual balance + primary styling
                       "px-3 sm:px-4 bg-primary text-primary-foreground border-transparent hover:bg-primary hover:text-primary-foreground"

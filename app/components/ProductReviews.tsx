@@ -441,9 +441,9 @@ export function ProductReviews({reviews}: {reviews: ReviewNode[]}) {
                                     role="tablist"
                                     aria-label="Review slide navigation"
                                 >
-                                    {scrollSnaps.map((_, i) => (
+                                    {scrollSnaps.map((snap, i) => (
                                         <button
-                                            key={i}
+                                            key={snap}
                                             role="tab"
                                             aria-selected={i === selectedIndex}
                                             aria-label={`Go to slide ${i + 1}`}

@@ -79,7 +79,8 @@ import type {CartSummaryProps} from "types";
 import {CartForm} from "@shopify/hydrogen";
 import {Money} from "~/components/Money";
 import {useEffect, useRef, useState} from "react";
-import {useFetcher, useFetchers} from "react-router";
+import {useFetcher} from "react-router";
+import {useCartMutationPending} from "~/lib/cart-utils";
 import {Progress} from "~/components/ui/progress";
 import {Wallet, Check, Truck, Loader2, Sparkles, PartyPopper, WifiOff} from "lucide-react";
 import {Textarea} from "~/components/ui/textarea";
@@ -123,28 +124,6 @@ const FALLBACK_CART_CONTENT = {
 const FALLBACK_UI_MESSAGES = {
     loadingSaving: "Saving..."
 } as const;
-
-// =============================================================================
-// CART MUTATION STATE HOOK
-// =============================================================================
-
-/**
- * Global fetcher key used by all cart mutations.
- * Must match the key used in CartLineItem.tsx and other cart components.
- */
-const CART_FETCHER_KEY = "cart-mutation";
-
-/**
- * Detects if any cart mutation is currently in flight.
- * Used to show "Calculating..." state on the subtotal while
- * waiting for the server to return updated totals.
- *
- * @returns true if a cart mutation (add/update/remove) is pending
- */
-function useCartMutationPending(): boolean {
-    const fetchers = useFetchers();
-    return fetchers.some(fetcher => fetcher.key === CART_FETCHER_KEY && fetcher.state !== "idle");
-}
 
 // =============================================================================
 // MAIN CART SUMMARY COMPONENT

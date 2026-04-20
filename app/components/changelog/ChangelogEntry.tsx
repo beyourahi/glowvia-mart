@@ -3,7 +3,7 @@
  *
  * @description
  * Renders one user-facing changelog entry as a card with category badge,
- * headline, and word-boundary-truncated summary. Dates are grouped at the
+ * headline, and full summary text. Dates are grouped at the
  * section level (ChangelogPage) rather than per-entry.
  *
  * @accessibility
@@ -77,27 +77,9 @@ const CATEGORY_DOT_COLORS: Record<ChangelogCategory, string> = {
 // CONSTANTS
 // =============================================================================
 
-/** Maximum characters to display before truncating with a word-boundary ellipsis */
-const SUMMARY_MAX_CHARS = 200;
-
 /** Animation delay cap (11 items * 40ms = 440ms max) */
 const MAX_STAGGER_INDEX = 11;
 const STAGGER_INCREMENT_MS = 40;
-
-// =============================================================================
-// HELPERS
-// =============================================================================
-
-/**
- * Truncates `text` to `maxChars` at the nearest word boundary, appending "…".
- * If text fits within the limit, returns it unchanged.
- */
-function truncateAtWord(text: string, maxChars: number): string {
-    if (text.length <= maxChars) return text;
-    const truncated = text.slice(0, maxChars);
-    const lastSpace = truncated.lastIndexOf(" ");
-    return (lastSpace > 0 ? truncated.slice(0, lastSpace) : truncated) + "\u2026";
-}
 
 // =============================================================================
 // COMPONENT
@@ -111,7 +93,6 @@ interface ChangelogEntryProps {
 export function ChangelogEntryCard({entry, index}: ChangelogEntryProps) {
     const delayMs = Math.min(index, MAX_STAGGER_INDEX) * STAGGER_INCREMENT_MS;
     const categoryStyle = entry.category ? CATEGORY_STYLES[entry.category] : null;
-    const displaySummary = truncateAtWord(entry.summary, SUMMARY_MAX_CHARS);
 
     return (
         <article
@@ -137,7 +118,7 @@ export function ChangelogEntryCard({entry, index}: ChangelogEntryProps) {
             <h3 className="font-serif text-base sm:text-lg font-semibold text-[var(--text-primary)] leading-snug mt-2 mb-1.5">
                 {entry.headline}
             </h3>
-            <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{displaySummary}</p>
+            <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{entry.summary}</p>
             <p className="mt-3 text-xs text-[var(--text-subtle)]">
                 by{" "}
                 <a

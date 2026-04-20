@@ -77,16 +77,17 @@ Backend behavior, data flow, and Hydrogen conventions **must remain consistent**
 storefront_002/
 ├── app/
 │   ├── routes/              # 49 routes
-│   ├── components/          # 129 components
+│   ├── components/          # 132 components
 │   │   ├── ui/              # 27 shadcn
 │   │   ├── blog/            # 7 blog
 │   │   ├── changelog/       # 2 changelog
 │   │   ├── pwa/             # 5 PWA
+│   │   ├── product/         # ShoppingSummary, ProductBadge
 │   │   ├── motion/          # Parallax
 │   │   ├── gallery/         # Gallery grid
 │   │   ├── icons/           # Custom icons
 │   │   └── ProductLightbox/ # Lightbox system
-│   ├── lib/                 # 64 utilities
+│   ├── lib/                 # 66 utilities
 │   │   ├── metaobject-*.ts  # CMS
 │   │   ├── pwa-*.ts         # PWA
 │   │   ├── changelog-data.ts # Static changelog entries
@@ -196,7 +197,7 @@ For portfolio Workers deploys, demo-store credentials live in `wrangler.jsonc`. 
 **Architecture**: `lib/pwa-queries.ts`, `lib/pwa-parsers.ts`, `lib/color/`, `lib/metaobject-*.ts`, `public/sw.js`
 **Config**: `vite.config.ts`, `react-router.config.ts`, `eslint.config.js`, `styles/tailwind.css`
 **GraphQL**: `storefrontapi.generated.d.ts`, `customer-accountapi.generated.d.ts`
-**Solutions**: `lib/color/contrast.ts` (WCAG), `lib/wishlist-context.tsx` (SSR), `lib/smoothScroll.ts` (Lenis)
+**Solutions**: `lib/color/contrast.ts` (WCAG), `lib/wishlist-context.tsx` (SSR), `lib/smoothScroll.ts` (Lenis), `lib/cart-utils.ts` (global cart fetcher key — all CartForm components must use this key to prevent simultaneous Shopify mutations)
 **Shared UI Patterns**: `components/PageHeading.tsx` — unified page heading + optional description used across all content pages (changelog, gallery, search, blog, FAQ, policies, etc.); use this instead of ad-hoc heading markup
 **Data Source Resolver**: `app/lib/data-source.ts` — validates store env and proxies Shopify queries used by the app context
 **Content Defaults**: `app/lib/metaobject-parsers.ts` — fallback UI and content constants used when metaobject fields are missing

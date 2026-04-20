@@ -30,6 +30,12 @@ import type {ChangelogEntry} from "~/lib/types/changelog";
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
         date: "2026-04-20",
+        category: "Improvement",
+        headline: "Only the updated item's price animates during cart changes",
+        summary: "When you change the quantity of one item, only that item's price shows the loading shimmer — all other items in your bag remain fully visible and static. The checkout total still updates to reflect any change."
+    },
+    {
+        date: "2026-04-20",
         category: "Design",
         headline: "Prices animate gracefully while your cart is updating",
         summary: "Instead of showing a spinner or going blank, prices in your bag and in the checkout button now display a soft shimmer while a cart change is in progress. The Checkout label and its icon stay visible at all times — only the price itself animates until the updated total arrives."

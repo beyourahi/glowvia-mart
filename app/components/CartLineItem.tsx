@@ -87,7 +87,7 @@ import {CartForm, Image, OptimisticInput, useOptimisticData, type OptimisticCart
 import {useVariantUrl} from "~/lib/variants";
 import {useCallback, useMemo} from "react";
 import {Link} from "react-router";
-import {CART_FETCHER_KEY, useCartMutationPending} from "~/lib/cart-utils";
+import {CART_FETCHER_KEY, useCartMutationPending, useLineItemMutating} from "~/lib/cart-utils";
 import {ProductPrice} from "./ProductPrice";
 import {ProductTitle} from "./ProductTitle";
 import {Money} from "~/components/Money";
@@ -113,6 +113,7 @@ export function CartLineItem({layout, line}: {layout: CartLayout; line: CartLine
     const {canHover} = usePointerCapabilities();
     const isPage = layout === "page";
     const isMutating = useCartMutationPending();
+    const isLineLoading = useLineItemMutating(id);
     const optimisticData = useOptimisticData<{action: string; quantity?: number}>(id);
     const isRemoving = optimisticData?.action === "remove";
 
@@ -228,7 +229,7 @@ export function CartLineItem({layout, line}: {layout: CartLayout; line: CartLine
                         {/* Bottom Row: Price + Quantity Controls */}
                         <div className="flex items-center justify-between mt-auto pt-0.5">
                             <span className="font-mono tabular-nums text-base sm:text-lg font-medium text-primary-foreground tracking-tight">
-                                {isMutating ? (
+                                {isLineLoading ? (
                                     <>
                                         <PriceLoadingIndicator />
                                         <span className="sr-only">calculating</span>
@@ -324,7 +325,7 @@ export function CartLineItem({layout, line}: {layout: CartLayout; line: CartLine
                     {/* Bottom Row: Price + Quantity Controls */}
                     <div className="flex items-center justify-between mt-auto pt-0.5">
                         <span className="font-mono tabular-nums text-base sm:text-lg font-medium text-primary tracking-tight">
-                            {isMutating ? (
+                            {isLineLoading ? (
                                 <>
                                     <PriceLoadingIndicator />
                                     <span className="sr-only">calculating</span>

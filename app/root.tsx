@@ -732,7 +732,7 @@ const CART_SUGGESTIONS_QUERY = `#graphql
       width
       height
     }
-    variants(first: 1) {
+    variants(first: 250) {
       nodes {
         id
         title
@@ -742,6 +742,10 @@ const CART_SUGGESTIONS_QUERY = `#graphql
           value
         }
         price {
+          amount
+          currencyCode
+        }
+        compareAtPrice {
           amount
           currencyCode
         }

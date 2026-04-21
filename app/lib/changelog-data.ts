@@ -29,6 +29,12 @@ import type {ChangelogEntry} from "~/lib/types/changelog";
 // Newest entries at the top. Add new entries here in the same commit that ships the change.
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
+        date: "2026-04-21",
+        category: "Fix",
+        headline: "\"Get Now\" in cart suggestions now opens the size/colour picker",
+        summary: "Tapping \"Get Now\" on a product in the suggested items carousel inside your bag now correctly opens the variant selector so you can choose your size, colour, or style before adding — instead of silently adding the default option."
+    },
+    {
         date: "2026-04-20",
         category: "Improvement",
         headline: "Only the updated item's price animates during cart changes",

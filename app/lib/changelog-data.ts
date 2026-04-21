@@ -53,6 +53,18 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
         summary: "Tapping \"Get Now\" on a product in the suggested items carousel inside your bag now correctly opens the variant selector so you can choose your size, colour, or style before adding — instead of silently adding the default option."
     },
     {
+        date: "2026-04-21",
+        category: "Design",
+        headline: "Featured product action buttons are now full-width on small screens",
+        summary: "On phones with narrow screens, the call-to-action buttons in the homepage featured product section now span the full available width, making them easier to tap. The newsletter section on mobile also shows a more compact layout to keep the page clean."
+    },
+    {
+        date: "2026-04-21",
+        category: "Improvement",
+        headline: "Wishlist can now be sorted alphabetically by product name",
+        summary: "Two new sort options — A to Z and Z to A — have been added to the wishlist controls, making it easy to find a specific saved item by name when your list is long. The sort and view controls have also been reorganised into a cleaner layout on all screen sizes."
+    },
+    {
         date: "2026-04-20",
         category: "Improvement",
         headline: "Only the updated item's price animates during cart changes",
@@ -194,6 +206,12 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     },
     {
         date: "2026-04-18",
+        category: "Fix",
+        headline: "Add to Bag button no longer gets stuck after returning from the checkout page",
+        summary: "If you tapped 'Add to Bag' and then navigated back from the Shopify checkout page, the button could become unresponsive for the rest of the session — requiring a page refresh to shop again. It now resets correctly when you return, so you can keep adding items without any interruption."
+    },
+    {
+        date: "2026-04-18",
         headline: "Hover effects disabled on touch — smoother mobile experience",
         summary:
             "On phones and tablets, hover animations no longer trigger on tap — eliminating ghost hover states and reducing unnecessary style recalculation. Content that was previously only visible on hover (gallery overlays, expand buttons) is now always visible on touch screens.",
@@ -272,6 +290,12 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     },
     {
         date: "2026-04-15",
+        category: "Improvement",
+        headline: "App updates now apply automatically without any action from you",
+        summary: "When the store app receives an update, the changes now take effect on your next visit — with no 'A new version is available' banner to dismiss or 'Refresh' prompt to acknowledge."
+    },
+    {
+        date: "2026-04-15",
         time: "6pm",
         headline: "Search button on the hero now shows a rotating label as you hover",
         summary:
@@ -309,6 +333,12 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
         summary:
             "The total number of updates shipped so far is now shown as a large, prominent number framed by ruled lines and dot accents — the same visual motifs used in the timeline below. It reads as a milestone rather than a footnote.",
         category: "Design"
+    },
+    {
+        date: "2026-04-14",
+        category: "Improvement",
+        headline: "Contact page now redirects to the FAQ section",
+        summary: "The standalone contact page has been retired. Visiting the contact URL now takes you straight to the FAQ section, where common questions are answered — and store contact details are available directly on the homepage."
     },
     {
         date: "2026-04-13",
@@ -381,6 +411,12 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
         summary:
             "The floating Install App button is now consistently visible across all browsers and screen sizes, making it easy to add the store to your home screen whenever you're ready.",
         category: "Fix"
+    },
+    {
+        date: "2026-04-10",
+        category: "Improvement",
+        headline: "Installed app users are now prompted to open the app, not install it again",
+        summary: "If you have already added the store to your home screen, the install button now recognises this and shows a prompt to open the installed app directly — instead of offering to install something you already have."
     },
     {
         date: "2026-04-10",
@@ -557,5 +593,89 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
         summary:
             "The number shown next to \"All Products\" in the full-screen navigation menu was sometimes displaying an incorrect total. It now always reflects the actual product count in the store.",
         category: "Fix"
+    },
+    {
+        date: "2026-04-05",
+        category: "New Feature",
+        headline: "Collections can now be sorted by best sellers",
+        summary: "A 'Best Selling' option has been added to the sort controls on all collection pages, so you can quickly see the most popular products in any category without having to guess which ones other shoppers prefer."
+    },
+    {
+        date: "2026-04-04",
+        category: "New Feature",
+        headline: "Newsletter sign-up section added to the homepage",
+        summary: "A newsletter subscription block now appears on the homepage between the FAQ and the footer, making it easy for visitors to sign up for updates without navigating away from what they are browsing."
+    },
+    {
+        date: "2026-04-02",
+        category: "Design",
+        headline: "Account pages have been refreshed with a consistent card-based layout",
+        summary: "Your order history, saved addresses, profile settings, and other account sections have been redesigned with a unified card layout and subtle entrance animations — making the account area feel more polished and easier to navigate."
+    },
+    {
+        date: "2026-04-01",
+        category: "Fix",
+        headline: "Homepage no longer shows a dark blank area when loading",
+        summary: "On certain devices and browsers, the top section of the homepage briefly appeared as a solid dark block before the hero image and content loaded in. The page now renders cleanly from the first frame, and the hero animation plays reliably every time."
+    },
+    {
+        date: "2026-04-01",
+        category: "Improvement",
+        headline: "Blog page now shows a helpful message when no articles are published yet",
+        summary: "When the blog has no published articles, the page previously appeared blank. It now shows a friendly message along with a direct link to browse the shop, so visitors always have somewhere useful to go."
+    },
+    {
+        date: "2026-04-01",
+        category: "Fix",
+        headline: "Account navigation is now hidden for visitors who are not signed in",
+        summary: "When visiting account-related pages without being logged in, the account navigation sidebar was still showing. It now stays out of the way for signed-out visitors, keeping the page relevant to what you can actually do."
+    },
+    {
+        date: "2026-04-01",
+        category: "Fix",
+        headline: "Page-not-found errors now show a clean, friendly message",
+        summary: "When you landed on a page that doesn't exist, the error screen used to display the full URL path in the message, which looked technical and confusing. It now shows a short, plain message instead."
+    },
+    {
+        date: "2026-04-01",
+        category: "Fix",
+        headline: "Navigating directly to the cart address no longer shows an error",
+        summary: "Typing the cart URL directly into the browser or following an outdated bookmark to the cart page used to return a page-not-found error. It now redirects you to the homepage instead."
+    },
+    {
+        date: "2026-04-01",
+        category: "Improvement",
+        headline: "Older product and collection links now redirect to the right page",
+        summary: "Links to products and collections using older URL formats — from previous store setups, social posts, or bookmarks — now automatically redirect to the correct page instead of landing on a 404 error."
+    },
+    {
+        date: "2026-03-26",
+        category: "Improvement",
+        headline: "Log out and cancel subscription buttons now show a loading indicator",
+        summary: "Clicking 'Log out' or 'Cancel subscription' now immediately disables the button and shows a spinner while the action processes — preventing accidental double-taps and making it clear that your request is on its way."
+    },
+    {
+        date: "2026-03-23",
+        category: "Fix",
+        headline: "Brand marquee no longer pauses when you hover over it",
+        summary: "The scrolling strip at the bottom of the hero section used to stop moving when you moved your cursor over it. It now scrolls continuously — hovering over it no longer interrupts the animation."
+    },
+    {
+        date: "2026-03-09",
+        category: "Fix",
+        headline: "Brand name animation plays correctly as you scroll",
+        summary: "The animation that brings the store name into view as you scroll down past the hero section was not triggering reliably. It now plays smoothly on every page load."
+    },
+    {
+        date: "2026-03-06",
+        category: "Fix",
+        headline: "Navigation links are now easier to read",
+        summary: "The colour of links in the top navigation bar has been adjusted for better readability, making it clearer which items are tappable and where they take you."
+    },
+    {
+        date: "2026-03-04",
+        category: "Fix",
+        headline: "Checkout button now correctly opens the checkout page",
+        summary: "The 'Proceed to Checkout' button was not navigating to the checkout page — clicking it did nothing. It now takes you to your cart checkout every time."
     }
 ];

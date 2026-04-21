@@ -221,67 +221,65 @@ export default function Article({loaderData}: Route.ComponentProps) {
             {/* Immersive Hero Image
                 Full-bleed on mobile, rounded + constrained on desktop.
                 pt-(--page-breathing-room): Breathing room from fixed header (24px to 64px)
-                Bottom gradient fades into page background for seamless transition. */}
+                Bottom gradient fades into page background for seamless transition.
+                No entrance animation — above-the-fold content must be immediately visible. */}
             {image && (
-                <AnimatedSection animation="fade" threshold={0.1}>
-                    <div className="relative w-full overflow-hidden pt-(--page-breathing-room) md:rounded-2xl md:mx-auto md:max-w-5xl">
-                        <div className="aspect-16/10 sm:aspect-video md:aspect-2/1">
-                            <Image
-                                data={image}
-                                sizes="(min-width: 1280px) 1024px, (min-width: 768px) 90vw, 100vw"
-                                loading="eager"
-                                className="h-full w-full object-cover"
-                            />
-                        </div>
-                        {/* Bottom gradient fade into background */}
-                        <div
-                            className="absolute inset-x-0 bottom-0 h-24 sm:h-32 bg-linear-to-t from-background via-background/60 to-transparent"
-                            aria-hidden="true"
+                <div className="relative w-full overflow-hidden pt-(--page-breathing-room) md:rounded-2xl md:mx-auto md:max-w-5xl">
+                    <div className="aspect-16/10 sm:aspect-video md:aspect-2/1">
+                        <Image
+                            data={image}
+                            sizes="(min-width: 1280px) 1024px, (min-width: 768px) 90vw, 100vw"
+                            loading="eager"
+                            className="h-full w-full object-cover"
                         />
                     </div>
-                </AnimatedSection>
+                    {/* Bottom gradient fade into background */}
+                    <div
+                        className="absolute inset-x-0 bottom-0 h-24 sm:h-32 bg-linear-to-t from-background via-background/60 to-transparent"
+                        aria-hidden="true"
+                    />
+                </div>
             )}
 
             <article className="px-4 md:px-6 lg:px-8">
                 {/* Article Header - centered magazine-style layout
-                    Matches the blog index and category pages' centered headings */}
-                <AnimatedSection animation="slide-up" threshold={0.1} delay={100}>
-                    <header className="mx-auto max-w-3xl text-center space-y-5 md:space-y-6 pt-6 md:pt-8 mb-10 md:mb-14 lg:mb-16">
-                        {/* Tags - centered row */}
-                        {tags && tags.length > 0 && (
-                            <div className="flex justify-center">
-                                <TagList tags={tags} variant="outline" size="sm" blogHandle={blogHandle} />
-                            </div>
+                    Matches the blog index and category pages' centered headings.
+                    No entrance animation — above-the-fold content must be immediately visible. */}
+                <header className="mx-auto max-w-3xl text-center space-y-5 md:space-y-6 pt-6 md:pt-8 mb-10 md:mb-14 lg:mb-16">
+                    {/* Tags - centered row */}
+                    {tags && tags.length > 0 && (
+                        <div className="flex justify-center">
+                            <TagList tags={tags} variant="outline" size="sm" blogHandle={blogHandle} />
+                        </div>
+                    )}
+
+                    {/* Title - fluid sizing with serif typography */}
+                    <h1 className="font-serif text-fluid-h2 font-medium leading-[1.15] tracking-tight text-primary">
+                        {title}
+                    </h1>
+
+                    {/* Meta Row - centered with dot separators */}
+                    <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-sm md:text-base text-muted-foreground">
+                        {author?.name && (
+                            <>
+                                <span className="font-medium text-foreground">{author.name}</span>
+                                <span className="text-muted-foreground/40" aria-hidden="true">
+                                    &middot;
+                                </span>
+                            </>
                         )}
+                        <time dateTime={publishedAt}>{publishedDate}</time>
+                        <span className="text-muted-foreground/40" aria-hidden="true">
+                            &middot;
+                        </span>
+                        <span>{readingTime} min read</span>
+                    </div>
 
-                        {/* Title - fluid sizing with serif typography */}
-                        <h1 className="font-serif text-fluid-h2 font-medium leading-[1.15] tracking-tight text-primary">
-                            {title}
-                        </h1>
-
-                        {/* Meta Row - centered with dot separators */}
-                        <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-sm md:text-base text-muted-foreground">
-                            {author?.name && (
-                                <>
-                                    <span className="font-medium text-foreground">{author.name}</span>
-                                    <span className="text-muted-foreground/40" aria-hidden="true">
-                                        &middot;
-                                    </span>
-                                </>
-                            )}
-                            <time dateTime={publishedAt}>{publishedDate}</time>
-                            <span className="text-muted-foreground/40" aria-hidden="true">
-                                &middot;
-                            </span>
-                            <span>{readingTime} min read</span>
-                        </div>
-
-                        {/* Decorative flourish line - replaces full-width Separator */}
-                        <div className="flex justify-center pt-2" aria-hidden="true">
-                            <div className="w-12 h-px bg-primary/30" />
-                        </div>
-                    </header>
-                </AnimatedSection>
+                    {/* Decorative flourish line - replaces full-width Separator */}
+                    <div className="flex justify-center pt-2" aria-hidden="true">
+                        <div className="w-12 h-px bg-primary/30" />
+                    </div>
+                </header>
 
                 {/* Article Content
                     Uses dedicated .article-content CSS class from tailwind.css

@@ -102,6 +102,8 @@ function robotsTxtData({url, shopId}: {shopId?: string; url?: string}) {
 User-agent: *
 ${generalDisallowRules({sitemapUrl, shopId})}
 
+${aiCrawlerRules({shopId})}
+
 # Google adsbot ignores robots.txt unless specifically named!
 User-agent: adsbot-google
 Disallow: /checkouts/
@@ -187,6 +189,45 @@ Disallow: /search/?*
 Disallow: /apple-app-site-association
 Disallow: /.well-known/shopify/monorail
 ${sitemapUrl ? `Sitemap: ${sitemapUrl}` : ""}`;
+}
+
+/**
+ * Generates explicit allow rules for major AI crawlers.
+ *
+ * All named bots are permitted to index public storefront content (products,
+ * collections, blogs, pages, policies) while private paths remain blocked.
+ * Explicit rules override the general User-agent: * block for these agents,
+ * signalling clear opt-in intent to AI search and retrieval systems.
+ */
+function aiCrawlerRules({shopId}: {shopId?: string}) {
+    return `# AI crawlers — explicitly permitted to index all public storefront content
+User-agent: GPTBot
+User-agent: OAI-SearchBot
+User-agent: ChatGPT-User
+User-agent: ClaudeBot
+User-agent: anthropic-ai
+User-agent: Claude-Web
+User-agent: Google-Extended
+User-agent: PerplexityBot
+User-agent: YouBot
+User-agent: Applebot-Extended
+User-agent: cohere-ai
+User-agent: CCBot
+User-agent: Bytespider
+Allow: /products
+Allow: /collections
+Allow: /blogs
+Allow: /pages
+Allow: /policies
+Disallow: /admin
+Disallow: /cart
+Disallow: /checkout
+Disallow: /checkouts/
+Disallow: /carts
+Disallow: /orders
+Disallow: /account
+${shopId ? `Disallow: /${shopId}/checkouts` : ""}
+${shopId ? `Disallow: /${shopId}/orders` : ""}`;
 }
 
 // =============================================================================

@@ -54,8 +54,10 @@
 import {useState, useEffect, useMemo, useCallback, useRef} from "react";
 import {useFetcher} from "react-router";
 import {CartForm} from "@shopify/hydrogen";
-import {Loader2, Share2} from "lucide-react";
+import {Share2} from "lucide-react";
 import {cn} from "~/lib/utils";
+import {Button} from "~/components/ui/button";
+import {Spinner} from "~/components/ui/spinner";
 import {useScrollLock} from "~/hooks/useScrollLock";
 import {Money} from "~/components/Money";
 import {QuantitySelector} from "~/components/QuantitySelector";
@@ -275,7 +277,7 @@ export function QuickAddSheet({product, open, onOpenChange, sizeChart}: QuickAdd
 
                         {/* Product title and price */}
                         <div className="flex-1 min-w-0">
-                            <SheetTitle className="font-sans text-xl font-medium leading-snug text-primary line-clamp-2 mb-0">
+                            <SheetTitle className="line-clamp-2 leading-snug">
                                 <span>{primary}</span>
                                 {secondary && <span>, {secondary}</span>}
                             </SheetTitle>
@@ -325,62 +327,70 @@ export function QuickAddSheet({product, open, onOpenChange, sizeChart}: QuickAdd
                                 const isColor = isColorOption(group.name);
 
                                 return (
-                                    <div key={group.name} className="flex flex-wrap gap-2">
-                                        {group.values.map(value => {
-                                            const isSelected = currentSelections[group.name] === value.value;
-                                            const variant = findVariantByOptions(product.variants.nodes, {
-                                                ...currentSelections,
-                                                [group.name]: value.value
-                                            });
-                                            const isAvailable = variant?.availableForSale ?? false;
+                                    <div key={group.name} className="flex flex-col gap-2">
+                                        {/* Group label — shown when multiple option groups exist (matches PDP) */}
+                                        {optionGroups.length > 1 && (
+                                            <p className="text-[11px] sm:text-[10px] font-semibold tracking-widest uppercase text-muted-foreground">
+                                                {group.name}
+                                            </p>
+                                        )}
+                                        <div className="flex flex-wrap gap-2">
+                                            {group.values.map(value => {
+                                                const isSelected = currentSelections[group.name] === value.value;
+                                                const variant = findVariantByOptions(product.variants.nodes, {
+                                                    ...currentSelections,
+                                                    [group.name]: value.value
+                                                });
+                                                const isAvailable = variant?.availableForSale ?? false;
 
-                                            // For color options, try to get swatch data from color name
-                                            const swatchData = isColor
-                                                ? getSwatchFromColorName(value.value)
-                                                : undefined;
-                                            const hasSwatchData = isColor && hasColorMapping(value.value);
+                                                // For color options, try to get swatch data from color name
+                                                const swatchData = isColor
+                                                    ? getSwatchFromColorName(value.value)
+                                                    : undefined;
+                                                const hasSwatchData = isColor && hasColorMapping(value.value);
 
-                                            // Pill button styling - consistent for all options
-                                            const buttonClasses = cn(
-                                                "inline-flex min-h-10 select-none items-center justify-center gap-2 rounded-full border-2 px-3 py-1.5 text-base font-medium sleek hover:scale-[1.02] hover:shadow-md active:scale-[0.98]",
-                                                isSelected
-                                                    ? "border-primary bg-primary text-primary-foreground"
-                                                    : "border-primary text-primary hover:bg-primary hover:text-primary-foreground",
-                                                !isAvailable && "opacity-50 cursor-not-allowed"
-                                            );
-
-                                            // Button content: swatch circle + name, or just name
-                                            const optionContent =
-                                                hasSwatchData && swatchData ? (
-                                                    <span className="inline-flex items-center gap-2">
-                                                        <ColorSwatch
-                                                            color={swatchData.color}
-                                                            name={value.value}
-                                                            size="sm"
-                                                            selected={isSelected}
-                                                        />
-                                                        <span>{value.value}</span>
-                                                    </span>
-                                                ) : (
-                                                    <span>{value.value}</span>
+                                                // Pill button styling — matches PDP variant pills exactly
+                                                const buttonClasses = cn(
+                                                    "inline-flex min-h-11 select-none items-center justify-center gap-1.5 sm:gap-2 rounded-full border-2 px-2.5 sm:px-4 py-1.5 text-sm sm:text-base lg:text-lg font-medium sleek hover:scale-[1.02] hover:shadow-md active:scale-[0.98]",
+                                                    isSelected
+                                                        ? "border-primary bg-primary text-primary-foreground"
+                                                        : "border-primary text-primary hover:bg-primary hover:text-primary-foreground",
+                                                    isAvailable ? "cursor-pointer" : "opacity-50 cursor-not-allowed"
                                                 );
 
-                                            return (
-                                                <button
-                                                    key={value.value}
-                                                    type="button"
-                                                    disabled={!isAvailable}
-                                                    onClick={() => {
-                                                        if (variant && isAvailable) {
-                                                            setSelectedVariantId(variant.id);
-                                                        }
-                                                    }}
-                                                    className={buttonClasses}
-                                                >
-                                                    {optionContent}
-                                                </button>
-                                            );
-                                        })}
+                                                // Button content: swatch circle + name, or just name
+                                                const optionContent =
+                                                    hasSwatchData && swatchData ? (
+                                                        <span className="inline-flex items-center gap-2">
+                                                            <ColorSwatch
+                                                                color={swatchData.color}
+                                                                name={value.value}
+                                                                size="sm"
+                                                                selected={isSelected}
+                                                            />
+                                                            <span>{value.value}</span>
+                                                        </span>
+                                                    ) : (
+                                                        <span>{value.value}</span>
+                                                    );
+
+                                                return (
+                                                    <button
+                                                        key={value.value}
+                                                        type="button"
+                                                        disabled={!isAvailable}
+                                                        onClick={() => {
+                                                            if (variant && isAvailable) {
+                                                                setSelectedVariantId(variant.id);
+                                                            }
+                                                        }}
+                                                        className={buttonClasses}
+                                                    >
+                                                        {optionContent}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
                                     </div>
                                 );
                             })}
@@ -388,7 +398,7 @@ export function QuickAddSheet({product, open, onOpenChange, sizeChart}: QuickAdd
                     )}
                 </SheetBody>
 
-                <SheetFooter className="border-none flex-col gap-3">
+                <SheetFooter className="flex-col gap-3">
                     {/* Quantity selector + Wishlist + Share row */}
                     {selectedVariant && selectedVariant.availableForSale && (
                         <div className="flex items-center justify-between gap-3">
@@ -400,14 +410,15 @@ export function QuickAddSheet({product, open, onOpenChange, sizeChart}: QuickAdd
                                     variant="primary-outline"
                                     size="default"
                                 />
-                                <button
+                                <Button
                                     type="button"
+                                    variant="outline"
+                                    size="icon"
                                     onClick={() => void handleShare()}
-                                    className="flex min-h-10 min-w-10 select-none items-center justify-center rounded-full border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground active:scale-95"
                                     aria-label="Share product"
                                 >
                                     <Share2 className="size-5" />
-                                </button>
+                                </Button>
                             </div>
                         </div>
                     )}
@@ -421,9 +432,13 @@ export function QuickAddSheet({product, open, onOpenChange, sizeChart}: QuickAdd
                             onSuccess={handleCartSuccess}
                         />
                     ) : availableVariants.length === 0 ? (
-                        <div className="w-full min-h-12 inline-flex items-center justify-center rounded-full border-2 border-muted bg-muted/50 px-3 sm:px-4 py-2 text-lg font-medium text-muted-foreground">
+                        <Button
+                            variant="outline"
+                            disabled
+                            className="w-full min-h-12 justify-center py-2 text-base sm:text-lg"
+                        >
                             {OUT_OF_STOCK_LABEL}
-                        </div>
+                        </Button>
                     ) : null}
                 </SheetFooter>
             </SheetContent>
@@ -490,15 +505,12 @@ function QuickAddCartButton({
     }, [fetcher, isLoading, variant.availableForSale, variant.id, quantity]);
 
     return (
-        <button
+        <Button
             type="button"
+            variant="outline"
             onClick={handleAddToCart}
             disabled={isLoading || !variant.availableForSale}
-            className={cn(
-                "w-full min-h-12 inline-flex select-none items-center justify-between gap-4 rounded-full border-2 border-primary bg-transparent px-3 sm:px-4 py-2 text-lg font-medium text-primary sleek",
-                "hover:bg-primary hover:text-primary-foreground active:bg-primary active:text-primary-foreground",
-                (isLoading || !variant.availableForSale) && "opacity-50 cursor-not-allowed"
-            )}
+            className="w-full min-h-12 justify-between gap-4 py-2 text-base sm:text-lg active:bg-primary active:text-primary-foreground"
         >
             <span className="flex items-center gap-2">
                 <Money data={variant.price} />
@@ -510,10 +522,13 @@ function QuickAddCartButton({
                     )}
             </span>
             <span className="flex items-center gap-2">
-                {isLoading && <Loader2 className="size-5 animate-spin" />}
-                {variant.availableForSale ? buttonLabel : OUT_OF_STOCK_LABEL}
+                {isLoading ? (
+                    <Spinner className="size-5" />
+                ) : (
+                    variant.availableForSale ? buttonLabel : OUT_OF_STOCK_LABEL
+                )}
             </span>
-        </button>
+        </Button>
     );
 }
 

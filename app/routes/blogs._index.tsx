@@ -82,8 +82,8 @@ export const meta: Route.MetaFunction = ({data, matches}) => {
         rootData?.siteContent?.siteSettings?.blogPageDescription ||
         "Explore stories, inspiration, and ideas to help you discover joy in everyday moments.";
 
-    return (
-        getSeoMeta({
+    return [
+        ...(getSeoMeta({
             title: pageTitle,
             titleTemplate: `%s | ${brandName}`,
             description: pageDescription,
@@ -97,8 +97,9 @@ export const meta: Route.MetaFunction = ({data, matches}) => {
                       type: "image" as const
                   }
                 : undefined
-        }) ?? []
-    );
+        }) ?? []),
+        {rel: "alternate", type: "application/rss+xml", title: `${pageTitle} RSS Feed`, href: "/blogs/feed.xml"}
+    ];
 };
 
 export async function loader(args: Route.LoaderArgs) {

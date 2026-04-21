@@ -30,6 +30,18 @@ import type {ChangelogEntry} from "~/lib/types/changelog";
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
         date: "2026-04-21",
+        category: "New Feature",
+        headline: "Blog articles now available as an RSS feed",
+        summary: "All published blog posts are now syndicated at /blogs/feed.xml in RSS 2.0 format. Subscribe in any RSS reader to get new articles automatically, or share the feed link with newsletter tools and content aggregators."
+    },
+    {
+        date: "2026-04-21",
+        category: "Design",
+        headline: "Quick-add sheet polished to match the site's visual style",
+        summary: "The variant-selection sheet that slides up on mobile when you tap a product's quick-add button has been refined throughout — title weight and colour now match the rest of the site, option group labels (Size, Bundle, etc.) are shown above each set of pills, and all interactive buttons now share the same animation and focus behaviour as the rest of the store."
+    },
+    {
+        date: "2026-04-21",
         category: "Fix",
         headline: "Trackpad scroll now works on cart suggestions carousel",
         summary: "Two-finger horizontal trackpad scroll through product suggestions in the cart drawer is fully working. Touch swipe on mobile also restored. Mouse drag-to-scroll remains off."

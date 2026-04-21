@@ -405,7 +405,8 @@ function CartSuggestions({products, layout, cartLines}: CartSuggestionsProps) {
                         align: "start",
                         loop: true,
                         dragFree: false,
-                        skipSnaps: false
+                        skipSnaps: false,
+                        watchDrag: false
                     }}
                     plugins={[WheelGesturesPlugin({forceWheelAxis: "x"})]}
                     className="w-full"

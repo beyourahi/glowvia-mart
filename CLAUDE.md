@@ -331,7 +331,11 @@ Read all comments before editing. Update when changing code. Add for complex log
 | background_color | theme_settings.color_background  | OKLCH→HEX                  |
 | icons            | site_settings.icon_192, icon_512 | Required                   |
 
-**Wishlist**: `lib/wishlist-context.tsx` - React Context + LocalStorage, SSR-safe, cross-tab sync, optimistic updates, 6 animations. Routes: `/wishlist`, `/wishlist/share`, `/account/wishlist`, API: `/api/wishlist-products`
+**Wishlist**: `lib/wishlist-context.tsx` - React Context + LocalStorage, SSR-safe, cross-tab sync, optimistic updates, 6 animations. Routes: `/wishlist`, `/wishlist/share`, `/account/wishlist`, API: `/api/wishlist-products`. Account view sort options: date newest/oldest, price asc/desc, A-Z/Z-A — persisted in localStorage via `useWishlistSort` in `account.wishlist.tsx`.
+
+**Cart**: `CartMain.tsx` — line items, promo codes, gift cards, order summary. Contains `CartSuggestions`: product recommendations carousel in the cart aside (fetched via `root.tsx` `cartSuggestions` deferred data). Multi-variant products open `QuickAddDialog` (desktop) or `QuickAddSheet` (mobile) for variant selection without leaving the cart.
+
+**Quick Add**: `QuickAddButton.tsx` / `QuickAddDialog.tsx` (desktop modal) / `QuickAddSheet.tsx` (mobile bottom sheet) — add-to-cart with variant selection from product cards, no PDP navigation required. Auto-selects first available variant, integrates quantity selector, auto-closes on success.
 
 **Color System**: `lib/color/` - OKLCH parsing, sRGB conversion, dual contrast (WCAG 2.1 + APCA), swatch borders, 500+ color names, `ensureContrastCompliance()`
 

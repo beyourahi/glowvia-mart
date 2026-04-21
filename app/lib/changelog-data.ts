@@ -30,6 +30,36 @@ import type {ChangelogEntry} from "~/lib/types/changelog";
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
         date: "2026-04-21",
+        category: "Performance",
+        headline: "Article pages now render instantly instead of fading section-by-section",
+        summary: "Entrance animations on the article body, share row, author bio, back button, and related articles have been removed. All sections are visible the moment the page loads — the reading experience feels faster and nothing scrolls into view as you read."
+    },
+    {
+        date: "2026-04-21",
+        category: "Design",
+        headline: "Share buttons on articles refreshed with stronger presence",
+        summary: "The share row at the bottom of each article has been redesigned — a bolder serif heading with a decorative rule, larger pill buttons with bigger icons, a subtle lift on hover, and tap targets that comfortably exceed accessibility minimums on every screen size."
+    },
+    {
+        date: "2026-04-21",
+        category: "Improvement",
+        headline: "Featured blog card is now fully tappable on the blog index",
+        summary: "Tapping anywhere on the featured article card at the top of the blog page now opens the article — not just the Read Article button. The card is also taller on phones so the image and headline carry more weight as the entry point to reading."
+    },
+    {
+        date: "2026-04-21",
+        category: "Fix",
+        headline: "Blog index no longer repeats a lone article twice",
+        summary: "When a store has only a single published article, the blog page now shows the featured hero on its own without repeating the same article in a list directly below it."
+    },
+    {
+        date: "2026-04-21",
+        category: "Improvement",
+        headline: "Recent searches now show a thumbnail of the product you last tapped",
+        summary: "When you search and tap a product result, that search term is saved alongside the product's thumbnail. The next time you open search, your recent search chips show a small image next to each term — making it much faster to recognise and return to things you were looking at."
+    },
+    {
+        date: "2026-04-21",
         category: "New Feature",
         headline: "Blog articles now available as an RSS feed",
         summary: "All published blog posts are now syndicated at /blogs/feed.xml in RSS 2.0 format. Subscribe in any RSS reader to get new articles automatically, or share the feed link with newsletter tools and content aggregators."

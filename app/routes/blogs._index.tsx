@@ -185,6 +185,16 @@ export default function Blogs({loaderData}: Route.ComponentProps) {
     // Get all articles if single category
     const allArticles = hasMultipleCategories ? selectedArticles : blogNodes[0]?.articles?.nodes || [];
 
+    // Total article count across every blog — used to decide whether the
+    // article list section should render at all. When a store has only one
+    // article published we hide the redundant list and let the featured hero
+    // carry the full weight of the page.
+    const totalArticleCount = blogNodes.reduce(
+        (sum, blog) => sum + (blog.articles?.nodes?.length || 0),
+        0
+    );
+    const shouldRenderArticleList = totalArticleCount > 1 && allArticles.length > 0;
+
     return (
         <div className="px-4 sm:px-6 lg:px-8 mb-4 space-y-12 sm:space-y-16 md:space-y-20 pb-12 sm:pb-16 md:pb-20  ">
             {/* Hero Section - Two Column Layout
@@ -202,8 +212,11 @@ export default function Blogs({loaderData}: Route.ComponentProps) {
                 </AnimatedSection>
             )}
 
-            {/* Category Articles Section */}
-            {allArticles.length > 0 && (
+            {/* Category Articles Section
+                Only rendered when more than one article exists across all blogs —
+                when there's a single article we let the featured hero stand alone
+                instead of repeating the same card in a list directly below it. */}
+            {shouldRenderArticleList && (
                 <section className="space-y-6 sm:space-y-8">
                     {/* Category Selection - Only show if multiple categories */}
                     {hasMultipleCategories && (

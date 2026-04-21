@@ -171,38 +171,50 @@ export function ShareButtons({article, variant = "inline", className, shopName}:
      * Inline variant for article footers.
      *
      * Features:
-     * - Horizontal flex layout with wrapping
-     * - Icon-only buttons on mobile (touch-friendly 44x44px)
-     * - Full buttons with text on desktop
-     * - Primary color theme (border-primary/50, hover:bg-primary)
-     * - "Share this article" heading with uppercase tracking
+     * - Prominent section header with subtle top rule for visual anchor
+     * - Larger pill buttons (min-h-12 = 48px, exceeds WCAG 2.5.5 of 44x44)
+     * - 18px icons (up from 16px) for stronger presence
+     * - 2px border with primary treatment reinforces the UI accent
+     * - Solid primary fill on hover + subtle lift (translateY) and shadow
      * - Copy button shows checkmark for 2s after successful copy
+     * - Responsive labels: hidden on <640px to keep tap targets clean, visible on sm+
      */
     if (variant === "inline") {
         return (
-            <div className={cn("space-y-2.5 sm:space-y-3 md:space-y-4", className)}>
-                <h3 className="text-sm sm:text-sm md:text-sm font-medium text-muted-foreground uppercase tracking-wider">
-                    Share this article
-                </h3>
-                <div className="flex flex-wrap gap-1.5 sm:gap-2 md:gap-2.5">
+            <div className={cn("space-y-3 sm:space-y-4 md:space-y-5", className)}>
+                {/* Heading row with decorative rule — visually anchors the share section */}
+                <div className="flex items-center gap-3">
+                    <h3 className="font-serif text-base sm:text-lg md:text-xl font-medium text-primary shrink-0">
+                        Share this article
+                    </h3>
+                    <span aria-hidden="true" className="flex-1 h-px bg-primary/15" />
+                </div>
+
+                <div className="flex flex-wrap gap-2 sm:gap-2.5 md:gap-3">
                     {platforms.map(platform => (
                         <Button
                             key={platform.id}
                             variant="outline"
                             size="sm"
+                            aria-label={`Share on ${platform.name}`}
                             className={cn(
-                                "rounded-full gap-1.5 sm:gap-2 border-2 border-primary/50 text-primary",
+                                "rounded-full gap-2 sm:gap-2.5",
+                                "border-2 border-primary/60 bg-background text-primary",
                                 "hover:bg-primary hover:text-primary-foreground hover:border-primary",
-                                "sleek hover:scale-110 hover:shadow-md",
-                                // Touch-friendly sizing: icon-only on mobile, with text on larger screens
-                                "size-10 sm:size-auto sm:min-h-11 sm:min-w-0 p-0 sm:px-4"
+                                "hover:-translate-y-0.5 hover:shadow-lg",
+                                "active:translate-y-0 active:shadow-sm",
+                                "sleek",
+                                // Larger, more prominent tap targets
+                                // <640px: 48px square icon-only
+                                // ≥640px: full pill with label, min-height 48px
+                                "size-12 sm:size-auto sm:min-h-12 sm:min-w-0 p-0 sm:px-5 text-sm sm:text-base font-medium"
                             )}
                             onClick={() => void handleShare(platform, shareData)}
                         >
                             {platform.id === "copy" && copied ? (
-                                <Check className="size-4" />
+                                <Check className="size-[1.125rem] sm:size-5" />
                             ) : (
-                                <platform.icon className="size-4" />
+                                <platform.icon className="size-[1.125rem] sm:size-5" />
                             )}
                             <span className="hidden sm:inline">{platform.name}</span>
                         </Button>

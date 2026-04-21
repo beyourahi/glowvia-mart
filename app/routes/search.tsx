@@ -61,7 +61,7 @@ import {ProductPrice} from "~/components/ProductPrice";
 import {DiscountBadge} from "~/components/DiscountBadge";
 import {getProductFontSizes} from "~/components/ProductItem";
 import {analyzeProductDiscount, type ProductWithVariants} from "~/lib/discounts";
-import {useRecentSearches} from "~/hooks/useRecentSearches";
+import {useRecentSearches, type RecentSearchEntry} from "~/hooks/useRecentSearches";
 import {usePointerCapabilities} from "~/hooks/usePointerCapabilities";
 import {Alert, AlertDescription} from "~/components/ui/alert";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "~/components/ui/tabs";
@@ -483,7 +483,7 @@ export default function SearchPage() {
  * Shows recent searches, popular searches, and featured collections
  */
 interface SearchPageInitialStateProps {
-    recentSearches: string[];
+    recentSearches: RecentSearchEntry[];
     collections: MenuCollection[];
     popularSearches: string[];
     onClearRecent: () => void;
@@ -536,16 +536,42 @@ function SearchPageInitialState({
                         </Button>
                     </div>
                     <div className="flex flex-wrap gap-2 sm:gap-3">
-                        {recentSearches.map(term => (
-                            <Button
-                                key={term}
-                                variant="outline"
-                                size="sm"
-                                onClick={() => onSuggestionClick(term)}
-                                className="text-sm sm:text-sm border-[var(--border-strong)]"
+                        {recentSearches.map(entry => (
+                            <button
+                                key={entry.term}
+                                type="button"
+                                onClick={() => onSuggestionClick(entry.term)}
+                                className={cn(
+                                    "motion-interactive motion-press cursor-pointer",
+                                    // Thumbnail chips use compact left padding so the image sits flush
+                                    entry.image
+                                        ? "pl-1.5 pr-3 sm:pr-4 py-1.5"
+                                        : "px-3 sm:px-4 py-2",
+                                    "min-h-11 inline-flex items-center gap-2",
+                                    "rounded-[var(--radius-pill-raw)] border border-[var(--border-strong)]",
+                                    "text-sm font-medium text-primary",
+                                    "hover:bg-primary hover:text-primary-foreground",
+                                    "active:scale-[var(--motion-press-scale)]"
+                                )}
                             >
-                                {term}
-                            </Button>
+                                {entry.image ? (
+                                    <span className="relative size-8 shrink-0 overflow-hidden rounded-full bg-muted/50 ring-1 ring-[var(--border-strong)]/60">
+                                        <Image
+                                            alt={entry.image.altText || entry.term}
+                                            data={{
+                                                url: entry.image.url,
+                                                altText: entry.image.altText ?? undefined,
+                                                width: entry.image.width ?? undefined,
+                                                height: entry.image.height ?? undefined
+                                            }}
+                                            loading="lazy"
+                                            sizes="32px"
+                                            className="h-full w-full object-cover"
+                                        />
+                                    </span>
+                                ) : null}
+                                <span className="truncate max-w-[10rem] sm:max-w-[14rem]">{entry.term}</span>
+                            </button>
                         ))}
                     </div>
                 </section>

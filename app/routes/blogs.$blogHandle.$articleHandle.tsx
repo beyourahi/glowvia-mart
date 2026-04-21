@@ -19,8 +19,7 @@
  * - Social share buttons
  * - Author bio section
  * - Related articles carousel
- * - Scroll-triggered AnimatedSection entrance animations
- * - JSON-LD structured data for SEO
+ * - JSON-LD structured data for SEO (content renders without entrance animations)
  *
  * @layout
  * 1. Reading progress bar (fixed position)
@@ -61,7 +60,6 @@ import {Image, getSeoMeta} from "@shopify/hydrogen";
 import {ArrowLeft} from "lucide-react";
 import {redirectIfHandleIsLocalized} from "~/lib/redirect";
 import {calculateReadingTime, formatArticleDate, filterRelatedArticles} from "~/lib/blog-utils";
-import {AnimatedSection} from "~/components/AnimatedSection";
 import {TagList} from "~/components/blog/TagBadge";
 import {ShareButtons} from "~/components/blog/ShareButtons";
 import {AuthorBio} from "~/components/blog/AuthorBio";
@@ -244,7 +242,7 @@ export default function Article({loaderData}: Route.ComponentProps) {
             <article className="px-4 md:px-6 lg:px-8">
                 {/* Article Header - centered magazine-style layout
                     Matches the blog index and category pages' centered headings.
-                    No entrance animation — above-the-fold content must be immediately visible. */}
+                    No entrance animation — content renders immediately for perceived performance. */}
                 <header className="mx-auto max-w-3xl text-center space-y-5 md:space-y-6 pt-6 md:pt-8 mb-10 md:mb-14 lg:mb-16">
                     {/* Tags - centered row */}
                     {tags && tags.length > 0 && (
@@ -284,62 +282,70 @@ export default function Article({loaderData}: Route.ComponentProps) {
                 {/* Article Content
                     Uses dedicated .article-content CSS class from tailwind.css
                     (follows same pattern as .policy-content)
-                    Note: contentHtml is sanitized by Shopify's Storefront API */}
-                <AnimatedSection animation="fade" threshold={0.05} delay={200}>
-                    <div
-                        ref={contentRef}
-                        dangerouslySetInnerHTML={{__html: contentHtml}}
-                        className="article-content mx-auto prose-readable-wide py-8 md:py-10 lg:py-12"
-                    />
-                </AnimatedSection>
+                    Note: contentHtml is sanitized by Shopify's Storefront API.
+                    No fade-in — content renders immediately on page load. */}
+                <ArticleContent contentHtml={contentHtml} contentRef={contentRef} />
 
                 {/* Share Section - whitespace separation instead of Separator */}
-                <AnimatedSection animation="slide-up" threshold={0.2}>
-                    <div className="mx-auto prose-readable-wide pt-8 md:pt-10 pb-6 md:pb-8">
-                        <ShareButtons
-                            article={{
-                                title,
-                                excerpt: article.excerpt,
-                                image: article.image,
-                                blog: {handle: blogHandle},
-                                handle: article.handle
-                            }}
-                            variant="inline"
-                        />
-                    </div>
-                </AnimatedSection>
+                <div className="mx-auto prose-readable-wide pt-8 md:pt-10 pb-6 md:pb-8">
+                    <ShareButtons
+                        article={{
+                            title,
+                            excerpt: article.excerpt,
+                            image: article.image,
+                            blog: {handle: blogHandle},
+                            handle: article.handle
+                        }}
+                        variant="inline"
+                    />
+                </div>
 
                 {/* Author Bio - card background (bg-muted/30) provides natural separation */}
                 {author?.bio && (
-                    <AnimatedSection animation="slide-up" threshold={0.2}>
-                        <div className="mx-auto prose-readable-wide pb-6 md:pb-8">
-                            <AuthorBio author={author} variant="card" />
-                        </div>
-                    </AnimatedSection>
+                    <div className="mx-auto prose-readable-wide pb-6 md:pb-8">
+                        <AuthorBio author={author} variant="card" />
+                    </div>
                 )}
 
                 {/* Back to Blog - polished pill-shaped link with icon animation */}
-                <AnimatedSection animation="fade" threshold={0.2}>
-                    <div className="mx-auto prose-readable-wide pt-4 md:pt-6 pb-8 md:pb-12">
-                        <Link
-                            to={`/blogs/${blogHandle}`}
-                            prefetch="viewport"
-                            className="group inline-flex items-center gap-2 rounded-full border-2 border-primary/30 px-5 py-2.5 text-sm md:text-base text-muted-foreground motion-link hover:text-foreground hover:border-primary/60 hover:no-underline min-h-11"
-                        >
-                            <ArrowLeft className="size-4 motion-link group-hover:-translate-x-0.5" />
-                            <span>Back to {blogTitle || "Blog"}</span>
-                        </Link>
-                    </div>
-                </AnimatedSection>
+                <div className="mx-auto prose-readable-wide pt-4 md:pt-6 pb-8 md:pb-12">
+                    <Link
+                        to={`/blogs/${blogHandle}`}
+                        prefetch="viewport"
+                        className="group inline-flex items-center gap-2 rounded-full border-2 border-primary/30 px-5 py-2.5 text-sm md:text-base text-muted-foreground motion-link hover:text-foreground hover:border-primary/60 hover:no-underline min-h-11"
+                    >
+                        <ArrowLeft className="size-4 motion-link group-hover:-translate-x-0.5" />
+                        <span>Back to {blogTitle || "Blog"}</span>
+                    </Link>
+                </div>
             </article>
 
             {/* Related Articles Section - generous spacing via mt-section utility */}
-            <AnimatedSection animation="fade" threshold={0.1}>
-                <div className="mt-section px-4 md:px-6 lg:px-8">
-                    <RelatedArticles articles={filteredRelatedArticles} title="More Articles" />
-                </div>
-            </AnimatedSection>
+            <div className="mt-section px-4 md:px-6 lg:px-8">
+                <RelatedArticles articles={filteredRelatedArticles} title="More Articles" />
+            </div>
         </div>
+    );
+}
+
+/**
+ * Renders the article body HTML. Extracted so the main component stays focused
+ * and to keep the sanitized-HTML injection isolated to a single small component.
+ * contentHtml comes from Shopify's Storefront API and is already sanitized.
+ */
+function ArticleContent({
+    contentHtml,
+    contentRef
+}: {
+    contentHtml: string;
+    contentRef: React.RefObject<HTMLDivElement>;
+}) {
+    return (
+        <div
+            ref={contentRef}
+            dangerouslySetInnerHTML={{__html: contentHtml}}
+            className="article-content mx-auto prose-readable-wide py-8 md:py-10 lg:py-12"
+        />
     );
 }
 

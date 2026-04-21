@@ -66,7 +66,7 @@ import {Search, Clock, TrendingUp, Calendar, Newspaper, Package, FolderOpen} fro
 import {useScrollLock} from "~/hooks/useScrollLock";
 import * as Dialog from "@radix-ui/react-dialog";
 import {useAside} from "~/components/Aside";
-import {useRecentSearches} from "~/hooks/useRecentSearches";
+import {useRecentSearches, type RecentSearchEntry} from "~/hooks/useRecentSearches";
 import {useSearchKeyboard} from "~/hooks/useSearchKeyboard";
 import {usePointerCapabilities} from "~/hooks/usePointerCapabilities";
 import {STORE_FORMAT_LOCALE} from "~/lib/store-locale";
@@ -245,9 +245,14 @@ export function FullScreenSearch({collections, popularSearchTerms = []}: FullScr
     };
 
     // Handle clicking a result (save to recent)
-    const handleResultClick = () => {
+    // When a product is clicked we also capture its thumbnail so the next time
+    // Recent Searches renders, the chip shows a visual anchor for that term.
+    const handleResultClick = (meta?: {
+        image?: {url: string; altText?: string | null; width?: number | null; height?: number | null} | null;
+        productHandle?: string | null;
+    }) => {
         if (inputValue.trim()) {
-            addSearch(inputValue.trim());
+            addSearch(inputValue.trim(), meta);
         }
         close();
     };
@@ -382,7 +387,7 @@ export function FullScreenSearch({collections, popularSearchTerms = []}: FullScr
  * Shows recent searches, popular searches, and featured collections.
  */
 interface SearchInitialStateProps {
-    recentSearches: string[];
+    recentSearches: RecentSearchEntry[];
     collections: MenuCollection[];
     popularSearches: string[];
     onClearRecent: () => void;
@@ -425,23 +430,43 @@ function SearchInitialState({
                         </button>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                        {recentSearches.map(term => (
+                        {recentSearches.map(entry => (
                             <button
-                                key={term}
-                                onClick={() => onSuggestionClick(term)}
+                                key={entry.term}
+                                onClick={() => onSuggestionClick(entry.term)}
                                 className={cn(
                                     "motion-interactive motion-press",
-                                    // Responsive padding with proper touch target
-                                    "px-3 sm:px-4 py-2.5 sm:py-2 min-h-11 cursor-pointer",
+                                    // Thumbnail chips get tighter left padding so the image sits flush
+                                    entry.image
+                                        ? "pl-1.5 pr-3 sm:pr-4 py-1.5 sm:py-1.5"
+                                        : "px-3 sm:px-4 py-2.5 sm:py-2",
+                                    "min-h-11 cursor-pointer",
                                     "rounded-[var(--radius-pill-raw)] border border-[var(--border-strong)]",
                                     "text-sm font-medium text-primary",
+                                    "inline-flex items-center gap-2",
                                     canHover
                                         ? "hover:bg-primary hover:text-primary-foreground"
                                         : "active:bg-primary active:text-primary-foreground",
                                     "active:scale-[var(--motion-press-scale)]"
                                 )}
                             >
-                                {term}
+                                {entry.image ? (
+                                    <span className="relative size-8 shrink-0 overflow-hidden rounded-full bg-muted/50 ring-1 ring-[var(--border-strong)]/60">
+                                        <Image
+                                            alt={entry.image.altText || entry.term}
+                                            data={{
+                                                url: entry.image.url,
+                                                altText: entry.image.altText ?? undefined,
+                                                width: entry.image.width ?? undefined,
+                                                height: entry.image.height ?? undefined
+                                            }}
+                                            loading="lazy"
+                                            sizes="32px"
+                                            className="h-full w-full object-cover"
+                                        />
+                                    </span>
+                                ) : null}
+                                <span className="truncate max-w-[10rem] sm:max-w-[14rem]">{entry.term}</span>
                             </button>
                         ))}
                     </div>
@@ -550,6 +575,11 @@ function SearchInitialState({
  * Displays categorized search results in tabs with view options.
  * Each tab maintains its own view preferences in localStorage.
  */
+interface ResultClickMeta {
+    image?: {url: string; altText?: string | null; width?: number | null; height?: number | null} | null;
+    productHandle?: string | null;
+}
+
 interface SearchResultsSectionProps {
     products: SearchProduct[];
     collections: SearchCollection[];
@@ -560,7 +590,7 @@ interface SearchResultsSectionProps {
     articleCount: number;
     term: string;
     state: "idle" | "loading" | "submitting";
-    onResultClick: () => void;
+    onResultClick: (meta?: ResultClickMeta) => void;
     onViewAll: () => void;
     searchContent: import("types").SearchContent;
 }
@@ -812,7 +842,19 @@ function SearchResultsSection({
                                     <button
                                         type="button"
                                         key={product.id}
-                                        onClick={onResultClick}
+                                        onClick={() =>
+                                            onResultClick({
+                                                image: product.featuredImage
+                                                    ? {
+                                                          url: product.featuredImage.url,
+                                                          altText: product.featuredImage.altText ?? null,
+                                                          width: product.featuredImage.width ?? null,
+                                                          height: product.featuredImage.height ?? null
+                                                      }
+                                                    : null,
+                                                productHandle: product.handle ?? null
+                                            })
+                                        }
                                         className="w-full text-left"
                                     >
                                         <ProductItem

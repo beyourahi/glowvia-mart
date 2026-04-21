@@ -164,8 +164,26 @@ export function ArticleHero({article, variant = "listing", showReadMore = true, 
      * - Even on lightest images, overlay guarantees 4.5:1 minimum
      */
     if (variant === "listing") {
+        /**
+         * Listing layout wraps the entire hero in a single <Link> so tapping
+         * anywhere in the card navigates — not just the "Read Article" pill.
+         * The inner CTA is kept as an on-card visual affordance but is now a
+         * non-interactive <span> to avoid nested interactive controls.
+         *
+         * Mobile sizing bumped to min-h-[60vh] (was 45vh) so the featured card
+         * carries more weight on phones — the primary entry point to the blog.
+         */
         return (
-            <div className={cn("relative rounded-xl sm:rounded-2xl overflow-hidden", className)}>
+            <Link
+                to={articleUrl}
+                prefetch="viewport"
+                aria-label={`Read article: ${title}`}
+                className={cn(
+                    "group relative block rounded-xl sm:rounded-2xl overflow-hidden no-underline cursor-pointer",
+                    "motion-link focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary",
+                    className
+                )}
+            >
                 {/* Background Image */}
                 {image && (
                     <div className="absolute inset-0">
@@ -174,7 +192,7 @@ export function ArticleHero({article, variant = "listing", showReadMore = true, 
                             data={image}
                             loading="eager"
                             sizes="100vw"
-                            className="h-full w-full object-cover"
+                            className="h-full w-full object-cover motion-image group-hover:scale-[1.02]"
                         />
                         {/* Gradient Overlay - stronger on mobile for text legibility */}
                         <div className="absolute inset-0 bg-gradient-to-t from-dark/90 via-dark/50 to-dark/20 sm:from-dark/80 sm:via-dark/40 sm:to-dark/10" />
@@ -182,13 +200,13 @@ export function ArticleHero({article, variant = "listing", showReadMore = true, 
                 )}
 
                 {/* Content */}
-                <div className="relative min-h-[45vh] sm:min-h-[50vh] md:min-h-[60vh] flex flex-col justify-end p-4 sm:p-6 md:p-10 lg:p-12">
+                <div className="relative min-h-[60vh] sm:min-h-[55vh] md:min-h-[60vh] flex flex-col justify-end p-5 sm:p-6 md:p-10 lg:p-12">
                     <div className="max-w-3xl space-y-3 sm:space-y-4 md:space-y-6">
                         {/* Tags - limit to 2 on mobile for space */}
                         {tags && tags.length > 0 && <TagList tags={tags} limit={3} variant="hero" size="sm" />}
 
-                        {/* Title */}
-                        <h2 className="font-serif text-2xl sm:text-3xl md:text-4xl font-normal leading-tight text-light">
+                        {/* Title — larger on mobile to match the bumped hero height */}
+                        <h2 className="font-serif text-3xl sm:text-3xl md:text-4xl font-normal leading-tight text-light">
                             {title}
                         </h2>
 
@@ -218,31 +236,24 @@ export function ArticleHero({article, variant = "listing", showReadMore = true, 
                                 )}
                             </div>
 
-                            {/* Read Article Button - Matches Shop Now button from VideoHero
-                                State Flow (inverted CTA pattern - dark button inverts to light on interaction):
-                                - Default: bg-primary (dark), text-primary-foreground (white), border-primary
-                                - Hover: bg-light (white), text-primary (dark), border-light
-                                - Active: bg-light/90 (slightly darker white), text-primary, border-light
-
-                                Contrast Validation:
-                                - Default: text-primary-foreground (#fff) on bg-primary = 14.68:1 (WCAG AAA) ✓
-                                - Hover: text-primary (#1f1f1f) on bg-light (#fff) = 14.68:1 (WCAG AAA) ✓
-                                - Active: text-primary (#1f1f1f) on bg-light/90 = 13.2:1 (WCAG AAA) ✓
-
-                                Touch target: min 44px height (py-3 + line-height ≈ 48px)
-                                Icon: CircleArrowOutUpRight rotates 45° on hover */}
+                            {/* Read Article affordance — now a non-interactive span.
+                                The whole card is already a link, so wrapping another
+                                <Link> here would nest interactive controls (invalid
+                                HTML + a11y violation). The span still provides the
+                                visual CTA pattern, driven by the group hover state. */}
                             {showReadMore && (
-                                <Link to={articleUrl} prefetch="viewport" className="no-underline">
-                                    <span className="group inline-flex items-center justify-center gap-2 sm:gap-2.5 rounded-full bg-primary border-2 border-primary px-4 sm:px-5 md:px-6 py-3 font-sans text-sm sm:text-base font-medium text-primary-foreground hover:bg-light hover:text-primary hover:border-light active:bg-light/90 active:border-light active:scale-[0.98] cursor-pointer sleek">
-                                        Read Article
-                                        <CircleArrowOutUpRight className="w-5 h-5 sleek group-hover:rotate-45" />
-                                    </span>
-                                </Link>
+                                <span
+                                    aria-hidden="true"
+                                    className="inline-flex w-fit items-center justify-center gap-2 sm:gap-2.5 rounded-full bg-primary border-2 border-primary px-4 sm:px-5 md:px-6 py-3 font-sans text-sm sm:text-base font-medium text-primary-foreground group-hover:bg-light group-hover:text-primary group-hover:border-light sleek"
+                                >
+                                    Read Article
+                                    <CircleArrowOutUpRight className="w-5 h-5 sleek group-hover:rotate-45" />
+                                </span>
                             )}
                         </div>
                     </div>
                 </div>
-            </div>
+            </Link>
         );
     }
 

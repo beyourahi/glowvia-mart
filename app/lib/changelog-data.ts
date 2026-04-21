@@ -30,6 +30,12 @@ import type {ChangelogEntry} from "~/lib/types/changelog";
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
         date: "2026-04-21",
+        category: "Design",
+        headline: "More breathing room between the footer and the sticky buy button on product pages",
+        summary: "On mobile product pages, the footer now sits further above the sticky Get it Now bar. The copyright row and designer credit are no longer crowded against the button — there's a clear gap so the two feel like distinct layers of the page."
+    },
+    {
+        date: "2026-04-21",
         category: "Performance",
         headline: "Article pages now render instantly instead of fading section-by-section",
         summary: "Entrance animations on the article body, share row, author bio, back button, and related articles have been removed. All sections are visible the moment the page loads — the reading experience feels faster and nothing scrolls into view as you read."

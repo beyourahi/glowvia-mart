@@ -89,12 +89,9 @@ export function ProductBadge({type, className}: ProductBadgeProps) {
     return (
         <span
             className={cn(
-                // Typography - matches DiscountBadge
-                "text-sm font-medium uppercase tracking-wide",
-                // Layout
+                "text-xs font-medium uppercase tracking-wide",
                 "inline-flex items-center justify-center",
-                // Spacing - matches DiscountBadge text area
-                "px-2.5 py-1",
+                "px-2 py-0.5",
                 // Shape - matches DiscountBadge rounded-full
                 "rounded-full",
                 // Shadow - matches DiscountBadge depth

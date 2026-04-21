@@ -197,7 +197,7 @@ For portfolio Workers deploys, demo-store credentials live in `wrangler.jsonc`. 
 **Architecture**: `lib/pwa-queries.ts`, `lib/pwa-parsers.ts`, `lib/color/`, `lib/metaobject-*.ts`, `public/sw.js`
 **Config**: `vite.config.ts`, `react-router.config.ts`, `eslint.config.js`, `styles/tailwind.css`
 **GraphQL**: `storefrontapi.generated.d.ts`, `customer-accountapi.generated.d.ts`
-**Solutions**: `lib/color/contrast.ts` (WCAG), `lib/wishlist-context.tsx` (SSR), `lib/smoothScroll.ts` (Lenis), `lib/cart-utils.ts` (global cart fetcher key — all CartForm components must use this key to prevent simultaneous Shopify mutations)
+**Solutions**: `lib/color/contrast.ts` (WCAG), `lib/wishlist-context.tsx` (SSR), `lib/smoothScroll.ts` (Lenis), `lib/cart-utils.ts` (global cart fetcher key + mutation hooks — `CART_FETCHER_KEY` must be passed to all CartForm components; `useCartMutationPending()` checks if any cart op is in flight; `useLineItemMutating(lineId)` scopes loading state to a specific line item only)
 **Shared UI Patterns**: `components/PageHeading.tsx` — unified page heading + optional description used across all content pages (changelog, gallery, search, blog, FAQ, policies, etc.); use this instead of ad-hoc heading markup
 **Data Source Resolver**: `app/lib/data-source.ts` — validates store env and proxies Shopify queries used by the app context
 **Content Defaults**: `app/lib/metaobject-parsers.ts` — fallback UI and content constants used when metaobject fields are missing
@@ -337,7 +337,7 @@ Read all comments before editing. Update when changing code. Add for complex log
 
 **Hooks** (13 in `hooks/`): useChangelogFilter, useFooterClearance, useInView, useNetworkStatus, usePointerCapabilities, usePwaAnalytics, usePwaInstall, useReadingProgress, useRecentSearches, useScreenSize, useScrollLock, useSearchKeyboard, useServiceWorkerUpdate. Additional scroll hooks in `lib/`: useScrolled, useScrollProgress
 
-**Animations**: 23 `@keyframes` in `tailwind.css` - product (fade-in, image-hover), wishlist (heart-beat, heart-glow, burst-ring), hero (shimmer), GPU-accelerated, respects `prefers-reduced-motion`
+**Animations**: 26 `@keyframes` in `tailwind.css` - product (fade-in, image-hover), cart (cart-item-enter, success-pulse, price-dot), wishlist (heart-beat, heart-glow, burst-ring), hero (shimmer), GPU-accelerated, respects `prefers-reduced-motion`
 
 **Search**: Regular (full data), predictive (autocomplete), popular terms, recent (LocalStorage), keyboard (Cmd/Ctrl+K), full-screen overlay
 

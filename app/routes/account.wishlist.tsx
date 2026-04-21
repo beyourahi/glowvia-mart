@@ -82,7 +82,7 @@ import {
 // =============================================================================
 
 type LayoutMode = "grid" | "list";
-type WishlistSortOption = "date-newest" | "date-oldest" | "price-asc" | "price-desc";
+type WishlistSortOption = "date-newest" | "date-oldest" | "price-asc" | "price-desc" | "title-asc" | "title-desc";
 
 // =============================================================================
 // META & LOADER
@@ -177,7 +177,7 @@ function useWishlistSort(): [WishlistSortOption, (sort: WishlistSortOption) => v
 
     useEffect(() => {
         const stored = localStorage.getItem("wishlist-sort");
-        if (["date-newest", "date-oldest", "price-asc", "price-desc"].includes(stored ?? "")) {
+        if (["date-newest", "date-oldest", "price-asc", "price-desc", "title-asc", "title-desc"].includes(stored ?? "")) {
             setSort(stored as WishlistSortOption);
         }
     }, []);
@@ -213,6 +213,10 @@ function sortProducts(products: ProductItemFragment[], sortOption: WishlistSortO
                 const priceB = parseFloat(b.priceRange.minVariantPrice.amount);
                 return priceB - priceA;
             });
+        case "title-asc":
+            return sorted.sort((a, b) => a.title.localeCompare(b.title));
+        case "title-desc":
+            return sorted.sort((a, b) => b.title.localeCompare(a.title));
         default:
             return sorted;
     }
@@ -278,15 +282,19 @@ export default function AccountWishlist() {
         return (
             <div className="space-y-10 md:space-y-14 lg:space-y-16">
                 <WishlistHeader count={null} ids={ids} products={[]} onClearClick={() => setDialogOpen(true)} />
-                <WishlistViewOptionsSelector
-                    gridColumns={gridColumns}
-                    onGridColumnsChange={setGridColumns}
-                    layoutMode={layoutMode}
-                    onLayoutModeChange={setLayoutMode}
-                    sortOption={sortOption}
-                    onSortChange={setSortOption}
-                />
-                <WishlistSkeleton count={ids.length || 8} layoutMode={layoutMode} />
+                <div>
+                    <div className="flex mb-4 sm:mb-6 md:justify-end">
+                        <WishlistViewOptionsSelector
+                            gridColumns={gridColumns}
+                            onGridColumnsChange={setGridColumns}
+                            layoutMode={layoutMode}
+                            onLayoutModeChange={setLayoutMode}
+                            sortOption={sortOption}
+                            onSortChange={setSortOption}
+                        />
+                    </div>
+                    <WishlistSkeleton count={ids.length || 8} layoutMode={layoutMode} />
+                </div>
             </div>
         );
     }
@@ -316,33 +324,36 @@ export default function AccountWishlist() {
                     />
                 </AnimatedSection>
 
-                <WishlistViewOptionsSelector
-                    gridColumns={gridColumns}
-                    onGridColumnsChange={setGridColumns}
-                    layoutMode={layoutMode}
-                    onLayoutModeChange={setLayoutMode}
-                    sortOption={sortOption}
-                    onSortChange={setSortOption}
-                />
-
-                <AnimatedSection animation="section" threshold={0.1} delay={100}>
-                    {products.length > 0 ? (
-                        <div className={gridClassName}>
-                            {products.map((product, index) => (
-                                <ProductItem
-                                    key={product.id}
-                                    product={product}
-                                    loading={index < 4 ? "eager" : "lazy"}
-                                    variant={layoutMode === "list" ? "list" : "card"}
-                                    index={index}
-                                    gridColumns={gridColumns}
-                                />
-                            ))}
-                        </div>
-                    ) : (
-                        <WishlistUnavailable onClearClick={() => setDialogOpen(true)} />
-                    )}
-                </AnimatedSection>
+                <div>
+                    <div className="flex mb-4 sm:mb-6 md:justify-end">
+                        <WishlistViewOptionsSelector
+                            gridColumns={gridColumns}
+                            onGridColumnsChange={setGridColumns}
+                            layoutMode={layoutMode}
+                            onLayoutModeChange={setLayoutMode}
+                            sortOption={sortOption}
+                            onSortChange={setSortOption}
+                        />
+                    </div>
+                    <AnimatedSection animation="section" threshold={0.1} delay={100}>
+                        {products.length > 0 ? (
+                            <div className={gridClassName}>
+                                {products.map((product, index) => (
+                                    <ProductItem
+                                        key={product.id}
+                                        product={product}
+                                        loading={index < 4 ? "eager" : "lazy"}
+                                        variant={layoutMode === "list" ? "list" : "card"}
+                                        index={index}
+                                        gridColumns={gridColumns}
+                                    />
+                                ))}
+                            </div>
+                        ) : (
+                            <WishlistUnavailable onClearClick={() => setDialogOpen(true)} />
+                        )}
+                    </AnimatedSection>
+                </div>
             </div>
 
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -400,6 +411,8 @@ type PillOption =
 const WISHLIST_PILL_OPTIONS: PillOption[] = [
     {id: "newest", label: "Newest", type: "sort", value: "date-newest"},
     {id: "oldest", label: "Oldest", type: "sort", value: "date-oldest"},
+    {id: "az", label: "A-Z", type: "sort", value: "title-asc"},
+    {id: "za", label: "Z-A", type: "sort", value: "title-desc"},
     {id: "price-low", label: "Price ↑", type: "sort", value: "price-asc"},
     {id: "price-high", label: "Price ↓", type: "sort", value: "price-desc"},
     {id: "2col", label: "2-Col", type: "grid", value: 2},
@@ -459,8 +472,12 @@ function WishlistViewOptionsSelector({
                 key={option.id}
                 type="button"
                 variant={isActive ? "default" : "outline"}
+                size="sm"
                 onClick={() => handlePillClick(option)}
-                className={cn("min-h-11 md:min-h-0 text-sm md:text-base", "active:scale-95")}
+                className={cn(
+                    "whitespace-nowrap font-sans text-sm sm:text-sm md:text-base",
+                    "transition-all duration-300 ease-out"
+                )}
             >
                 {option.label}
             </Button>
@@ -468,28 +485,30 @@ function WishlistViewOptionsSelector({
     };
 
     return (
-        <div className="mb-6">
+        <>
+            {/* Mobile: Horizontal scrollable carousel */}
             <div className="md:hidden overflow-x-auto scrollbar-hide">
-                <div className="flex items-center gap-2 snap-x snap-mandatory pb-2">
+                <div className="flex items-center gap-1.5 sm:gap-2 snap-x snap-mandatory">
                     {sortOptions.map(option => (
-                        <div key={option.id} className="snap-start shrink-0">
+                        <div key={option.id} className="snap-start">
                             {renderPill(option)}
                         </div>
                     ))}
                     <div className="w-px h-6 bg-primary/20 shrink-0" aria-hidden="true" />
                     {gridOptions.map(option => (
-                        <div key={option.id} className="snap-start shrink-0">
+                        <div key={option.id} className="snap-start">
                             {renderPill(option)}
                         </div>
                     ))}
                     {layoutOptions.map(option => (
-                        <div key={option.id} className="snap-start shrink-0">
+                        <div key={option.id} className="snap-start">
                             {renderPill(option)}
                         </div>
                     ))}
                 </div>
             </div>
 
+            {/* Desktop: Flex-wrap pill groups with visual separators */}
             <div className="hidden md:flex flex-wrap items-center justify-end gap-3">
                 <div className="flex items-center gap-2">{sortOptions.map(renderPill)}</div>
                 <div className="w-px h-6 bg-primary/20" aria-hidden="true" />
@@ -498,7 +517,7 @@ function WishlistViewOptionsSelector({
                     {layoutOptions.map(renderPill)}
                 </div>
             </div>
-        </div>
+        </>
     );
 }
 

@@ -102,7 +102,7 @@ export function FeaturedProductSpotlight({product}: {product: FeaturedProductSec
                     </div>
 
                     <div className="flex flex-wrap items-center gap-3">
-                        <QuickAddButton product={product} className="hover:scale-100" />
+                        <QuickAddButton product={product} className="w-full md:w-auto hover:scale-100" />
                         <Button
                             asChild
                             variant="outline"

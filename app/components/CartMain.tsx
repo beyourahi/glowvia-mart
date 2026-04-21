@@ -57,7 +57,7 @@
  * - root.tsx - Provides cartSuggestions data
  */
 
-import {Suspense, useCallback, useMemo} from "react";
+import {Suspense, useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useOptimisticCart, Image} from "@shopify/hydrogen";
 import {ShoppingCart, Sparkles} from "lucide-react";
 import {Button} from "~/components/ui/button";
@@ -68,8 +68,7 @@ import {useAside} from "~/components/Aside";
 import {CartLineItem} from "~/components/CartLineItem";
 import {CartSummary} from "./CartSummary";
 import {Empty, EmptyHeader, EmptyMedia, EmptyTitle} from "~/components/ui/empty";
-import {WheelGesturesPlugin} from "embla-carousel-wheel-gestures";
-import {Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext} from "~/components/ui/carousel";
+import {type CarouselApi, Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext} from "~/components/ui/carousel";
 import {Skeleton} from "~/components/ui/skeleton";
 import {cn} from "~/lib/utils";
 import {ProductItem} from "~/components/ProductItem";
@@ -352,6 +351,8 @@ const POPULATED_CART_HEADINGS = [
 
 function CartSuggestions({products, layout, cartLines}: CartSuggestionsProps) {
     const {close} = useAside();
+    const [emblaApi, setEmblaApi] = useState<CarouselApi>();
+    const carouselWrapperRef = useRef<HTMLDivElement>(null);
 
     const isEmpty = cartLines.length === 0;
     const suggestionsHeading = useMemo(() => {
@@ -364,6 +365,29 @@ function CartSuggestions({products, layout, cartLines}: CartSuggestionsProps) {
     const handleProductClick = useCallback(() => {
         close();
     }, [close]);
+
+    // Native trackpad scroll: WheelGesturesPlugin feeds wheel deltas into Embla's drag engine via
+    // synthetic MouseEvent clientX — but clientX doesn't change during a stationary trackpad gesture,
+    // so Embla always computes zero movement and nothing scrolls. Replace with a direct non-passive
+    // wheel listener: intercept horizontal events, call emblaApi.scrollNext/Prev, prevent the
+    // overflow-y-auto parent from consuming the event.
+    useEffect(() => {
+        const el = carouselWrapperRef.current;
+        if (!el || !emblaApi) return;
+        let locked = false;
+        const onWheel = (e: WheelEvent) => {
+            if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
+            e.preventDefault();
+            if (locked) return;
+            locked = true;
+            if (e.deltaX > 0) emblaApi.scrollNext();
+            else emblaApi.scrollPrev();
+            // Hold off new scrolls until the animation settles (~500 ms for duration:25 in Embla).
+            setTimeout(() => { locked = false; }, 500);
+        };
+        el.addEventListener("wheel", onWheel, {passive: false});
+        return () => el.removeEventListener("wheel", onWheel);
+    }, [emblaApi]);
 
     // Exclude products already in cart — match on product.id (not variant.id) because
     // suggestions only fetch variants(first:1), so variant-level matching is unreliable.
@@ -399,16 +423,19 @@ function CartSuggestions({products, layout, cartLines}: CartSuggestionsProps) {
                 </p>
             </div>
             {/* Carousel with navigation controls for desktop users */}
-            <div className="relative">
+            <div className="relative" ref={carouselWrapperRef}>
                 <Carousel
                     opts={{
                         align: "start",
                         loop: true,
-                        dragFree: false,
+                        dragFree: true,
                         skipSnaps: false,
-                        watchDrag: false
+                        // Allow touch scroll (mobile) but block mouse drag.
+                        // isTrusted: true + mousedown = real user mouse → block.
+                        // isTrusted: true + touchstart = real touch → allow.
+                        watchDrag: (_, event) => !event.isTrusted || event.type !== "mousedown"
                     }}
-                    plugins={[WheelGesturesPlugin({forceWheelAxis: "x"})]}
+                    setApi={setEmblaApi}
                     className="w-full"
                 >
                     <CarouselContent className="-ml-2 md:-ml-3">

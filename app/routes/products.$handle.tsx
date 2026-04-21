@@ -83,6 +83,7 @@ import {OfflineAwareErrorPage} from "~/components/OfflineAwareErrorPage";
 import {trackErrorBoundary} from "~/hooks/usePwaAnalytics";
 import {hasSpecialTag, getSpecialTags} from "~/lib/product-tags";
 import {ProductBadgeStack} from "~/components/product/ProductBadge";
+import {ProductTagList} from "~/components/product/ProductTagList";
 import {countDiscountedProducts, type LightweightProduct} from "~/lib/discounts";
 import {formatShopifyMoney} from "~/lib/currency-formatter";
 import {parseProductTitle} from "~/lib/product";
@@ -337,7 +338,10 @@ export default function Product() {
                     <ProductDescription html={descriptionHtml} size="sm" />
                 </div>
 
-                {/* 4. Product Hero Mobile (variants, quantity, add to cart) */}
+                {/* 4. Product Tags - categorization metadata (subtle pills) */}
+                <ProductTagList tags={product.tags} className="px-3 sm:px-4 pb-4 sm:pb-6" />
+
+                {/* 5. Product Hero Mobile (variants, quantity, add to cart) */}
                 <ProductHeroMobile
                     productOptions={productOptions}
                     selectedVariant={selectedVariant}
@@ -454,6 +458,8 @@ export default function Product() {
                                 />
                                 {/* Product Description - Comprehensive prose typography for desktop */}
                                 <ProductDescription html={descriptionHtml} size="base" className="pt-12" />
+                                {/* Product Tags - categorization metadata footer for the info panel */}
+                                <ProductTagList tags={product.tags} className="pt-2" />
                             </div>
                         </div>
                     </div>

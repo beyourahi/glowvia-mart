@@ -30,6 +30,12 @@ import type {ChangelogEntry} from "~/lib/types/changelog";
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
         date: "2026-04-22",
+        category: "Improvement",
+        headline: "Product videos now play everywhere a product appears, not just on cards",
+        summary: "When a product's lead media is a video, it now plays consistently across the whole store — in the cart drawer and cart page, in the quick add panel on desktop, in the mobile variant sheet, and in the featured product spotlight on the homepage. Before, those surfaces always showed a still image even when the merchant had set a video as the first media. The switch between video and photo happens automatically based on what the merchant uploaded, so whatever you see on a product card is what you'll see everywhere else. Videos stay muted, loop quietly, and only start loading when they scroll into view — on both mobile and desktop."
+    },
+    {
+        date: "2026-04-22",
         category: "Fix",
         headline: "Photo dots on product cards no longer overlap the Quick Add button",
         summary: "On product cards with more than one photo or video, the little row of dots that shows which slide you're on used to sit right on top of the Quick Add button on mobile — and slide underneath it on desktop when you hovered. The dots now lift clear of the button automatically: always visible on phones, and rising up to meet the button as it fades in on desktop. Nothing gets hidden behind anything else anymore."

@@ -87,6 +87,17 @@ interface QuickAddImage {
 }
 
 /**
+ * Loose media shape — accepts the raw Shopify media union (MediaImage | Video)
+ * so any fragment that fetches `media(first: N) { nodes { ... } }` is compatible.
+ * Forwarded as-is into QuickAddDialog / QuickAddSheet where getCardVideoMedia
+ * decides whether to render the first media as a video.
+ */
+interface QuickAddMediaNode {
+    __typename?: string | null;
+    [key: string]: unknown;
+}
+
+/**
  * Flexible product type that works with multiple fragment types
  * ProductItemFragment, CollectionItemFragment, CuratedProductFragment
  */
@@ -100,6 +111,9 @@ interface QuickAddProduct {
     images?: {
         nodes: QuickAddImage[];
     };
+    media?: {
+        nodes: QuickAddMediaNode[];
+    } | null;
     priceRange: {
         minVariantPrice: {amount: string; currencyCode: string};
         maxVariantPrice: {amount: string; currencyCode: string};

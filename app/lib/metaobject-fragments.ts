@@ -80,6 +80,38 @@ export const SITE_SETTINGS_FRAGMENT = `#graphql
             width
             height
           }
+          media(first: 5) {
+            nodes {
+              __typename
+              ... on MediaImage {
+                id
+                image {
+                  id
+                  url
+                  altText
+                  width
+                  height
+                }
+              }
+              ... on Video {
+                id
+                alt
+                sources {
+                  url
+                  mimeType
+                  width
+                  height
+                }
+                previewImage {
+                  id
+                  url
+                  altText
+                  width
+                  height
+                }
+              }
+            }
+          }
           priceRange {
             minVariantPrice {
               amount

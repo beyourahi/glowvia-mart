@@ -83,7 +83,7 @@
  */
 import type {CartLineUpdateInput} from "@shopify/hydrogen/storefront-api-types";
 import type {CartLayout} from "~/components/CartMain";
-import {CartForm, Image, OptimisticInput, useOptimisticData, type OptimisticCartLine} from "@shopify/hydrogen";
+import {CartForm, OptimisticInput, useOptimisticData, type OptimisticCartLine} from "@shopify/hydrogen";
 import {useVariantUrl} from "~/lib/variants";
 import {useCallback, useMemo} from "react";
 import {Link} from "react-router";
@@ -98,6 +98,7 @@ import {Button} from "~/components/ui/button";
 import {Minus, Plus, X, RefreshCw} from "lucide-react";
 import {cn} from "~/lib/utils";
 import {PriceLoadingIndicator} from "~/components/PriceLoadingIndicator";
+import {ProductMediaThumb} from "~/components/ProductMediaThumb";
 
 type CartLine = OptimisticCartLine<CartApiQueryFragment>;
 
@@ -180,17 +181,19 @@ export function CartLineItem({layout, line}: {layout: CartLayout; line: CartLine
                             isChildLine ? "size-12 sm:size-14" : "size-[72px] sm:size-20"
                         )}
                     >
-                        {image && (
-                            <Image
-                                alt={title}
-                                aspectRatio="1/1"
-                                data={image}
-                                height={isChildLine ? 56 : 80}
-                                loading="lazy"
-                                width={isChildLine ? 56 : 80}
-                                className={cn("motion-image size-full object-cover", canHover && "group-hover/item:scale-[1.03]")}
-                            />
-                        )}
+                        <ProductMediaThumb
+                            product={product}
+                            fallbackImage={image}
+                            alt={title}
+                            aspectRatio="1/1"
+                            width={isChildLine ? 56 : 80}
+                            height={isChildLine ? 56 : 80}
+                            loading="lazy"
+                            className={cn(
+                                "motion-image size-full object-cover",
+                                canHover && "group-hover/item:scale-[1.03]"
+                            )}
+                        />
                     </Link>
 
                     {/* Horizontal Content Layout */}
@@ -279,17 +282,19 @@ export function CartLineItem({layout, line}: {layout: CartLayout; line: CartLine
                         isChildLine ? "size-14 sm:size-16" : "size-20 sm:size-24"
                     )}
                 >
-                    {image && (
-                        <Image
-                            alt={title}
-                            aspectRatio="1/1"
-                            data={image}
-                            height={isChildLine ? 64 : 96}
-                            loading="lazy"
-                            width={isChildLine ? 64 : 96}
-                            className={cn("motion-image size-full object-cover", canHover && "group-hover/item:scale-[1.03]")}
-                        />
-                    )}
+                    <ProductMediaThumb
+                        product={product}
+                        fallbackImage={image}
+                        alt={title}
+                        aspectRatio="1/1"
+                        width={isChildLine ? 64 : 96}
+                        height={isChildLine ? 64 : 96}
+                        loading="lazy"
+                        className={cn(
+                            "motion-image size-full object-cover",
+                            canHover && "group-hover/item:scale-[1.03]"
+                        )}
+                    />
                 </Link>
 
                 {/* Horizontal Content Layout */}

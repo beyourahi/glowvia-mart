@@ -1,4 +1,3 @@
-import {Image} from "@shopify/hydrogen";
 import {ArrowUpRight} from "lucide-react";
 import {Link} from "react-router";
 import type {FeaturedProductSection} from "types";
@@ -6,6 +5,7 @@ import {Money} from "~/components/Money";
 import {QuickAddButton} from "~/components/QuickAddButton";
 import {Button} from "~/components/ui/button";
 import {parseProductTitle} from "~/lib/product";
+import {ProductMediaThumb} from "~/components/ProductMediaThumb";
 
 const getDescription = (description: string) => {
     const trimmed = description.trim();
@@ -45,14 +45,22 @@ export function FeaturedProductSpotlight({product}: {product: FeaturedProductSec
                 className="group relative overflow-hidden rounded-[var(--radius-2xl-raw)] bg-muted/35"
             >
                 {displayImage ? (
-                    <Image
-                        data={{
-                            url: displayImage.url,
-                            altText: displayImage.altText || product.title
-                        }}
-                        sizes="(min-width: 1280px) 42vw, (min-width: 768px) 50vw, 100vw"
-                        className="aspect-[4/5] md:aspect-[4/3.5] h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                    />
+                    <div className="aspect-[4/5] md:aspect-[4/3.5] h-full w-full transition-transform duration-500 group-hover:scale-[1.03]">
+                        <ProductMediaThumb
+                            product={product}
+                            fallbackImage={{
+                                url: displayImage.url,
+                                altText: displayImage.altText || product.title,
+                                width: displayImage.width ?? undefined,
+                                height: displayImage.height ?? undefined
+                            }}
+                            alt={displayImage.altText || product.title}
+                            aspectRatio="4/5"
+                            sizes="(min-width: 1280px) 42vw, (min-width: 768px) 50vw, 100vw"
+                            loading="eager"
+                            className="h-full w-full object-cover"
+                        />
+                    </div>
                 ) : (
                     <div className="flex aspect-[4/5] md:aspect-[4/3.5] items-center justify-center bg-gradient-to-br from-muted to-muted/30 px-10 text-center">
                         <div>

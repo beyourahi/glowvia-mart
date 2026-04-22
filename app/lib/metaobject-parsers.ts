@@ -673,6 +673,12 @@ function parseFeaturedProductSection(featuredProductField: MetaobjectField | und
         };
     });
 
+    // Forward raw media nodes so downstream (QuickAdd*, FeaturedProductSpotlight)
+    // can render a video when product.media[0] is a Video. Shape kept loose —
+    // getCardVideoMedia reads only __typename and the relevant sub-fields.
+    const rawMedia = reference.media as {nodes?: Array<Record<string, unknown>>} | undefined;
+    const mediaNodes = Array.isArray(rawMedia?.nodes) ? rawMedia.nodes : null;
+
     return {
         id: reference.id as string,
         handle: reference.handle as string,
@@ -682,6 +688,7 @@ function parseFeaturedProductSection(featuredProductField: MetaobjectField | und
         availableForSale: true,
         tags: (reference.tags as string[] | null) ?? [],
         featuredImage,
+        media: mediaNodes ? {nodes: mediaNodes} : null,
         priceRange,
         price: {
             amount: variantPrice.amount as string,

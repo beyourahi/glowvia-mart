@@ -73,6 +73,7 @@ import {filterDisplayTags, getButtonLabel} from "~/lib/product-tags";
 import {parseProductTitle} from "~/lib/product";
 import {OUT_OF_STOCK_LABEL} from "~/lib/product/product-card-utils";
 import {ProductImagePlaceholder} from "~/components/ProductImagePlaceholder";
+import {ProductMediaThumb} from "~/components/ProductMediaThumb";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Types
@@ -98,6 +99,15 @@ interface QuickAddImage {
     height?: number | null;
 }
 
+/**
+ * Loose media shape — accepts the raw Shopify media union (MediaImage | Video)
+ * from any product fragment that fetches `media(first: N) { nodes { ... } }`.
+ */
+type QuickAddMediaNode = {
+    __typename?: string | null;
+    [key: string]: unknown;
+};
+
 interface QuickAddProduct {
     id: string;
     title: string;
@@ -107,6 +117,9 @@ interface QuickAddProduct {
     images?: {
         nodes: QuickAddImage[];
     };
+    media?: {
+        nodes: QuickAddMediaNode[];
+    } | null;
     priceRange: {
         minVariantPrice: {amount: string; currencyCode: string};
         maxVariantPrice: {amount: string; currencyCode: string};
@@ -262,12 +275,19 @@ export function QuickAddSheet({product, open, onOpenChange, sizeChart}: QuickAdd
 
                 <SheetHeader>
                     <div className="flex items-start gap-3">
-                        {/* Product thumbnail */}
+                        {/* Product thumbnail — video-first when product.media[0] is a Video.
+                            Muted + playsInline guarantees autoplay on iOS / Android. */}
                         <div className="w-16 h-20 shrink-0 overflow-hidden rounded-lg bg-muted/50">
-                            {product.featuredImage?.url ? (
-                                <img
-                                    src={product.featuredImage.url}
-                                    alt={product.featuredImage.altText || product.title}
+                            {product.featuredImage?.url ||
+                            (product.media?.nodes && product.media.nodes.length > 0) ? (
+                                <ProductMediaThumb
+                                    product={product}
+                                    fallbackImage={product.featuredImage}
+                                    alt={product.featuredImage?.altText || product.title}
+                                    aspectRatio="4/5"
+                                    width={64}
+                                    height={80}
+                                    loading="eager"
                                     className="w-full h-full object-cover"
                                 />
                             ) : (

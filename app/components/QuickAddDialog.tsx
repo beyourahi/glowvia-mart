@@ -70,6 +70,8 @@ import {filterDisplayTags, getButtonLabel} from "~/lib/product-tags";
 import {parseProductTitle} from "~/lib/product";
 import {OUT_OF_STOCK_LABEL} from "~/lib/product/product-card-utils";
 import {ProductImagePlaceholder} from "~/components/ProductImagePlaceholder";
+import {getCardVideoMedia, type CardVideoMedia} from "~/lib/product/product-card-media";
+import {ProductMediaThumb} from "~/components/ProductMediaThumb";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Types
@@ -95,6 +97,16 @@ interface QuickAddImage {
     height?: number | null;
 }
 
+/**
+ * Loose media shape — accepts the raw Shopify media union (MediaImage | Video)
+ * from any product fragment that fetches `media(first: N) { nodes { ... } }`.
+ * getCardVideoMedia reads __typename to decide if the first node is a Video.
+ */
+type QuickAddMediaNode = {
+    __typename?: string | null;
+    [key: string]: unknown;
+};
+
 interface QuickAddProduct {
     id: string;
     title: string;
@@ -104,6 +116,9 @@ interface QuickAddProduct {
     images?: {
         nodes: QuickAddImage[];
     };
+    media?: {
+        nodes: QuickAddMediaNode[];
+    } | null;
     priceRange: {
         minVariantPrice: {amount: string; currencyCode: string};
         maxVariantPrice: {amount: string; currencyCode: string};
@@ -216,6 +231,10 @@ export function QuickAddDialog({product, open, onOpenChange, sizeChart}: QuickAd
               ? [product.featuredImage]
               : [];
 
+    // Detect primary-media video — first slide in the gallery when the first
+    // media node is a Video. Parity with product cards (video-first rendering).
+    const primaryVideo: CardVideoMedia | null = getCardVideoMedia(product);
+
     // Auto-select first available variant when dialog opens
     useEffect(() => {
         if (open && availableVariants.length > 0 && !selectedVariantId) {
@@ -264,8 +283,25 @@ export function QuickAddDialog({product, open, onOpenChange, sizeChart}: QuickAd
                         className="w-full md:w-1/2 shrink-0 h-full overflow-y-auto overscroll-contain [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
                         data-lenis-prevent
                     >
-                        {productImages.length > 0 ? (
+                        {primaryVideo || productImages.length > 0 ? (
                             <div className="flex flex-col gap-2">
+                                {/* Primary-media video slide — mirrors product-card video-first
+                                    behavior on every screen size. Muted + playsInline so iOS
+                                    Safari and Android browsers autoplay inline. */}
+                                {primaryVideo && (
+                                    <div className="relative w-full overflow-hidden bg-muted/50 rounded-lg">
+                                        <div className="aspect-4/5 w-full">
+                                            <ProductMediaThumb
+                                                product={product}
+                                                fallbackImage={product.featuredImage}
+                                                alt={primaryVideo.alt || product.title}
+                                                aspectRatio="4/5"
+                                                loading="eager"
+                                                className="size-full object-cover"
+                                            />
+                                        </div>
+                                    </div>
+                                )}
                                 {productImages.map((image, index) => (
                                     <div
                                         key={image.id || index}

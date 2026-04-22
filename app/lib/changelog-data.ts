@@ -30,6 +30,12 @@ import type {ChangelogEntry} from "~/lib/types/changelog";
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
         date: "2026-04-22",
+        category: "Improvement",
+        headline: "Product cards now browse photos and videos in one carousel",
+        summary: "Product cards used to show either a video or a stack of photos. Now every photo and video appears together in a single carousel, so you can flip between the hero video and the detail shots without leaving the card. Videos only start loading when the card is near the screen and pause when you scroll past, keeping browsing smooth even on pages with lots of products."
+    },
+    {
+        date: "2026-04-22",
         category: "New Feature",
         headline: "Product cards now play a short video when the first media asset is a video",
         summary: "If a product's first media asset is a video, shoppers now see that video playing silently on the product card — across collections, search results, related products, cart suggestions, and every other place cards appear. Videos autoplay muted with a poster placeholder that keeps the layout stable, and they only start loading once the card is close to the screen so pages with many products stay fast. Products without a video continue to use the existing image carousel unchanged."

@@ -50,8 +50,6 @@ import {ProductPrice} from "~/components/ProductPrice";
 import {DiscountBadge} from "~/components/DiscountBadge";
 import {QuickAddButton} from "~/components/QuickAddButton";
 import {ProductImageCarousel} from "~/components/ProductImageCarousel";
-import {ProductCardVideo} from "~/components/ProductCardVideo";
-import {getCardVideoMedia} from "~/lib/product/product-card-media";
 import {WishlistButton} from "~/components/WishlistButton";
 import {PinIcon} from "~/components/PinIcon";
 import {ProductBadgeStack} from "~/components/ProductBadge";
@@ -402,10 +400,14 @@ export function ProductItem({
               ? [featuredImage]
               : [];
 
-    // Video-first media: if the first media asset on the product is a Video,
-    // render it in place of the default product image. Falls back to images
-    // for non-video products (preserves existing behavior).
-    const cardVideoMedia = getCardVideoMedia(product);
+    // Full Shopify media list (images + videos) when the fragment selects it.
+    // The carousel prefers `media` over `images` so videos render alongside stills.
+    const productMediaNodes =
+        "media" in product && Array.isArray((product as {media?: {nodes?: unknown[]}}).media?.nodes)
+            ? ((product as {media: {nodes: unknown[]}}).media.nodes as React.ComponentProps<
+                  typeof ProductImageCarousel
+              >["media"])
+            : null;
 
     // Analyze discount from product variant data
     // If discountPercentageProp is provided, use legacy behavior
@@ -684,18 +686,17 @@ export function ProductItem({
                     </div>
                 )}
 
-                {/* Product media — video first when available, otherwise image carousel */}
-                {cardVideoMedia ? (
-                    <ProductCardVideo
-                        sources={cardVideoMedia.sources}
-                        previewImage={cardVideoMedia.previewImage}
-                        alt={cardVideoMedia.alt}
+                {/* Product media — unified carousel showing all images and videos.
+                    When `media` is unavailable (older fragments) this falls back to the
+                    image-only path. */}
+                {productMediaNodes || productImages.length > 0 ? (
+                    <ProductImageCarousel
+                        images={productImages}
+                        media={productMediaNodes}
                         productTitle={product.title}
                         loading={loading}
                         isOutOfStock={isOutOfStock}
                     />
-                ) : productImages.length > 0 ? (
-                    <ProductImageCarousel images={productImages} productTitle={product.title} loading={loading} isOutOfStock={isOutOfStock} />
                 ) : (
                     <ProductImagePlaceholder aspectRatio="4/5" />
                 )}

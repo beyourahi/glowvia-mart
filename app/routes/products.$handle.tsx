@@ -327,19 +327,19 @@ export default function Product() {
                     />
                 </div>
 
-                {/* 2. Product Name and Discount Badge - fluid text sizing for long perfume names at 320px */}
+                {/* 2. Product Tags + Name + Discount Badge
+                     Tags render directly above the title for consistent visual hierarchy
+                     across the PDP, QuickAddSheet, and QuickAddDialog. */}
                 <div className="px-3 sm:px-4 pt-4 sm:pt-6 space-y-2">
+                    <ProductTagList tags={product.tags} />
                     <ProductTitle title={title} variant="pdp" />
                     <ProductDiscountBadge selectedVariant={selectedVariant} product={product} />
                 </div>
 
                 {/* 3. Description - Comprehensive prose typography */}
-                <div className="px-3 sm:px-4 py-3 sm:py-4">
+                <div className="px-3 sm:px-4 py-3 sm:py-4 pb-4 sm:pb-6">
                     <ProductDescription html={descriptionHtml} size="sm" />
                 </div>
-
-                {/* 4. Product Tags - categorization metadata (subtle pills) */}
-                <ProductTagList tags={product.tags} className="px-3 sm:px-4 pb-4 sm:pb-6" />
 
                 {/* 5. Product Hero Mobile (variants, quantity, add to cart) */}
                 <ProductHeroMobile
@@ -427,9 +427,12 @@ export default function Product() {
                                         <ProductBadgeStack types={badgeTypes} />
                                     </div>
                                 )}
-                                {/* Product Title and Discount Badge
-                                         Title scales progressively: 30px → 36px → 44px → 48px */}
+                                {/* Product Tags + Title + Discount Badge
+                                         Tags render directly above the title for consistent visual
+                                         hierarchy across the PDP, QuickAddSheet, and QuickAddDialog.
+                                         Title scales progressively: 30px → 36px → 44px → 48px. */}
                                 <div className="space-y-3 mb-12 lg:mb-16 xl:mb-20 2xl:mb-24">
+                                    <ProductTagList tags={product.tags} />
                                     <ProductTitle title={title} variant="pdp" />
                                     <ProductDiscountBadge selectedVariant={selectedVariant} product={product} />
                                 </div>
@@ -458,8 +461,6 @@ export default function Product() {
                                 />
                                 {/* Product Description - Comprehensive prose typography for desktop */}
                                 <ProductDescription html={descriptionHtml} size="base" className="pt-12" />
-                                {/* Product Tags - categorization metadata footer for the info panel */}
-                                <ProductTagList tags={product.tags} className="pt-2" />
                             </div>
                         </div>
                     </div>

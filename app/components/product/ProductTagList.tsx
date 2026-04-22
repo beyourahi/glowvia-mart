@@ -1,29 +1,33 @@
 /**
- * @fileoverview Regular product tag badges for the product detail page
+ * @fileoverview Shopper-facing product tags — unified above-title badge row
  *
  * @description
- * Displays all shopper-facing product tags (categorization metadata) as compact
- * pill badges at the bottom of the product info section. Special system tags
- * (pin, premium, preorder, new, clearance) are filtered out — those are surfaced
- * via ProductBadgeStack and the preorder button logic.
- *
- * @design
- * Intentionally subdued so it reads as metadata, not promotion:
- * - Rounded-full pills (distinct from rounded-md uppercase special badges)
- * - Muted background + muted-foreground text (~5.32:1 contrast, WCAG AA ✓)
- * - text-xs, normal casing (preserves merchant-entered capitalization)
- * - Lucide Tag icon as a semantic leading label, not decorative filler
+ * Renders filtered product tags (system tags — pin, premium, preorder, new,
+ * clearance — are excluded and surfaced via ProductBadgeStack / preorder button
+ * logic instead). Used as a single primitive directly above the product title
+ * on the PDP, QuickAddSheet, and QuickAddDialog for consistent placement,
+ * styling, spacing, and semantics across every surface.
  *
  * @placement
- * - Desktop: after ProductDescription, as the final info-panel element
- * - Mobile: after ProductDescription, before the coral ProductHeroMobile hero
+ * Immediately above the product title in:
+ * - PDP mobile + desktop layouts
+ * - QuickAddSheet header
+ * - QuickAddDialog header
+ *
+ * @design
+ * Outline pill treatment that reads as a category highlight, not metadata:
+ * - rounded-full outline pills in text-primary, border on --primary
+ * - font-semibold, uppercase, tracking-wide keeps each tag terse and scannable
+ * - text-xs fits comfortably above titles at every breakpoint
+ * - Tag icon intentionally omitted — above the title, the badges themselves
+ *   are the label; a leading icon would read as a metadata footer again
  *
  * @a11y
- * - Leading icon is aria-hidden; the region uses aria-label="Product tags"
- * - Tags render as plain spans (non-interactive) to signal metadata, not filters
+ * - role="group" + aria-label="Product tags" identifies the region
+ * - Tags render as plain Badge spans (non-interactive metadata, not filters)
+ * - text-primary on transparent over --background stays within WCAG AA contrast
  */
 
-import {Tag} from "lucide-react";
 import {Badge} from "~/components/ui/badge";
 import {filterDisplayTags} from "~/lib/product-tags";
 import {cn} from "~/lib/utils";
@@ -46,18 +50,11 @@ export function ProductTagList({tags, className}: ProductTagListProps) {
             aria-label="Product tags"
             className={cn("flex flex-wrap items-center gap-1.5", className)}
         >
-            <Tag
-                className="size-3.5 shrink-0 text-muted-foreground/70"
-                aria-hidden="true"
-                strokeWidth={1.75}
-            />
             {displayTags.map(tag => (
                 <Badge
                     key={tag}
-                    variant="secondary"
-                    // bg-muted on muted-foreground = 5.32:1 (WCAG AA) ✓
-                    // font-normal + text-xs keeps it as metadata, not a CTA
-                    className="bg-muted text-muted-foreground font-normal text-xs px-2.5 py-0.5 border-transparent hover:bg-muted/80"
+                    variant="outline"
+                    className="border text-primary font-semibold text-xs px-2.5 py-0.5 uppercase tracking-wide"
                 >
                     {tag}
                 </Badge>

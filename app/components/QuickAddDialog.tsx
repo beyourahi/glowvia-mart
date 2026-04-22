@@ -16,7 +16,7 @@
  * - Auto-closes on successful add (no cart drawer interruption)
  * - Body scroll lock when open
  * - Event bubbling prevention (safe inside clickable cards)
- * - Tag badges under product title
+ * - Tag badges above product title (shared ProductTagList primitive)
  * - Lenis scroll prevention for smooth scrolling
  *
  * @props
@@ -58,7 +58,6 @@ import {cn} from "~/lib/utils";
 import {useScrollLock} from "~/hooks/useScrollLock";
 import {Money} from "~/components/Money";
 import {QuantitySelector} from "~/components/QuantitySelector";
-import {Badge} from "~/components/ui/badge";
 import {Dialog, DialogContent, DialogHeader, DialogTitle} from "~/components/ui/dialog";
 import {ColorSwatch} from "~/components/ui/color-swatch";
 import {isColorOption, getSwatchFromColorName, hasColorMapping} from "~/lib/color-name-map";
@@ -66,7 +65,8 @@ import {WishlistButton} from "~/components/WishlistButton";
 import {SizeChartButtonCompact} from "~/components/SizeChartButton";
 import type {SizeChartData} from "~/lib/size-chart";
 import {toast} from "sonner";
-import {filterDisplayTags, getButtonLabel} from "~/lib/product-tags";
+import {getButtonLabel} from "~/lib/product-tags";
+import {ProductTagList} from "~/components/product/ProductTagList";
 import {parseProductTitle} from "~/lib/product";
 import {OUT_OF_STOCK_LABEL} from "~/lib/product/product-card-utils";
 import {ProductImagePlaceholder} from "~/components/ProductImagePlaceholder";
@@ -180,10 +180,6 @@ interface QuickAddDialogProps {
 export function QuickAddDialog({product, open, onOpenChange, sizeChart}: QuickAddDialogProps) {
     const [quantity, setQuantity] = useState(1);
     const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
-
-    // Filter out special tags (pin, premium, preorder, etc.) for display
-    // These are shown as badges on product cards, not in the tags list
-    const displayTags = filterDisplayTags(product.tags);
 
     // Get appropriate button label ("Pre Order" for preorder products)
     const buttonLabel = getButtonLabel(product.tags, "Get it now");
@@ -325,24 +321,14 @@ export function QuickAddDialog({product, open, onOpenChange, sizeChart}: QuickAd
                     {/* Product info and options - right side */}
                     <div className="flex-1 p-4 sm:p-6 flex flex-col overflow-y-auto" data-lenis-prevent>
                         <DialogHeader className="text-left pr-10">
+                            {/* Product Tags - above the title (special tags filtered out)
+                                Uses the shared ProductTagList primitive for consistent styling,
+                                spacing, and semantics across the PDP and both Quick Add surfaces. */}
+                            <ProductTagList tags={product.tags} className="mb-1.5" />
                             <DialogTitle className="font-sans text-2xl sm:text-3xl font-medium leading-snug text-primary mb-0">
                                 <span>{primary}</span>
                                 {secondary && <span>, {secondary}</span>}
                             </DialogTitle>
-                            {/* Product Tags - under the title (special tags filtered out) */}
-                            {displayTags.length > 0 && (
-                                <div className="flex flex-wrap gap-1.5 mt-1">
-                                    {displayTags.map((tag: string) => (
-                                        <Badge
-                                            key={tag}
-                                            variant="outline"
-                                            className="text-sm border text-primary font-semibold px-2.5 uppercase"
-                                        >
-                                            {tag}
-                                        </Badge>
-                                    ))}
-                                </div>
-                            )}
                             <div className="flex items-center gap-3 mt-1">
                                 <span className="font-mono tabular-nums text-base text-primary">
                                     {selectedVariant ? (

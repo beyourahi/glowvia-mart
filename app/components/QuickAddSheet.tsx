@@ -8,7 +8,7 @@
  *
  * @features
  * - Mobile bottom sheet with drag handle indicator
- * - Product thumbnail with tags in header
+ * - Product thumbnail, tags above title, price in header
  * - Pill-style variant option buttons
  * - Auto-selects first available variant on open
  * - Integrated quantity selector
@@ -61,7 +61,6 @@ import {Spinner} from "~/components/ui/spinner";
 import {useScrollLock} from "~/hooks/useScrollLock";
 import {Money} from "~/components/Money";
 import {QuantitySelector} from "~/components/QuantitySelector";
-import {Badge} from "~/components/ui/badge";
 import {Sheet, SheetContent, SheetHeader, SheetTitle, SheetBody, SheetFooter} from "~/components/ui/sheet";
 import {ColorSwatch} from "~/components/ui/color-swatch";
 import {isColorOption, getSwatchFromColorName, hasColorMapping} from "~/lib/color-name-map";
@@ -69,7 +68,8 @@ import {WishlistButton} from "~/components/WishlistButton";
 import {SizeChartButtonCompact} from "~/components/SizeChartButton";
 import type {SizeChartData} from "~/lib/size-chart";
 import {toast} from "sonner";
-import {filterDisplayTags, getButtonLabel} from "~/lib/product-tags";
+import {getButtonLabel} from "~/lib/product-tags";
+import {ProductTagList} from "~/components/product/ProductTagList";
 import {parseProductTitle} from "~/lib/product";
 import {OUT_OF_STOCK_LABEL} from "~/lib/product/product-card-utils";
 import {ProductImagePlaceholder} from "~/components/ProductImagePlaceholder";
@@ -183,10 +183,6 @@ export function QuickAddSheet({product, open, onOpenChange, sizeChart}: QuickAdd
     const [quantity, setQuantity] = useState(1);
     const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
 
-    // Filter out special tags (pin, premium, preorder, etc.) for display
-    // These are shown as badges on product cards, not in the tags list
-    const displayTags = filterDisplayTags(product.tags);
-
     // Get appropriate button label ("Pre Order" for preorder products)
     const buttonLabel = getButtonLabel(product.tags, "Get it now");
 
@@ -297,24 +293,14 @@ export function QuickAddSheet({product, open, onOpenChange, sizeChart}: QuickAdd
 
                         {/* Product title and price */}
                         <div className="flex-1 min-w-0">
+                            {/* Product Tags - above the title (special tags filtered out)
+                                Uses the shared ProductTagList primitive for consistent styling,
+                                spacing, and semantics across the PDP and both Quick Add surfaces. */}
+                            <ProductTagList tags={product.tags} className="mb-1.5" />
                             <SheetTitle className="line-clamp-2 leading-snug">
                                 <span>{primary}</span>
                                 {secondary && <span>, {secondary}</span>}
                             </SheetTitle>
-                            {/* Product Tags - under the title (special tags filtered out) */}
-                            {displayTags.length > 0 && (
-                                <div className="flex flex-wrap gap-1.5 mt-1">
-                                    {displayTags.map((tag: string) => (
-                                        <Badge
-                                            key={tag}
-                                            variant="outline"
-                                            className="text-sm border text-primary font-semibold px-2 uppercase"
-                                        >
-                                            {tag}
-                                        </Badge>
-                                    ))}
-                                </div>
-                            )}
                             <div className="flex items-center gap-3 mt-1">
                                 <span className="font-mono tabular-nums text-sm text-primary">
                                     {selectedVariant ? (

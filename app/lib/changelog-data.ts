@@ -30,6 +30,12 @@ import type {ChangelogEntry} from "~/lib/types/changelog";
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
         date: "2026-04-22",
+        category: "Design",
+        headline: "Gallery photos on mobile now show without the dark gradient overlay",
+        summary: "On phones, every gallery photo used to sit behind a permanent dark gradient at the bottom of the card. The overlay has been removed on small screens so the photography itself takes centre stage — the image fills the card cleanly with nothing obscuring the lower edge. Tablets and desktops keep the overlay behaviour they had, including the hover reveal on pointer devices."
+    },
+    {
+        date: "2026-04-22",
         category: "Improvement",
         headline: "Product cards now browse photos and videos in one carousel",
         summary: "Product cards used to show either a video or a stack of photos. Now every photo and video appears together in a single carousel, so you can flip between the hero video and the detail shots without leaving the card. Videos only start loading when the card is near the screen and pause when you scroll past, keeping browsing smooth even on pages with lots of products."

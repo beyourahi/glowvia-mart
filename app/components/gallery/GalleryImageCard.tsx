@@ -138,10 +138,10 @@ export function GalleryImageCard({image, index = 0}: GalleryImageCardProps) {
                     <div className="animate-shimmer from-muted/0 via-muted/60 to-muted/0 absolute inset-0 bg-gradient-to-r" />
                 )}
 
-                {/* Hover Overlay — always visible on touch; slides up on hover for pointer devices */}
+                {/* Hover Overlay — hidden on mobile (<640px); always visible on touch tablets; slides up on hover for pointer devices */}
                 <div
                     className={cn(
-                        "absolute inset-x-0 bottom-0",
+                        "absolute inset-x-0 bottom-0 max-sm:hidden",
                         canHover ? "translate-y-full group-hover:translate-y-0" : "translate-y-0",
                         "transition-transform duration-300 ease-out",
                         "bg-gradient-to-t from-dark/80 via-dark/50 to-transparent",

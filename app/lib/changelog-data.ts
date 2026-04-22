@@ -30,6 +30,12 @@ import type {ChangelogEntry} from "~/lib/types/changelog";
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
         date: "2026-04-22",
+        category: "New Feature",
+        headline: "Product cards now play a short video when the first media asset is a video",
+        summary: "If a product's first media asset is a video, shoppers now see that video playing silently on the product card — across collections, search results, related products, cart suggestions, and every other place cards appear. Videos autoplay muted with a poster placeholder that keeps the layout stable, and they only start loading once the card is close to the screen so pages with many products stay fast. Products without a video continue to use the existing image carousel unchanged."
+    },
+    {
+        date: "2026-04-22",
         category: "Performance",
         headline: "Gallery photos now load in the most efficient format, sized to your screen",
         summary: "The gallery used to serve the full-resolution original of every product photo regardless of whether you were on a phone or a desktop. Every image is now delivered in AVIF at a width that matches your screen, with a subtle shimmer placeholder while it loads. Gallery pages feel dramatically lighter on mobile networks and the first row of photos is prioritised for faster initial paint."

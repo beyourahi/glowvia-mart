@@ -50,6 +50,8 @@ import {ProductPrice} from "~/components/ProductPrice";
 import {DiscountBadge} from "~/components/DiscountBadge";
 import {QuickAddButton} from "~/components/QuickAddButton";
 import {ProductImageCarousel} from "~/components/ProductImageCarousel";
+import {ProductCardVideo} from "~/components/ProductCardVideo";
+import {getCardVideoMedia} from "~/lib/product/product-card-media";
 import {WishlistButton} from "~/components/WishlistButton";
 import {PinIcon} from "~/components/PinIcon";
 import {ProductBadgeStack} from "~/components/ProductBadge";
@@ -400,6 +402,11 @@ export function ProductItem({
               ? [featuredImage]
               : [];
 
+    // Video-first media: if the first media asset on the product is a Video,
+    // render it in place of the default product image. Falls back to images
+    // for non-video products (preserves existing behavior).
+    const cardVideoMedia = getCardVideoMedia(product);
+
     // Analyze discount from product variant data
     // If discountPercentageProp is provided, use legacy behavior
     const discountInfo: DiscountBadgeInfo | undefined = discountPercentageProp
@@ -677,8 +684,17 @@ export function ProductItem({
                     </div>
                 )}
 
-                {/* Product images - carousel for multiple, static for single */}
-                {productImages.length > 0 ? (
+                {/* Product media — video first when available, otherwise image carousel */}
+                {cardVideoMedia ? (
+                    <ProductCardVideo
+                        sources={cardVideoMedia.sources}
+                        previewImage={cardVideoMedia.previewImage}
+                        alt={cardVideoMedia.alt}
+                        productTitle={product.title}
+                        loading={loading}
+                        isOutOfStock={isOutOfStock}
+                    />
+                ) : productImages.length > 0 ? (
                     <ProductImageCarousel images={productImages} productTitle={product.title} loading={loading} isOutOfStock={isOutOfStock} />
                 ) : (
                     <ProductImagePlaceholder aspectRatio="4/5" />

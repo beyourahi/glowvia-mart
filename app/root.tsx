@@ -732,6 +732,39 @@ const CART_SUGGESTIONS_QUERY = `#graphql
       width
       height
     }
+    media(first: 5) {
+      nodes {
+        __typename
+        ... on MediaImage {
+          id
+          alt
+          image {
+            id
+            url
+            altText
+            width
+            height
+          }
+        }
+        ... on Video {
+          id
+          alt
+          sources {
+            url
+            mimeType
+            width
+            height
+          }
+          previewImage {
+            id
+            url
+            altText
+            width
+            height
+          }
+        }
+      }
+    }
     variants(first: 250) {
       nodes {
         id

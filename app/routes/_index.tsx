@@ -735,6 +735,39 @@ const CURATED_COLLECTIONS_QUERY = `#graphql
         height
       }
     }
+    media(first: 5) {
+      nodes {
+        __typename
+        ... on MediaImage {
+          id
+          alt
+          image {
+            id
+            url
+            altText
+            width
+            height
+          }
+        }
+        ... on Video {
+          id
+          alt
+          sources {
+            url
+            mimeType
+            width
+            height
+          }
+          previewImage {
+            id
+            url
+            altText
+            width
+            height
+          }
+        }
+      }
+    }
     variants(first: 100) {
       nodes {
         id
@@ -820,6 +853,39 @@ const RECENTLY_VIEWED_PRODUCTS_QUERY = `#graphql
             height
           }
         }
+        media(first: 5) {
+          nodes {
+            __typename
+            ... on MediaImage {
+              id
+              alt
+              image {
+                id
+                url
+                altText
+                width
+                height
+              }
+            }
+            ... on Video {
+              id
+              alt
+              sources {
+                url
+                mimeType
+                width
+                height
+              }
+              previewImage {
+                id
+                url
+                altText
+                width
+                height
+              }
+            }
+          }
+        }
         variants(first: 100) {
           nodes {
             id
@@ -887,6 +953,39 @@ const ALL_PRODUCTS_QUERY = `#graphql
             altText
             width
             height
+          }
+        }
+        media(first: 5) {
+          nodes {
+            __typename
+            ... on MediaImage {
+              id
+              alt
+              image {
+                id
+                url
+                altText
+                width
+                height
+              }
+            }
+            ... on Video {
+              id
+              alt
+              sources {
+                url
+                mimeType
+                width
+                height
+              }
+              previewImage {
+                id
+                url
+                altText
+                width
+                height
+              }
+            }
           }
         }
         variants(first: 100) {

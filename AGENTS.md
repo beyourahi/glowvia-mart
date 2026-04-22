@@ -76,8 +76,8 @@ Backend behavior, data flow, and Hydrogen conventions **must remain consistent**
 ```
 storefront_002/
 ├── app/
-│   ├── routes/              # 49 routes
-│   ├── components/          # 132 components
+│   ├── routes/              # 50 routes
+│   ├── components/          # 131 components
 │   │   ├── ui/              # 27 shadcn
 │   │   ├── blog/            # 7 blog
 │   │   ├── changelog/       # 2 changelog
@@ -87,11 +87,12 @@ storefront_002/
 │   │   ├── gallery/         # Gallery grid
 │   │   ├── icons/           # Custom icons
 │   │   └── ProductLightbox/ # Lightbox system
-│   ├── lib/                 # 66 utilities
+│   ├── lib/                 # 69 utilities
 │   │   ├── metaobject-*.ts  # CMS
 │   │   ├── pwa-*.ts         # PWA
 │   │   ├── changelog-data.ts # Static changelog entries
 │   │   ├── color/           # WCAG color contrast
+│   │   ├── performance/     # Image optimization helpers
 │   │   ├── product/         # Product data, variants, pricing
 │   │   ├── types/           # Shared type definitions
 │   │   └── fragments.ts     # GraphQL fragments
@@ -99,6 +100,8 @@ storefront_002/
 │   ├── graphql/customer-account/  # 15 queries
 │   └── styles/tailwind.css  # v4 + animations
 ├── public/sw.js             # Workbox
+├── server.ts                # Cloudflare Workers entry
+├── wrangler.jsonc           # Workers deploy config
 ├── vite.config.ts           # Vite build config
 └── react-router.config.ts   # Hydrogen preset
 ```
@@ -106,12 +109,16 @@ storefront_002/
 ## Common Commands
 
 ```bash
-npm run dev          # Dev server + GraphQL codegen
-npm run build        # Production build
-npm run preview      # Preview build
-npm run lint         # ESLint
-npm run typecheck    # TypeScript + route types
-npm run codegen      # Regenerate GraphQL types
+npm run dev                  # Dev server + GraphQL codegen
+npm run build                # Production build
+npm run preview              # Preview build
+npm run lint                 # ESLint
+npm run typecheck            # TypeScript + route types
+npm run codegen              # Regenerate GraphQL types
+npm run dev:workers          # Build + run locally under Wrangler
+npm run deploy:workers       # Build + deploy to Cloudflare Workers
+npm run deploy:workers:dry   # Build + Wrangler dry-run (no publish)
+npm run cf-typegen           # Regenerate Cloudflare Worker types
 ```
 
 ## Code Style

@@ -688,7 +688,9 @@ export function ProductItem({
 
                 {/* Product media — unified carousel showing all images and videos.
                     When `media` is unavailable (older fragments) this falls back to the
-                    image-only path. */}
+                    image-only path. `hasBottomAction` mirrors the conditional used below for
+                    the overlay markup so the carousel can lift its pagination indicator clear
+                    of the reserved Quick Add / customActions region. */}
                 {productMediaNodes || productImages.length > 0 ? (
                     <ProductImageCarousel
                         images={productImages}
@@ -696,6 +698,10 @@ export function ProductItem({
                         productTitle={product.title}
                         loading={loading}
                         isOutOfStock={isOutOfStock}
+                        hasBottomAction={
+                            !!customActions ||
+                            (!hideDefaultActions && showQuickAdd && "variants" in product)
+                        }
                     />
                 ) : (
                     <ProductImagePlaceholder aspectRatio="4/5" />

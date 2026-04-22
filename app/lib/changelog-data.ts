@@ -30,6 +30,12 @@ import type {ChangelogEntry} from "~/lib/types/changelog";
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
         date: "2026-04-22",
+        category: "Fix",
+        headline: "Photo dots on product cards no longer overlap the Quick Add button",
+        summary: "On product cards with more than one photo or video, the little row of dots that shows which slide you're on used to sit right on top of the Quick Add button on mobile — and slide underneath it on desktop when you hovered. The dots now lift clear of the button automatically: always visible on phones, and rising up to meet the button as it fades in on desktop. Nothing gets hidden behind anything else anymore."
+    },
+    {
+        date: "2026-04-22",
         category: "Design",
         headline: "Gallery photos on mobile now show without the dark gradient overlay",
         summary: "On phones, every gallery photo used to sit behind a permanent dark gradient at the bottom of the card. The overlay has been removed on small screens so the photography itself takes centre stage — the image fills the card cleanly with nothing obscuring the lower edge. Tablets and desktops keep the overlay behaviour they had, including the hover reveal on pointer devices."

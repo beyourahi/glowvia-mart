@@ -83,6 +83,16 @@ interface ProductImageCarouselProps {
     loading?: "eager" | "lazy";
     className?: string;
     isOutOfStock?: boolean;
+    /**
+     * Set when the parent renders a bottom-anchored action overlay (Quick Add,
+     * customActions). Lifts the pagination indicator above the reserved
+     * action region so the two never collide.
+     *
+     * Below `md`: always lifted (action overlay is always visible on mobile).
+     * `md`+: stays low by default, shifts up on `group-hover` to track the
+     * button's fade-in.
+     */
+    hasBottomAction?: boolean;
 }
 
 // =============================================================================
@@ -267,7 +277,8 @@ export function ProductImageCarousel({
     productTitle,
     loading = "lazy",
     className,
-    isOutOfStock = false
+    isOutOfStock = false,
+    hasBottomAction = false
 }: ProductImageCarouselProps) {
     const [api, setApi] = useState<CarouselApi>();
     const [activeIndex, setActiveIndex] = useState(0);
@@ -435,9 +446,17 @@ export function ProductImageCarousel({
                 <ArrowRight className="size-4 text-primary-foreground" />
             </div>
 
-            {/* Pagination dots — always-visible so multi-media is discoverable on mobile. */}
+            {/* Pagination dots — always-visible so multi-media is discoverable on mobile.
+                When `hasBottomAction` is set, the indicator is lifted above the Quick Add /
+                customActions overlay region to avoid collision. The `md:` variants keep the
+                indicator low on desktop until hover reveals the button, mirroring its fade-in. */}
             <div
-                className="pointer-events-none absolute bottom-2 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1 rounded-full bg-background/75 px-1.5 py-1 backdrop-blur-md"
+                className={cn(
+                    "pointer-events-none absolute left-1/2 z-30 flex -translate-x-1/2 items-center gap-1 rounded-full bg-background/75 px-1.5 py-1 backdrop-blur-md transition-[bottom] duration-200 ease-out",
+                    hasBottomAction
+                        ? "bottom-14 sm:bottom-16 md:bottom-2 md:group-hover:bottom-[4.5rem]"
+                        : "bottom-2"
+                )}
                 aria-hidden="true"
             >
                 {slides.map((slide, index) => (

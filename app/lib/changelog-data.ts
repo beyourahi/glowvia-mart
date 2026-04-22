@@ -29,6 +29,12 @@ import type {ChangelogEntry} from "~/lib/types/changelog";
 // Newest entries at the top. Add new entries here in the same commit that ships the change.
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
+        date: "2026-04-22",
+        category: "Performance",
+        headline: "Gallery photos now load in the most efficient format, sized to your screen",
+        summary: "The gallery used to serve the full-resolution original of every product photo regardless of whether you were on a phone or a desktop. Every image is now delivered in AVIF at a width that matches your screen, with a subtle shimmer placeholder while it loads. Gallery pages feel dramatically lighter on mobile networks and the first row of photos is prioritised for faster initial paint."
+    },
+    {
         date: "2026-04-21",
         category: "New Feature",
         headline: "Product pages now surface the full set of product tags as pill badges",

@@ -139,10 +139,10 @@ export function GalleryGrid({initialImages, pageInfo}: GalleryGridProps) {
 
     return (
         <div className="flex flex-col gap-4">
-            {/* Gallery Grid - compact gaps, 5 columns on ultrawide (1921px+) */}
-            <div className="grid grid-cols-2 gap-1 sm:gap-1.5 md:grid-cols-3 lg:grid-cols-4 3xl:grid-cols-5">
+            {/* Gallery Masonry - CSS columns for true masonry layout, 5 columns on ultrawide (1921px+) */}
+            <div className="columns-2 gap-1 sm:gap-1.5 md:columns-3 lg:columns-4 3xl:columns-5">
                 {images.map((image, index) => (
-                    <GalleryImageCard key={image.id} image={image} priority={index < 8} index={index} />
+                    <GalleryImageCard key={image.id} image={image} index={index} />
                 ))}
             </div>
 

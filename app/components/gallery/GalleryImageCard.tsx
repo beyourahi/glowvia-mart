@@ -12,10 +12,13 @@
  * - ~/routes/gallery - Gallery route providing image data
  */
 
+import {useEffect, useRef, useState} from "react";
+import {Link} from "react-router";
 import type {GalleryImageData} from "~/lib/gallery";
 import {cn} from "~/lib/utils";
 import {parseProductTitle} from "~/lib/product";
 import {usePointerCapabilities} from "~/hooks/usePointerCapabilities";
+import {buildShopifyImageUrl, createResponsiveSizes, getGridImageConfig} from "~/lib/performance";
 
 // =============================================================================
 // TYPES
@@ -23,9 +26,22 @@ import {usePointerCapabilities} from "~/hooks/usePointerCapabilities";
 
 interface GalleryImageCardProps {
     image: GalleryImageData;
-    priority?: boolean;
     index?: number;
 }
+
+// =============================================================================
+// CONSTANTS
+// =============================================================================
+
+// Candidate widths requested from Shopify's CDN. The browser picks the closest
+// match given the computed `sizes` attribute.
+const SRC_SET_WIDTHS = [400, 600, 800, 1200] as const;
+
+// Widest breakpoint column count in GalleryGrid — determines which cards are
+// "above the fold" for priority / eager-loading heuristics.
+const MAX_COLUMNS = 5;
+
+const RESPONSIVE_SIZES = createResponsiveSizes(2, 3, 5);
 
 // =============================================================================
 // COMPONENT
@@ -35,54 +51,94 @@ interface GalleryImageCardProps {
  * GalleryImageCard - Individual image card with hover overlay for product info.
  *
  * @param image - Gallery image data (url, dimensions, product/collection info)
- * @param priority - Whether to eager-load image (default: false)
- * @param index - Card position for staggered animation timing (default: 0)
- *
- * @example
- * ```tsx
- * <GalleryImageCard
- *   image={galleryImage}
- *   priority={index < 8}
- *   index={index}
- * />
- * ```
+ * @param index - Card position in the grid (used for loading priority)
  */
-export function GalleryImageCard({image, priority = false, index = 0}: GalleryImageCardProps) {
-    // =============================================================================
-    // DERIVED STATE
-    // =============================================================================
-
+export function GalleryImageCard({image, index = 0}: GalleryImageCardProps) {
     const {canHover} = usePointerCapabilities();
     const {primary, secondary} = parseProductTitle(image.productTitle);
 
-    /**
-     * Stagger delay calculation for cascade animation.
-     * Capped at 12 items (480ms max) to avoid excessive delays deep in grid.
-     */
-    const staggerDelay = Math.min(index, 11) * 40;
+    const config = getGridImageConfig(index, MAX_COLUMNS);
+    const imgRef = useRef<HTMLImageElement | null>(null);
 
-    // =============================================================================
-    // RENDER
-    // =============================================================================
+    const [loaded, setLoaded] = useState(false);
+    // Priority cards (above-the-fold) bypass the observer — show immediately.
+    const [visible, setVisible] = useState(config.priority);
+
+    // Browser-cached images fire onLoad before React attaches the handler.
+    // Re-check img.complete after mount to catch those.
+    useEffect(() => {
+        if (imgRef.current?.complete && imgRef.current.naturalWidth > 0) {
+            setLoaded(true);
+        }
+    }, []);
+
+    // Below-the-fold cards: fade in once they scroll into view. This runs in
+    // addition to native `loading="lazy"` — it controls the shimmer-to-image
+    // transition, not the network request.
+    useEffect(() => {
+        if (config.priority || visible) return;
+        if (typeof window === "undefined" || !("IntersectionObserver" in window)) return;
+
+        const node = imgRef.current;
+        if (!node) return;
+
+        const observer = new IntersectionObserver(
+            entries => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        setVisible(true);
+                        observer.unobserve(entry.target);
+                    }
+                });
+            },
+            {rootMargin: "50px", threshold: 0.01}
+        );
+
+        observer.observe(node);
+        return () => observer.disconnect();
+    }, [config.priority, visible]);
 
     return (
-        <div
-            className={cn("group block w-full animate-product-fade-in motion-surface", "rounded-sm overflow-hidden")}
-            style={{animationDelay: `${staggerDelay}ms`}}
+        <Link
+            to={`/products/${image.productHandle}`}
+            prefetch="intent"
+            aria-label={image.productTitle}
+            className={cn(
+                "group sleek relative block w-full break-inside-avoid",
+                "rounded-sm overflow-hidden mb-1 sm:mb-1.5",
+                "bg-muted/20",
+                "hover:shadow-xl hover:ring-2 hover:ring-primary/20",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+            )}
         >
-            <div className="aspect-[4/5] relative overflow-hidden bg-muted/20">
-                {/* Main Image */}
+            <div className="relative w-full" style={{aspectRatio: image.aspectRatio || 1}}>
+                {/* Main Image — AVIF + responsive srcSet for bandwidth-tuned delivery */}
                 <img
-                    src={image.url}
+                    ref={imgRef}
+                    src={buildShopifyImageUrl(image.url, {format: "avif", width: 800, quality: 85})}
+                    srcSet={SRC_SET_WIDTHS.map(
+                        w => `${buildShopifyImageUrl(image.url, {format: "avif", width: w, quality: 85})} ${w}w`
+                    ).join(", ")}
+                    sizes={RESPONSIVE_SIZES}
                     alt={image.altText || image.productTitle}
-                    loading={priority ? "eager" : "lazy"}
                     width={image.width}
                     height={image.height}
-                    className={cn("absolute inset-0 h-full w-full object-cover motion-image", canHover && "group-hover:scale-105")}
+                    loading={config.loading}
+                    {...(config.fetchPriority ? {fetchpriority: config.fetchPriority} : {})}
+                    onLoad={() => setLoaded(true)}
+                    className={cn(
+                        "sleek absolute inset-0 h-full w-full object-cover",
+                        canHover && "group-hover:scale-105",
+                        visible ? "opacity-100" : "opacity-0"
+                    )}
                 />
 
-                {/* Hover Overlay - slides up from bottom */}
-                {/* Overlay — always visible on touch; slides up on hover for pointer devices */}
+                {/* Shimmer placeholder until the image has finished loading */}
+                {!loaded && (
+                    <div className="animate-shimmer from-muted/0 via-muted/60 to-muted/0 absolute inset-0 bg-gradient-to-r" />
+                )}
+
+                {/* Hover Overlay — always visible on touch; slides up on hover for pointer devices */}
                 <div
                     className={cn(
                         "absolute inset-x-0 bottom-0",
@@ -101,6 +157,6 @@ export function GalleryImageCard({image, priority = false, index = 0}: GalleryIm
                     )}
                 </div>
             </div>
-        </div>
+        </Link>
     );
 }

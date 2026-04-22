@@ -19,7 +19,7 @@
  * (brand, hero, promotions, theme) needs Shopify Admin control.
  *
  * Data Structure:
- * - SiteSettings: Brand, hero, SEO, contact, sections, promotions, collections
+ * - SiteSettings: Brand, hero, SEO, sections, promotions, collections
  * - ThemeConfig: Fonts (sans, serif, mono) + Colors (primary, secondary, background, foreground, accent)
  *
  * Hook Variants:
@@ -27,7 +27,6 @@
  * - useSiteContentSafe(): Full content with fallback defaults
  * - useSiteSettings(): Only site settings
  * - useThemeConfig(): Only theme configuration
- * - useContactInfo(): Derived contact info object
  * - useSocialLinks(): Social media links array
  * - useSectionHeadings(): Section heading strings
  * - useTestimonials(), useFaqItems(), useInstagramMedia(): Collections
@@ -52,7 +51,6 @@ import {createContext, useContext, useMemo, type ReactNode} from "react";
 import type {
     SiteContent,
     SiteSettings,
-    ContactInfo,
     SocialLink,
     SectionHeadings,
     Testimonial,
@@ -139,20 +137,6 @@ export function useThemeConfig(): ThemeConfig {
  */
 export function useSiteSettings(): SiteSettings {
     return useSiteContentSafe().siteSettings;
-}
-
-/**
- * Hook to access contact info (derived from siteSettings)
- * Provides backward compatibility for components expecting ContactInfo shape
- */
-export function useContactInfo(): ContactInfo {
-    const settings = useSiteSettings();
-    return {
-        email: settings.contactEmail,
-        phone: settings.contactPhone,
-        businessHours: settings.businessHours,
-        address: settings.address
-    };
 }
 
 /**

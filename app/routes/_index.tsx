@@ -126,7 +126,7 @@ import {
     generateOrganizationSchema,
     generateWebsiteSchema
 } from "~/lib/seo";
-import {useTestimonials, useInstagramMedia, useFaqItems, usePromotionalBanners, useContactInfo} from "~/lib/site-content-context";
+import {useTestimonials, useInstagramMedia, useFaqItems, usePromotionalBanners} from "~/lib/site-content-context";
 import {ShopLocation} from "~/components/ShopLocation";
 import {useWishlist} from "~/lib/wishlist-context";
 
@@ -410,7 +410,6 @@ export default function Homepage() {
     const instagramMedia = useInstagramMedia();
     const faqItems = useFaqItems();
     const {bannerOneMedia, bannerTwoMedia} = usePromotionalBanners();
-    const contactInfo = useContactInfo();
     const {count: wishlistCount} = useWishlist();
 
     return (
@@ -593,105 +592,8 @@ export default function Homepage() {
                 <AnimatedSection animation="slide-up" threshold={0.1} className="mt-16 md:mt-20 lg:mt-24 -mx-container">
                     <ShopLocation />
                 </AnimatedSection>
-
-                {/* Contact Section — only rendered when at least one field has content */}
-                <AnimatedSection animation="slide-up" threshold={0.1} className="mt-16 md:mt-20 lg:mt-24">
-                    <HomepageContactSection contactInfo={contactInfo} />
-                </AnimatedSection>
             </Container>
         </>
-    );
-}
-
-// =============================================================================
-// HOMEPAGE CONTACT SECTION
-// =============================================================================
-
-/**
- * Full contact card displayed at the bottom of the homepage.
- * Shows address, email, phone, and business hours when available.
- * Only renders when at least one field is non-empty.
- */
-function HomepageContactSection({contactInfo}: {contactInfo: {email: string; phone: string; businessHours: string; address: {street: string; city: string; state: string; zip: string}}}) {
-    const {email, phone, businessHours, address} = contactInfo;
-    const hasEmail = Boolean(email?.trim());
-    const hasPhone = Boolean(phone?.trim());
-    const hasHours = Boolean(businessHours?.trim());
-    const hasAddress = Boolean(address?.street?.trim() || address?.city?.trim());
-    const hasAny = hasEmail || hasPhone || hasHours || hasAddress;
-
-    if (!hasAny) return null;
-
-    const fullAddress = [
-        address?.street,
-        [address?.city, address?.state].filter(Boolean).join(", "),
-        address?.zip
-    ]
-        .filter(Boolean)
-        .join("\n");
-
-    return (
-        <div className="border-t border-border pt-12 md:pt-16">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 lg:gap-24">
-                {/* Left — label + address */}
-                <div className="space-y-6">
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                        Find Us
-                    </p>
-                    {hasAddress && (
-                        <address className="not-italic font-serif text-2xl sm:text-3xl lg:text-4xl leading-snug text-foreground">
-                            {address?.street && <span className="block">{address.street}</span>}
-                            {(address?.city || address?.state) && (
-                                <span className="block">
-                                    {[address?.city, address?.state].filter(Boolean).join(", ")}
-                                    {address?.zip ? ` ${address.zip}` : ""}
-                                </span>
-                            )}
-                        </address>
-                    )}
-                </div>
-
-                {/* Right — email, phone, hours */}
-                <div className="flex flex-col justify-end gap-6">
-                    {hasEmail && (
-                        <div className="space-y-1">
-                            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                                Email
-                            </p>
-                            <a
-                                href={`mailto:${email}`}
-                                className="text-lg sm:text-xl font-medium text-foreground hover:text-primary hover:no-underline transition-colors"
-                            >
-                                {email}
-                            </a>
-                        </div>
-                    )}
-                    {hasPhone && (
-                        <div className="space-y-1">
-                            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                                Phone
-                            </p>
-                            <a
-                                href={`tel:${phone}`}
-                                className="text-lg sm:text-xl font-medium text-foreground hover:text-primary hover:no-underline transition-colors"
-                            >
-                                {phone}
-                            </a>
-                        </div>
-                    )}
-                    {hasHours && (
-                        <div className="space-y-1">
-                            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                                Hours
-                            </p>
-                            <p className="text-lg sm:text-xl font-medium text-foreground whitespace-pre-line">
-                                {businessHours}
-                            </p>
-                        </div>
-                    )}
-                </div>
-            </div>
-        </div>
     );
 }
 

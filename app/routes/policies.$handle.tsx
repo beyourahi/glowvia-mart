@@ -19,7 +19,6 @@
  * 2. Policy title with decorative line break
  * 3. Other policies navigation sidebar
  * 4. Policy content (HTML from Shopify)
- * 5. Contact CTA section
  *
  * @design
  * - Primary background throughout
@@ -41,7 +40,6 @@
  *
  * @related
  * - Footer.tsx - Links to policy pages
- * - contact.tsx - CTA links to contact
  *
  * @see https://shopify.dev/docs/api/storefront/latest/objects/ShopPolicy
  */

@@ -40,7 +40,7 @@ import {SITE_SETTINGS_FRAGMENT, THEME_SETTINGS_FRAGMENT} from "./metaobject-frag
 /**
  * Query for site settings (singleton metaobject)
  * Contains site-wide configuration:
- * - Brand identity, hero, SEO, contact, section headings
+ * - Brand identity, hero, SEO, section headings
  * - Promotional banners, shipping threshold
  * - Social links, testimonials, FAQs, Instagram images (as JSON arrays)
  *

@@ -15,7 +15,7 @@
  * - Collection handling (social links, testimonials, FAQs, Instagram media)
  *
  * Metaobject Structure (Only 2 metaobjects needed):
- * 1. site_settings - Site content (brand, hero, SEO, contact, collections)
+ * 1. site_settings - Site content (brand, hero, SEO, collections)
  * 2. theme_settings - Brand theming (fonts & colors)
  *
  * Note: UI content parsers (product, cart, account, search, etc.) are preserved
@@ -130,12 +130,8 @@ const FALLBACK_SITE_SETTINGS = {
     heroMediaMobile: undefined,
     heroMediaLargeScreen: undefined,
     siteUrl: "",
-    contactEmail: "",
-    contactPhone: "",
     messengerPageId: "",
     whatsappNumber: "",
-    businessHours: "",
-    address: {street: "", city: "", state: "", zip: ""},
     ...FALLBACK_SECTION_HEADINGS,
     galleryPageHeading: "The Gallery",
     galleryPageDescription:
@@ -168,11 +164,6 @@ const FALLBACK_SITE_SETTINGS = {
             id: "faq-default-4",
             question: "Do you ship internationally?",
             answer: "Yes, we ship to most countries worldwide. Shipping costs and delivery times vary by destination."
-        },
-        {
-            id: "faq-default-5",
-            question: "How do I contact customer support?",
-            answer: "You can reach us via email, phone, or our contact page. Our support team is available during business hours."
         }
     ],
     instagramMedia: [],
@@ -1067,18 +1058,9 @@ export function parseSiteSettings(rawData: unknown): SiteSettings {
         heroMediaMobile: parseHeroMedia(data.heroMediaMobile) || DEFAULT_SITE_SETTINGS.heroMediaMobile,
         heroMediaLargeScreen: parseHeroMedia(data.heroMediaLargeScreen) || DEFAULT_SITE_SETTINGS.heroMediaLargeScreen,
 
-        // Contact Information
-        contactEmail: data.contactEmail?.value || DEFAULT_SITE_SETTINGS.contactEmail,
-        contactPhone: data.contactPhone?.value || DEFAULT_SITE_SETTINGS.contactPhone,
+        // Messaging Widgets (Messenger + WhatsApp — powers FloatingChatWidget)
         messengerPageId: data.messengerId?.value || DEFAULT_SITE_SETTINGS.messengerPageId,
         whatsappNumber: data.whatsappNumber?.value || DEFAULT_SITE_SETTINGS.whatsappNumber,
-        businessHours: data.businessHours?.value || DEFAULT_SITE_SETTINGS.businessHours,
-        address: {
-            street: data.streetAddress?.value || DEFAULT_SITE_SETTINGS.address.street,
-            city: data.city?.value || DEFAULT_SITE_SETTINGS.address.city,
-            state: data.state?.value || DEFAULT_SITE_SETTINGS.address.state,
-            zip: data.zipCode?.value || DEFAULT_SITE_SETTINGS.address.zip
-        },
 
         // Section Headings
         blogSectionTitle: data.blogSectionTitle?.value || DEFAULT_SITE_SETTINGS.blogSectionTitle,

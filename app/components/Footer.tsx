@@ -30,7 +30,7 @@
  *
  * @navigation-structure
  * - Shop: Collections, Gallery, Search
- * - Support: FAQ, Contact, Policies
+ * - Support: FAQ, Policies
  * - Account: Orders, Addresses, Profile
  * - Connect: Social links + Blog (dynamic from metaobjects)
  *
@@ -56,7 +56,7 @@ import {Await, NavLink, useLocation, useRouteLoaderData} from "react-router";
 import {Copyright as CopyrightIcon} from "lucide-react";
 import type {FooterProps} from "types";
 import {NewsletterForm} from "~/components/NewsletterForm";
-import {useSiteSettings, useSocialLinks, useFaqItems, useContactInfo} from "~/lib/site-content-context";
+import {useSiteSettings, useSocialLinks, useFaqItems} from "~/lib/site-content-context";
 import type {RootLoader} from "~/root";
 
 // =============================================================================
@@ -88,9 +88,6 @@ export function Footer({footer: footerPromise, header: _header}: FooterProps) {
                                 <FooterLinks />
                             </div>
                         </div>
-
-                        {/* Contact Strip: Email + Phone — rendered only when at least one is configured */}
-                        <FooterContactStrip />
 
                         {/* Bottom Section: Copyright - stays at bottom.
                              id="footer-bottom-bar" is the IntersectionObserver target used by
@@ -363,43 +360,6 @@ function NewsletterSection() {
                     <span>Log in to your account</span>
                 </NavLink>
             </div>
-        </div>
-    );
-}
-
-// =============================================================================
-// FOOTER CONTACT STRIP
-// =============================================================================
-
-/**
- * Renders a thin contact row (email + phone) above the copyright bar.
- * Only mounts when at least one of the two fields is non-empty.
- */
-function FooterContactStrip() {
-    const {email, phone} = useContactInfo();
-    const hasEmail = Boolean(email?.trim());
-    const hasPhone = Boolean(phone?.trim());
-
-    if (!hasEmail && !hasPhone) return null;
-
-    return (
-        <div className="border-t border-primary-foreground/10 px-container py-4 flex flex-wrap items-center gap-x-6 gap-y-1">
-            {hasEmail && (
-                <a
-                    href={`mailto:${email}`}
-                    className="text-sm text-primary-foreground/70 hover:text-primary-foreground hover:no-underline"
-                >
-                    {email}
-                </a>
-            )}
-            {hasPhone && (
-                <a
-                    href={`tel:${phone}`}
-                    className="text-sm text-primary-foreground/70 hover:text-primary-foreground hover:no-underline"
-                >
-                    {phone}
-                </a>
-            )}
         </div>
     );
 }

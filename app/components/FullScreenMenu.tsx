@@ -22,7 +22,7 @@
  * Menu organized into 4 columns (responsive):
  * 1. Featured - All Products, All Collections, SALE (if discounts), featured collections
  * 2. Categories - All other collections
- * 3. Account & Info - Account, Orders, Wishlist, Gallery, FAQ, Contact, Blogs (conditional)
+ * 3. Account & Info - Account, Orders, Wishlist, Gallery, FAQ, Blogs (conditional)
  * 4. Policies - Shipping, Refund, Privacy, Terms
  *
  * @props

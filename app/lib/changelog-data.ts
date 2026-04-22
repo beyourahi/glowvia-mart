@@ -29,6 +29,12 @@ import type {ChangelogEntry} from "~/lib/types/changelog";
 // Newest entries at the top. Add new entries here in the same commit that ships the change.
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
+        date: "2026-04-23",
+        category: "Improvement",
+        headline: "Wrong-URL pages now open a browsable carousel of collections instead of a dead end",
+        summary: "Typing a link that doesn't exist — or landing on an old URL that's been removed — used to show a plain error screen with a single Return Home button. The 404 page now shows a drag-to-scroll carousel of the store's collections directly below the heading, with the same card style used on the homepage: a tall photo tile, the collection name at the bottom, and a soft gradient for readability. You can sweep through them with a swipe, a mouse wheel, or the arrow keys and jump straight into the aisle you were probably looking for. The same upgrade touches smaller error screens scattered across the store (account sub-pages, order detail pages, policies that have been renamed): each now shows a proper status, a clearer message, and a Try Again button alongside Return Home, instead of a bare link."
+    },
+    {
         date: "2026-04-22",
         category: "Improvement",
         headline: "Product videos now play everywhere a product appears, not just on cards",
@@ -389,14 +395,6 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
         category: "New Feature"
     },
     {
-        date: "2026-04-15",
-        time: "12pm",
-        headline: "Store address and contact details are now visible on the homepage",
-        summary:
-            "Your store's address, email, phone number, and business hours now appear at the bottom of the homepage. The footer also shows your email and phone directly, so shoppers can reach you without hunting for a contact page.",
-        category: "New Feature"
-    },
-    {
         date: "2026-04-14",
         time: "3pm",
         headline: "Changelog dates now show the time each update shipped",
@@ -413,12 +411,6 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
         category: "Design"
     },
     {
-        date: "2026-04-14",
-        category: "Improvement",
-        headline: "Contact page now redirects to the FAQ section",
-        summary: "The standalone contact page has been retired. Visiting the contact URL now takes you straight to the FAQ section, where common questions are answered — and store contact details are available directly on the homepage."
-    },
-    {
         date: "2026-04-13",
         time: "11am",
         headline: "The updates page now shows a live total commit count and per-date update tallies",
@@ -431,7 +423,7 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
         time: "11am",
         headline: "Page titles are now bolder and easier to scan at a glance",
         summary:
-            "Headings on pages like Search, Contact, Gallery, FAQ, Blog, and Changelog are now displayed at a larger, more consistent size that matches the visual weight of the Collections pages. Every section of the store now has the same clear, confident title hierarchy.",
+            "Headings on pages like Search, Gallery, FAQ, Blog, and Changelog are now displayed at a larger, more consistent size that matches the visual weight of the Collections pages. Every section of the store now has the same clear, confident title hierarchy.",
         category: "Design"
     },
     {

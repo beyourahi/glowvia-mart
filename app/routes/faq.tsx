@@ -13,7 +13,6 @@
  * - FAQPage JSON-LD structured data for SEO
  * - CMS-driven content from site_settings
  * - Returns 404 when no FAQ data exists in CMS
- * - Contact CTA section at bottom
  *
  * @design
  * - Primary background throughout
@@ -40,7 +39,6 @@
  * - lib/seo.ts - generateFAQPageSchema function
  * - lib/site-content-context.tsx - useFaqItems hook
  * - root.tsx - Provides siteContent via context (includes faqItems)
- * - contact.tsx - Linked from CTA section
  */
 
 import type {Route} from "./+types/faq";

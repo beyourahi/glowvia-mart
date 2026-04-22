@@ -19,10 +19,10 @@
  * Field Naming Convention:
  * - snake_case keys match Shopify Admin metaobject field definitions
  * - Self-explanatory names (e.g., brand_name, hero_main_heading)
- * - Grouped by category (brand, hero, SEO, contact, etc.)
+ * - Grouped by category (brand, hero, SEO, etc.)
  *
  * Field Types Supported:
- * - Single line text: brand_name, contact_email, etc.
+ * - Single line text: brand_name, hero_main_heading, etc.
  * - Multi-line text: hero_description, mission_statement
  * - JSON: testimonials_data, faq_items_data (stored as JSON strings)
  * - File references: hero_background_media, favicon, PWA icons
@@ -225,18 +225,9 @@ export const SITE_SETTINGS_FRAGMENT = `#graphql
     }
 
     # ─────────────────────────────────────────────────────────────────────────
-    # SEO DEFAULTS
+    # SHOP LOCATIONS (Google Maps)
+    # Index-paired list fields: embed URLs zipped with share links.
     # ─────────────────────────────────────────────────────────────────────────
-    # ─────────────────────────────────────────────────────────────────────────
-    # CONTACT INFORMATION
-    # ─────────────────────────────────────────────────────────────────────────
-    contactEmail: field(key: "contact_email") { value }
-    contactPhone: field(key: "contact_phone") { value }
-    businessHours: field(key: "business_hours") { value }
-    streetAddress: field(key: "street_address") { value }
-    city: field(key: "city") { value }
-    state: field(key: "state_province") { value }
-    zipCode: field(key: "postal_code") { value }
     googleMapsEmbed: field(key: "google_maps_embed") { value }
     googleMapsLink: field(key: "google_maps_link") { value }
 

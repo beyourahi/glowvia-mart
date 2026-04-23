@@ -11,8 +11,11 @@
  * @see https://developer.chrome.com/docs/workbox/
  */
 
-// Import Workbox from CDN
-importScripts("https://storage.googleapis.com/workbox-cdn/releases/7.0.0/workbox-sw.js");
+// Import Workbox from the self-hosted build output copied during prebuild.
+importScripts("/workbox-v7/workbox-v7.4.0/workbox-sw.js");
+
+// Ensure Workbox loads any secondary modules from the same self-hosted directory.
+workbox.setConfig({modulePathPrefix: "/workbox-v7/workbox-v7.4.0/"});
 
 // Ensure Workbox loaded successfully
 if (!workbox) {

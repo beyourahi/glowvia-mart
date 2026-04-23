@@ -707,34 +707,6 @@ export function ProductItem({
                     <ProductImagePlaceholder aspectRatio="4/5" />
                 )}
 
-                {/* OOS image treatment: semi-transparent overlay + diagonal strike-through */}
-                {/* overflow-hidden on parent clips both to image bounds; pointer-events-none */}
-                {/* preserves all click targets; z-[11]/z-[12] sits above image, below badges (z-20) */}
-                {isOutOfStock && (
-                    <>
-                        <div
-                            className="absolute inset-0 bg-white/40 pointer-events-none z-[11]"
-                            aria-hidden="true"
-                        />
-                        <svg
-                            className="absolute inset-0 w-full h-full pointer-events-none z-[12]"
-                            viewBox="0 0 1 1"
-                            preserveAspectRatio="none"
-                            aria-hidden="true"
-                        >
-                            <line
-                                x1="0"
-                                y1="0"
-                                x2="1"
-                                y2="1"
-                                stroke="rgba(0,0,0,0.28)"
-                                strokeWidth="1"
-                                vectorEffect="non-scaling-stroke"
-                            />
-                        </svg>
-                    </>
-                )}
-
                 {/* Hover overlay - subtle darkening effect */}
                 <div className={cn(
                     "absolute inset-0 bg-primary/0 motion-overlay pointer-events-none z-10",

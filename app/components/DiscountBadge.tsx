@@ -133,8 +133,8 @@ export function DiscountBadge({discountInfo, percentage, position = "absolute", 
                 position === "absolute" && "absolute top-2 left-2 z-10",
                 // Shape & Layout
                 "inline-flex items-center gap-1.5 rounded-full",
-                // Background
-                "bg-discount-bg",
+                // Background + border ring (matches storefront_001 spec)
+                "bg-discount-bg border-discount-icon-bg border",
                 // Padding
                 "px-1.5 pr-2.5 py-1",
                 // Shadow for depth

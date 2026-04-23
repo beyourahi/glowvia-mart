@@ -10,7 +10,6 @@
  * - Apply/remove gift cards
  * - Update buyer identity
  * - Add order notes
- * - Custom unified promo code handler
  *
  * @url-pattern /cart (resource route - no UI)
  *
@@ -29,11 +28,11 @@
  * - LinesUpdate: Change quantities
  * - LinesRemove: Remove items
  * - DiscountCodesUpdate: Apply discount codes
+ * - GiftCardCodesUpdate: Replace applied gift card codes
  * - GiftCardCodesAdd: Append gift card codes (2026.1.0+)
  * - GiftCardCodesRemove: Remove gift cards
  * - BuyerIdentityUpdate: Set customer info
  * - NoteUpdate: Add order notes
- * - CustomPromoCodeApply: Unified promo handler
  *
  * @related
  * - CartMain.tsx - Cart drawer UI
@@ -114,68 +113,18 @@ export async function action({request, context}: Route.ActionArgs) {
             result = await cart.addGiftCardCodes(giftCardCodes);
             break;
         }
+        case CartForm.ACTIONS.GiftCardCodesUpdate: {
+            const formGiftCardCode = inputs.giftCardCode;
+            const giftCardCodes = (formGiftCardCode ? [formGiftCardCode] : []) as string[];
+
+            giftCardCodes.push(...inputs.giftCardCodes);
+
+            result = await cart.updateGiftCardCodes(giftCardCodes);
+            break;
+        }
         case CartForm.ACTIONS.GiftCardCodesRemove: {
             const appliedGiftCardIds = inputs.giftCardCodes as string[];
             result = await cart.removeGiftCardCodes(appliedGiftCardIds);
-            break;
-        }
-        case "CustomPromoCodeApply": {
-            // Unified promo code: tries discount first, then gift card
-            const promoCode = String(formData.get("promoCode") || "").trim();
-
-            // Parse the JSON arrays from form data
-            let existingDiscountCodes: string[] = [];
-            let existingGiftCardCodes: string[] = [];
-            try {
-                const discountCodesStr = formData.get("discountCodes");
-                const giftCardCodesStr = formData.get("giftCardCodes");
-                if (discountCodesStr) {
-                    const parsed = JSON.parse(String(discountCodesStr));
-                    if (Array.isArray(parsed)) existingDiscountCodes = parsed as string[];
-                }
-                if (giftCardCodesStr) {
-                    const parsed = JSON.parse(String(giftCardCodesStr));
-                    if (Array.isArray(parsed)) existingGiftCardCodes = parsed as string[];
-                }
-            } catch {
-                // Fallback to empty arrays if parsing fails
-            }
-
-            if (!promoCode) {
-                // No code entered - just return current discount codes state
-                result = await cart.updateDiscountCodes(existingDiscountCodes);
-                break;
-            }
-
-            // Step 1: Try as discount code first
-            const discountResult = await cart.updateDiscountCodes([promoCode, ...existingDiscountCodes]);
-
-            // Check if the code was applied successfully as a discount
-            const discountApplied = discountResult.cart?.discountCodes?.some(
-                code => code.code.toLowerCase() === promoCode.toLowerCase() && code.applicable
-            );
-
-            if (discountApplied) {
-                // Success as discount code
-                result = discountResult;
-                break;
-            }
-
-            // Step 2: Not a valid discount - remove it from discount codes and try as gift card
-            // Remove the invalid discount code (defensive: don't let cleanup failure block gift card attempt)
-            try {
-                await cart.updateDiscountCodes(existingDiscountCodes);
-            } catch {
-                // Cleanup failed — cart may still have the invalid discount code.
-                // Proceed to gift card attempt regardless.
-            }
-
-            // Try as gift card
-            const giftCardResult = await cart.updateGiftCardCodes([promoCode, ...existingGiftCardCodes]);
-
-            // Return the gift card result - if invalid, it will have userErrors
-            // The frontend will handle displaying appropriate error messages
-            result = giftCardResult;
             break;
         }
         default:

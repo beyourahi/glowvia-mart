@@ -76,8 +76,8 @@ Backend behavior, data flow, and Hydrogen conventions **must remain consistent**
 ```
 storefront_002/
 ├── app/
-│   ├── routes/              # 50 routes
-│   ├── components/          # 131 components
+│   ├── routes/              # 51 routes
+│   ├── components/          # 132 components
 │   │   ├── ui/              # 27 shadcn
 │   │   ├── blog/            # 7 blog
 │   │   ├── changelog/       # 2 changelog
@@ -87,7 +87,7 @@ storefront_002/
 │   │   ├── gallery/         # Gallery grid
 │   │   ├── icons/           # Custom icons
 │   │   └── ProductLightbox/ # Lightbox system
-│   ├── lib/                 # 69 utilities
+│   ├── lib/                 # 70 utilities
 │   │   ├── metaobject-*.ts  # CMS
 │   │   ├── pwa-*.ts         # PWA
 │   │   ├── changelog-data.ts # Static changelog entries
@@ -156,11 +156,11 @@ Always use MCP tools over web search for official docs. Validate GraphQL after A
 | `CartForm.ACTIONS.LinesUpdate`         | `cart.updateLines()`            | Update quantities / attributes         |
 | `CartForm.ACTIONS.LinesRemove`         | `cart.removeLines()`            | Remove line items                      |
 | `CartForm.ACTIONS.DiscountCodesUpdate` | `cart.updateDiscountCodes()`    | Replace all discount codes             |
+| `CartForm.ACTIONS.GiftCardCodesUpdate` | `cart.updateGiftCardCodes()`    | Replace all gift card codes            |
 | `CartForm.ACTIONS.GiftCardCodesAdd`    | `cart.addGiftCardCodes()`       | Append gift card codes (2026.1.0+)     |
 | `CartForm.ACTIONS.GiftCardCodesRemove` | `cart.removeGiftCardCodes()`    | Remove applied gift card codes         |
 | `CartForm.ACTIONS.NoteUpdate`          | `cart.updateNote()`             | Update cart note                       |
 | `CartForm.ACTIONS.BuyerIdentityUpdate` | `cart.updateBuyerIdentity()`    | Update buyer country / customer        |
-| `"CustomPromoCodeApply"`               | discount → gift card fallback   | Unified promo handler (custom action)  |
 
 ## Repository
 

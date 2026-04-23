@@ -31,6 +31,12 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
         date: "2026-04-23",
         category: "Improvement",
+        headline: "Search links now keep their chosen price order",
+        summary: "If you open a search link that asks for Price: Low to High or Price: High to Low, the product results now load in that order right away instead of quietly falling back to relevance. The store also keeps its backup social links ready when a merchant has not filled them in yet, so the footer still shows a complete set of brand channels on lightly configured shops."
+    },
+    {
+        date: "2026-04-23",
+        category: "Improvement",
         headline: "Wrong-URL pages now open a browsable carousel of collections instead of a dead end",
         summary: "Typing a link that doesn't exist — or landing on an old URL that's been removed — used to show a plain error screen with a single Return Home button. The 404 page now shows a drag-to-scroll carousel of the store's collections directly below the heading, with the same card style used on the homepage: a tall photo tile, the collection name at the bottom, and a soft gradient for readability. You can sweep through them with a swipe, a mouse wheel, or the arrow keys and jump straight into the aisle you were probably looking for. The same upgrade touches smaller error screens scattered across the store (account sub-pages, order detail pages, policies that have been renamed): each now shows a proper status, a clearer message, and a Try Again button alongside Return Home, instead of a bare link."
     },

@@ -49,14 +49,19 @@ import {getSitemapIndex} from "@shopify/hydrogen";
  * @returns XML Response with sitemap index, cached for 24 hours
  */
 export async function loader({request, context: {storefront}}: Route.LoaderArgs) {
-    const response = await getSitemapIndex({
-        storefront,
-        request
+    const shopifyResponse = await getSitemapIndex({storefront, request});
+
+    // Inject custom sitemap entry for routes that Shopify does not include automatically.
+    const url = new URL(request.url);
+    const origin = url.origin;
+    const body = await shopifyResponse.text();
+    const customEntry = `  <sitemap><loc>${origin}/sitemap.custom.xml</loc></sitemap>\n`;
+    const enhanced = body.replace("</sitemapindex>", `${customEntry}</sitemapindex>`);
+
+    return new Response(enhanced, {
+        headers: {
+            "Content-Type": "application/xml; charset=utf-8",
+            "Cache-Control": `max-age=${60 * 60 * 24}`
+        }
     });
-
-    // Cache for 24 hours - sitemap structure rarely changes
-    response.headers.set("Cache-Control", `max-age=${60 * 60 * 24}`);
-
-    return response;
 }
-

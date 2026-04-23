@@ -54,7 +54,7 @@ export function ProductTagList({tags, className}: ProductTagListProps) {
                 <Badge
                     key={tag}
                     variant="outline"
-                    className="border text-primary font-semibold text-xs px-2.5 py-0.5 uppercase tracking-wide"
+                    className="border text-primary font-semibold text-xs px-2 py-0.5 uppercase tracking-wide"
                 >
                     {tag}
                 </Badge>

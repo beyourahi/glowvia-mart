@@ -76,6 +76,7 @@ import {trackErrorBoundary} from "~/hooks/usePwaAnalytics";
 import {sortWithPinnedFirst} from "~/lib/product-tags";
 import {AnimatedSection} from "~/components/AnimatedSection";
 import {PageHeading} from "~/components/PageHeading";
+import {getSearchSortOption} from "~/lib/sort-filter-helpers";
 
 const FALLBACK_POPULAR_SEARCHES = ["new arrivals", "best sellers", "gift ideas", "on sale", "trending now"];
 
@@ -404,8 +405,7 @@ export default function SearchPage() {
                                         </TabsTrigger>
                                     </TabsList>
 
-                                    {/* View options on desktop - inline with tabs */}
-                                    {/* TODO: Implement sorting for search results - for now only grid/list options */}
+                                    {/* View options on desktop - search sorting is currently URL-driven */}
                                     {((activeTab === "products" && products.nodes.length > 0) ||
                                         (activeTab === "collections" && collections.nodes.length > 0) ||
                                         (activeTab === "articles" && articles.nodes.length > 0)) && (
@@ -1388,13 +1388,16 @@ export const SEARCH_QUERY = `#graphql
     $productAfter: String
     $articleFirst: Int!
     $articleAfter: String
+    $sortKey: SearchSortKeys!
+    $reverse: Boolean!
   ) @inContext(country: $country, language: $language) {
     products: search(
       query: $term,
       types: [PRODUCT],
       first: $productFirst,
       after: $productAfter,
-      sortKey: RELEVANCE,
+      sortKey: $sortKey,
+      reverse: $reverse,
       unavailableProducts: SHOW,
     ) {
       nodes {
@@ -1437,13 +1440,16 @@ const SEARCH_PRODUCTS_QUERY = `#graphql
     $term: String!
     $first: Int!
     $after: String
+    $sortKey: SearchSortKeys!
+    $reverse: Boolean!
   ) @inContext(country: $country, language: $language) {
     products: search(
       query: $term,
       types: [PRODUCT],
       first: $first,
       after: $after,
-      sortKey: RELEVANCE,
+      sortKey: $sortKey,
+      reverse: $reverse,
       unavailableProducts: SHOW,
     ) {
       nodes {
@@ -1632,6 +1638,7 @@ async function regularSearch({
     const {dataAdapter} = context;
     const url = new URL(request.url);
     const term = String(url.searchParams.get("q") || "");
+    const searchSortOption = getSearchSortOption(url.searchParams.get("sort"));
 
     // Execute search and collections queries in parallel
     // Collections query is wrapped with error handling to prevent cascading failures
@@ -1640,7 +1647,9 @@ async function regularSearch({
             variables: {
                 term,
                 productFirst: 24,
-                articleFirst: 12
+                articleFirst: 12,
+                sortKey: searchSortOption.sortKey,
+                reverse: searchSortOption.reverse
             }
         }),
         fetchCollections(dataAdapter, term)
@@ -1654,9 +1663,7 @@ async function regularSearch({
 
     const error = errors ? errors.map(({message}: {message: string}) => message).join(", ") : undefined;
 
-    // Sort search results with pinned products first
-    // No secondary comparator: Shopify's search relevance ranking is the ideal sort for search
-    // Pins get highest precedence, then relevance order is maintained within each group
+    // Keep promoted products pinned first even when the backend sort changes.
     const sortedProducts = sortWithPinnedFirst(products.nodes as SearchProduct[]);
 
     return {
@@ -1691,17 +1698,19 @@ async function fetchMoreProducts({request, context}: Pick<Route.LoaderArgs, "req
     const url = new URL(request.url);
     const term = String(url.searchParams.get("q") || "");
     const cursor = url.searchParams.get("cursor");
+    const searchSortOption = getSearchSortOption(url.searchParams.get("sort"));
 
     const {products} = (await dataAdapter.query(SEARCH_PRODUCTS_QUERY, {
         variables: {
             term,
             first: 24,
-            after: cursor
+            after: cursor,
+            sortKey: searchSortOption.sortKey,
+            reverse: searchSortOption.reverse
         }
     })) as {products: {nodes: SearchProduct[]; pageInfo: {hasNextPage: boolean; endCursor: string | null}}};
 
-    // Sort infinite scroll products with pinned first
-    // No secondary comparator: maintains Shopify's search relevance order
+    // Keep promoted products pinned first even when the backend sort changes.
     const sortedProducts = sortWithPinnedFirst(products.nodes);
 
     return {

@@ -93,7 +93,57 @@ const FALLBACK_BRAND_WORDS: string[] = [
     "Premium"
 ];
 
-const FALLBACK_SOCIAL_LINKS: SocialLink[] = [];
+const FALLBACK_SOCIAL_LINKS: SocialLink[] = [
+    {
+        id: "social-facebook",
+        platform: "Facebook",
+        handle: "/yourbrand",
+        url: "https://facebook.com/yourbrand",
+        displayOrder: 1
+    },
+    {
+        id: "social-instagram",
+        platform: "Instagram",
+        handle: "@yourbrand",
+        url: "https://instagram.com/yourbrand",
+        displayOrder: 2
+    },
+    {
+        id: "social-tiktok",
+        platform: "TikTok",
+        handle: "@yourbrand",
+        url: "https://tiktok.com/@yourbrand",
+        displayOrder: 3
+    },
+    {
+        id: "social-x",
+        platform: "X",
+        handle: "@yourbrand",
+        url: "https://x.com/yourbrand",
+        displayOrder: 4
+    },
+    {
+        id: "social-youtube",
+        platform: "YouTube",
+        handle: "@yourbrand",
+        url: "https://youtube.com/@yourbrand",
+        displayOrder: 5
+    },
+    {
+        id: "social-linkedin",
+        platform: "LinkedIn",
+        handle: "company/yourbrand",
+        url: "https://linkedin.com/company/yourbrand",
+        displayOrder: 6
+    },
+    {
+        id: "social-pinterest",
+        platform: "Pinterest",
+        handle: "@yourbrand",
+        url: "https://pinterest.com/yourbrand",
+        displayOrder: 7
+    }
+];
 
 const FALLBACK_THEME_FONTS = {
     sans: "Inter",

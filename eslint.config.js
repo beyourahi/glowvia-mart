@@ -30,7 +30,8 @@ export default [
             "**/*.graphql.ts",
             "**/*.generated.d.ts",
             "**/.react-router/",
-            "**/packages/hydrogen/dist/"
+            "**/packages/hydrogen/dist/",
+            "**/public/workbox-v7/"
         ]
     },
     ...fixupConfigRules(

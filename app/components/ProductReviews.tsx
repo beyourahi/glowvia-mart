@@ -398,7 +398,7 @@ export function ProductReviews({reviews}: {reviews: ReviewNode[]}) {
                     {/* Embla carousel — 1 / 2 / 3 cards visible at mobile / tablet / desktop */}
                     <Carousel
                         setApi={setCarouselApi}
-                        opts={{align: "start", containScroll: "keepSnaps"}}
+                        opts={{align: "start", containScroll: "keepSnaps", dragFree: true}}
                         plugins={[WheelGesturesPlugin({forceWheelAxis: "x"})]}
                         aria-label="Customer reviews"
                     >

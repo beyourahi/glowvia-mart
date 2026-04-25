@@ -314,7 +314,6 @@ export default function Product() {
 
     const {title, descriptionHtml} = product;
     const {badgeTypes} = getSpecialTags(product.tags);
-    const hasMultipleMedia = (product.media?.nodes?.length ?? 0) > 1;
 
     return (
         <>
@@ -419,20 +418,18 @@ export default function Product() {
                     {/* Image Gallery + Product Info */}
                     <div className="flex-1 min-w-0">
                         <div className="grid md:grid-cols-2 gap-8 md:gap-12 xl:gap-14 2xl:gap-16">
-                            {/* Product Image Gallery - sticky on md+ screens (only when multiple media items exist)
-                                     until all product copy scrolls away. No self-start: defaults to stretch so
-                                     this grid item fills the row height set by the taller product-info column,
-                                     giving the inner sticky element room to travel. Sticky releases naturally when
-                                     the row's bottom exits the viewport sticky threshold — i.e. after all
-                                     right-side copy has scrolled past. */}
+                            {/* Product Image Gallery — sticky on lg+ screens until all product copy scrolls away.
+                                     No self-start: defaults to stretch so this grid item fills the row height set
+                                     by the taller product-info column, giving the inner sticky element room to
+                                     travel. Sticky releases naturally when the row's bottom exits the viewport
+                                     sticky threshold — i.e. after all right-side copy has scrolled past. */}
                             <div>
                                 <div
                                     className={cn(
-                                        hasMultipleMedia && "md:sticky md:transition-[top] md:duration-300 md:ease-out",
-                                        hasMultipleMedia &&
-                                            (isScrolled
-                                                ? "md:top-[calc(var(--total-header-height)+0.75rem+var(--page-breathing-room))]"
-                                                : "md:top-[calc(var(--total-header-height)+var(--page-breathing-room))]")
+                                        "lg:sticky lg:transition-[top] lg:duration-300 lg:ease-out",
+                                        isScrolled
+                                            ? "lg:top-[calc(var(--total-header-height)+0.75rem+var(--page-breathing-room))]"
+                                            : "lg:top-[calc(var(--total-header-height)+var(--page-breathing-room))]"
                                     )}
                                 >
                                     <ProductImageGallery

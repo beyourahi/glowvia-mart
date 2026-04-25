@@ -1033,11 +1033,11 @@ function isValidColor(color: string | null | undefined): color is string {
  * Validates color format and falls back to defaults for invalid values
  */
 function parseThemeColors(data: MetaobjectData): ThemeCoreColors {
-    const primary = data.colorPrimary?.value ?? "";
-    const secondary = data.colorSecondary?.value ?? "";
-    const background = data.colorBackground?.value ?? "";
-    const foreground = data.colorForeground?.value ?? "";
-    const accent = data.colorAccent?.value ?? "";
+    const primary = data.colorPrimary?.value;
+    const secondary = data.colorSecondary?.value;
+    const background = data.colorBackground?.value;
+    const foreground = data.colorForeground?.value;
+    const accent = data.colorAccent?.value;
 
     return {
         primary: isValidColor(primary) ? primary.trim() : FALLBACK_THEME_COLORS.primary,

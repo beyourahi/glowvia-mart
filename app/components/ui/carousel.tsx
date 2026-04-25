@@ -168,24 +168,11 @@ function Carousel({
  * Content wrapper with overflow handling
  * Contains CarouselItem children
  */
-/**
- * Content wrapper with overflow handling
- * Contains CarouselItem children
- *
- * @overflow-strategy
- * Uses overflow-x-clip (not overflow-hidden) to:
- * - Clip horizontal overflow for proper carousel scrolling
- * - Allow vertical overflow for elements like pin badges that extend above cards
- *
- * overflow-hidden would create a stacking context that clips ALL overflow,
- * including pin icons positioned with negative top values (-top-2).
- * overflow-x-clip only restricts horizontal content while preserving vertical.
- */
 function CarouselContent({className, ...props}: React.ComponentProps<"div">) {
     const {carouselRef, orientation} = useCarousel();
 
     return (
-        <div ref={carouselRef} className="overflow-x-clip overflow-y-visible" data-slot="carousel-content">
+        <div ref={carouselRef} className="overflow-hidden" data-slot="carousel-content">
             <div
                 className={cn("flex", orientation === "horizontal" ? "-ml-4" : "-mt-4 flex-col", className)}
                 {...props}

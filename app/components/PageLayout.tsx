@@ -66,7 +66,6 @@ import {FullScreenSearch} from "~/components/FullScreenSearch";
 import {Sheet, SheetContent, SheetTitle, SheetDescription} from "~/components/ui/sheet";
 import {Skeleton} from "~/components/ui/skeleton";
 import {Button} from "~/components/ui/button";
-import {AlertCircle, RefreshCw, ShoppingCart} from "lucide-react";
 
 // ================================================================================
 // Header Clearance Padding System
@@ -249,78 +248,6 @@ function CartLoadingSkeleton() {
 }
 
 /**
- * CartErrorFallback - Error state when cart fails to load
- *
- * Displayed when cart data loading times out or fails.
- * This prevents the user from being stuck in an infinite loading state.
- *
- * Features:
- * - Clear error message explaining the issue
- * - "Try Again" button that refreshes the page
- * - "Continue Shopping" link to browse products
- * - Matches cart sheet styling for consistent UX
- *
- * Common causes of cart load failure:
- * - Network connectivity issues
- * - Stale cart ID in session cookie
- * - Shopify API temporary unavailability
- * - Request timeout (10 second limit)
- *
- * @accessibility
- * - AlertCircle icon with aria-hidden for decorative use
- * - Clear heading hierarchy
- * - Touch targets meet 44px minimum
- */
-function CartErrorFallback() {
-    const {close} = useAside();
-
-    // Refresh page to retry loading cart
-    // This clears any stale state and re-fetches cart data
-    const handleRetry = () => {
-        window.location.reload();
-    };
-
-    return (
-        <div className="flex h-full flex-col items-center justify-center px-6 py-12 text-center">
-            {/* Error Icon */}
-            <div className="mb-4 flex size-16 items-center justify-center rounded-full bg-overlay-light">
-                <AlertCircle className="size-8 text-primary-foreground/70" aria-hidden="true" />
-            </div>
-
-            {/* Error Message */}
-            <h2 className="mb-2 font-serif text-xl text-primary-foreground">Unable to load cart</h2>
-            <p className="mb-6 max-w-xs text-sm text-primary-foreground/70">
-                We couldn&apos;t load your cart. This may be due to a connection issue. Please try again.
-            </p>
-
-            {/* Action Buttons */}
-            <div className="flex flex-col gap-3 w-full max-w-xs">
-                {/* Primary: Retry loading */}
-                <Button
-                    onClick={handleRetry}
-                    className="w-full gap-2 bg-light text-primary hover:bg-light/90"
-                    size="lg"
-                >
-                    <RefreshCw className="size-4" aria-hidden="true" />
-                    Try Again
-                </Button>
-
-                {/* Secondary: Continue shopping */}
-                <Link
-                    to="/collections/all-products"
-                    onClick={close}
-                    prefetch="viewport"
-                    className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-primary-foreground/20 px-4 py-2.5 text-sm font-medium text-primary-foreground motion-link hover:bg-primary-foreground/10 min-h-11"
-                >
-                    <ShoppingCart className="size-4" aria-hidden="true" />
-                    Continue Shopping
-                </Link>
-            </div>
-        </div>
-    );
-}
-
-/**
  * CartSheet - Sliding cart drawer overlay
  *
  * Renders cart in a Sheet component (shadcn) that slides in from the right.
@@ -334,9 +261,10 @@ function CartErrorFallback() {
  * - Close: Click backdrop, ESC key, or close button in header
  *
  * Error Handling:
- * - Promises are wrapped with 10-second timeout in root.tsx
- * - On timeout/error, errorElement displays CartErrorFallback
- * - User can retry or continue shopping without clearing cache
+ * - Promises are wrapped with 10-second timeout via withTimeoutAndFallback in root.tsx
+ * - On timeout, the promise resolves to null — CartMain renders the empty cart state
+ * - No errorElement: render errors during revalidation (e.g. post-QuickAdd mutation)
+ *   show the loading skeleton rather than a dead-end error UI
  *
  * @param cart - Deferred cart data promise (with timeout)
  * @param isLoggedIn - Deferred auth status promise (with timeout)
@@ -411,7 +339,7 @@ function CartSheet({
                     Your cart items and checkout options
                 </SheetDescription>
                 <Suspense fallback={<CartLoadingSkeleton />}>
-                    <Await resolve={cart} errorElement={<CartErrorFallback />}>
+                    <Await resolve={cart}>
                         <CartSheetContent
                             isLoggedIn={resolvedAuth.isLoggedIn}
                             hasStoreCredit={resolvedAuth.hasStoreCredit}

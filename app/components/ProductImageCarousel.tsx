@@ -364,7 +364,6 @@ export function ProductImageCarousel({
                     loop: true,
                     skipSnaps: false,
                     containScroll: "trimSnaps",
-                    watchDrag: false // Arrow-only navigation preserves the card-click target on mobile.
                 }}
                 className="w-full rounded-lg"
             >

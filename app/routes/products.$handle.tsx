@@ -418,35 +418,33 @@ export default function Product() {
                     {/* Image Gallery + Product Info */}
                     <div className="flex-1 min-w-0">
                         <div className="grid md:grid-cols-2 gap-8 md:gap-12 xl:gap-14 2xl:gap-16">
-                            {/* Product Image Gallery — sticky on lg+ screens until all product copy scrolls away.
-                                     No self-start: defaults to stretch so this grid item fills the row height set
-                                     by the taller product-info column, giving the inner sticky element room to
-                                     travel. Sticky releases naturally when the row's bottom exits the viewport
-                                     sticky threshold — i.e. after all right-side copy has scrolled past. */}
+                            {/* Product Image Gallery — scrolls normally on lg+ screens.
+                                     No self-start: defaults to stretch so this grid item fills the row height
+                                     set by the copy column, which is the taller element when media is short.
+                                     The media column's natural height drives the grid row height. */}
+                            <div>
+                                <ProductImageGallery
+                                    images={product.images.nodes}
+                                    selectedVariantImage={selectedVariant?.image}
+                                    media={product.media?.nodes}
+                                    isAvailableForSale={product.availableForSale}
+                                />
+                            </div>
+                            {/* Product Info — sticky on lg+ screens until all product media scrolls away.
+                                     Outer div has no self-start: stretches to fill the row height set by the
+                                     taller media column, giving the inner sticky element room to travel.
+                                     Sticky releases naturally when the row's bottom exits the viewport
+                                     sticky threshold — i.e. after all left-side media has scrolled past. */}
                             <div>
                                 <div
                                     className={cn(
-                                        "lg:sticky lg:transition-[top] lg:duration-300 lg:ease-out",
+                                        "space-y-6 animate-slide-left-fade lg:sticky lg:transition-[top] lg:duration-300 lg:ease-out",
                                         isScrolled
                                             ? "lg:top-[calc(var(--total-header-height)+0.75rem+var(--page-breathing-room))]"
                                             : "lg:top-[calc(var(--total-header-height)+var(--page-breathing-room))]"
                                     )}
+                                    style={{animationDelay: "100ms"}}
                                 >
-                                    <ProductImageGallery
-                                        images={product.images.nodes}
-                                        selectedVariantImage={selectedVariant?.image}
-                                        media={product.media?.nodes}
-                                        isAvailableForSale={product.availableForSale}
-                                    />
-                                </div>
-                            </div>
-                            {/* Product Info - scrolls naturally while the media panel is sticky.
-                                     self-start keeps the element at its natural content height, which defines
-                                     the grid row height and therefore how long the media stays sticky. */}
-                            <div
-                                className="space-y-6 animate-slide-left-fade self-start"
-                                style={{animationDelay: "100ms"}}
-                            >
                                 {/* Product Tag Badges - desktop only, hidden on mobile */}
                                 {badgeTypes.length > 0 && (
                                     <div className="hidden items-center gap-2 lg:flex">
@@ -487,6 +485,7 @@ export default function Product() {
                                 />
                                 {/* Product Description - Comprehensive prose typography for desktop */}
                                 <ProductDescription html={descriptionHtml} size="base" className="pt-12" />
+                                </div>
                             </div>
                         </div>
                     </div>

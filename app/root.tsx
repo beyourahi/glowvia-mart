@@ -569,10 +569,11 @@ export function Layout({children}: {children?: React.ReactNode}) {
                     The &display=swap URL param makes Google Fonts include font-display:swap in @font-face rules. */}
                 {generatedTheme?.googleFontsUrl && <link rel="preload" as="style" href={generatedTheme.googleFontsUrl} />}
                 <NonBlockingFontLoader url={generatedTheme?.googleFontsUrl} />
-                {/* Dynamic CSS variables - injected AFTER Tailwind to override defaults */}
-                {generatedTheme?.cssVariables && <ThemeStyleTag css={generatedTheme.cssVariables} />}
                 <Meta />
                 <Links />
+                {/* Dynamic CSS variables — injected AFTER <Links /> so the runtime theme
+                    overrides the static brand-primary blue defaults in tailwind.css */}
+                {generatedTheme?.cssVariables && <ThemeStyleTag css={generatedTheme.cssVariables} />}
             </head>
             <body>
                 {children}

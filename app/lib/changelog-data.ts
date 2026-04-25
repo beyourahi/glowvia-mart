@@ -30,6 +30,12 @@ import type {ChangelogEntry} from "~/lib/types/changelog";
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
         date: "2026-04-25",
+        category: "Fix",
+        headline: "Brand colors now display correctly across the entire store",
+        summary: "The store's custom color theme — set through the brand settings — was being overridden by a default blue color scheme on every page. This affected text, buttons, backgrounds, and all branded UI elements. The issue has been corrected, so the colors you configure in your brand settings now appear exactly as intended for every visitor."
+    },
+    {
+        date: "2026-04-25",
         category: "New Feature",
         headline: "Search can now be filtered to show only in-stock products",
         summary: "A new 'In Stock' toggle has been added to the full-screen search overlay. Switch it on to hide products that are currently unavailable, so every result you see is something you can order right now. The filter carries through when you navigate from the overlay to the main search results page. Quick Add has also been corrected to ensure the variant you select is the one that actually goes into your cart."

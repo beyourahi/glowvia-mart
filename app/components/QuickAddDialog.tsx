@@ -137,6 +137,16 @@ interface QuickAddDialogProps {
     sizeChart?: SizeChartData | null;
 }
 
+interface QuickAddCartButtonProps {
+    variant: QuickAddVariant;
+    quantity: number;
+    onSuccess: () => void;
+    buttonLabel: string;
+    productId: string;
+    productTitle: string;
+    productHandle: string;
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 // Main Component
 // ═══════════════════════════════════════════════════════════════════════════
@@ -455,6 +465,9 @@ export function QuickAddDialog({product, open, onOpenChange, sizeChart}: QuickAd
                                     quantity={quantity}
                                     buttonLabel={buttonLabel}
                                     onSuccess={handleCartSuccess}
+                                    productId={product.id}
+                                    productTitle={product.title}
+                                    productHandle={product.handle}
                                 />
                             </div>
                         ) : availableVariants.length === 0 ? (
@@ -500,14 +513,11 @@ function QuickAddCartButton({
     variant,
     quantity,
     onSuccess,
-    buttonLabel
-}: {
-    variant: QuickAddVariant;
-    quantity: number;
-    onSuccess: () => void;
-    /** Button label text - "Get it now" or "Pre Order" for preorder products */
-    buttonLabel: string;
-}) {
+    buttonLabel,
+    productId,
+    productTitle,
+    productHandle
+}: QuickAddCartButtonProps) {
     // Use global cart fetcher key to prevent concurrent mutations
     // that cause "cart conflicted with another request" errors
     const fetcher = useFetcher({key: "cart-mutation"});
@@ -538,13 +548,22 @@ function QuickAddCartButton({
                 cartFormInput: JSON.stringify({
                     action: CartForm.ACTIONS.LinesAdd,
                     inputs: {
-                        lines: [{merchandiseId: variant.id, quantity, selectedVariant: variant}]
+                        lines: [
+                                {
+                                    merchandiseId: variant.id,
+                                    quantity,
+                                    selectedVariant: {
+                                        ...variant,
+                                        product: {id: productId, title: productTitle, handle: productHandle}
+                                    }
+                                }
+                            ]
                     }
                 })
             },
             {method: "POST", action: "/cart"}
         );
-    }, [fetcher, isLoading, variant, quantity]);
+    }, [fetcher, isLoading, variant, quantity, productId, productTitle, productHandle]);
 
     return (
         <button

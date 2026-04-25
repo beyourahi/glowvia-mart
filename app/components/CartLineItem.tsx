@@ -109,7 +109,7 @@ type CartLine = OptimisticCartLine<CartApiQueryFragment>;
 export function CartLineItem({layout, line}: {layout: CartLayout; line: CartLine}) {
     const {id, merchandise, sellingPlanAllocation} = line;
     const {product, title, image, selectedOptions} = merchandise;
-    const lineItemUrl = useVariantUrl(product.handle, selectedOptions);
+    const lineItemUrl = useVariantUrl(product?.handle ?? "", selectedOptions ?? []);
     const {close} = useAside();
     const {canHover} = usePointerCapabilities();
     const isPage = layout === "page";
@@ -148,6 +148,10 @@ export function CartLineItem({layout, line}: {layout: CartLayout; line: CartLine
     const isChildLine = !!parentRelationship;
     const parentProductTitle =
         parentRelationship?.parent?.merchandise?.product?.title ?? parentRelationship?.parent?.merchandise?.title;
+
+    // Guard: optimistic lines created without product context have merchandise.product === undefined.
+    // All hooks above are called unconditionally (React rules), so this guard is safe here.
+    if (!product) return null;
 
     // Compact horizontal layout for aside drawer
     if (!isPage) {

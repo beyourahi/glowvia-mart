@@ -29,6 +29,12 @@ import type {ChangelogEntry} from "~/lib/types/changelog";
 // Newest entries at the top. Add new entries here in the same commit that ships the change.
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
+        date: "2026-04-26",
+        category: "Fix",
+        headline: "Cart updates instantly after Quick Add",
+        summary: "Products added via the Quick Add panel (both the pop-up on desktop and the bottom sheet on mobile) now appear in your cart drawer immediately — no page refresh needed."
+    },
+    {
         date: "2026-04-25",
         category: "Improvement",
         headline: "Smoother swiping on all carousels",

@@ -91,7 +91,7 @@ export function ProductBadge({type, className}: ProductBadgeProps) {
             className={cn(
                 "text-xs font-medium uppercase tracking-wide",
                 "inline-flex items-center justify-center",
-                "px-2 py-0.5",
+                "px-2 py-1",
                 // Shape - matches DiscountBadge rounded-full
                 "rounded-full",
                 // Shadow - matches DiscountBadge depth

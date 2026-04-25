@@ -136,14 +136,14 @@ export function DiscountBadge({discountInfo, percentage, position = "absolute", 
                 // Background + border ring (matches storefront_001 spec)
                 "bg-discount-bg border-discount-icon-bg border",
                 // Padding
-                "px-1.5 pr-2.5 py-1",
+                "px-0.5 pr-1 py-0",
                 // Shadow for depth
                 "shadow-md",
                 className
             )}
         >
             {/* Icon container - darker emerald rounded background */}
-            <span className="flex items-center justify-center rounded-full bg-discount-icon-bg p-1">
+            <span className="flex items-center justify-center rounded-full bg-discount-icon-bg p-0.5">
                 <BadgePercent size={10} className="text-discount-text pointer-events-none" aria-hidden="true" />
             </span>
 
@@ -151,7 +151,7 @@ export function DiscountBadge({discountInfo, percentage, position = "absolute", 
             <span
                 className={cn(
                     // Typography - 12px base on mobile (WCAG readable), scales to 14px on small+ screens, back to 12px on large screens
-                    "text-[12px] sm:text-sm lg:text-xs font-medium uppercase tracking-wide",
+                    "text-xs font-medium uppercase tracking-wide",
                     // Shimmer gradient effect
                     "animate-shimmer bg-linear-to-r",
                     "from-discount-shimmer-start via-discount-shimmer-mid to-discount-shimmer-start",

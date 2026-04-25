@@ -42,6 +42,7 @@
 import type {ProductFragment} from "storefrontapi.generated";
 import {formatShopifyMoney} from "~/lib/currency-formatter";
 import {parseProductTitle} from "~/lib/product";
+import {extractImagesFromMedia} from "./media-utils";
 
 // Types
 export interface ShareData {
@@ -78,12 +79,12 @@ function formatPrice(price: {amount: string; currencyCode: string}): string {
 
 // Create share data from product
 export function createShareData(
-    product: Pick<ProductFragment, "title" | "description" | "images">,
+    product: Pick<ProductFragment, "title" | "description" | "media">,
     variant: ProductFragment["selectedOrFirstAvailableVariant"],
     currentUrl: string,
     shopName?: string
 ): ShareData {
-    const firstImage = product.images?.nodes?.[0];
+    const firstImage = extractImagesFromMedia(product.media?.nodes)?.[0];
     const {primary, secondary} = parseProductTitle(product.title);
 
     return {

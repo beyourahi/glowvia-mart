@@ -18,7 +18,7 @@
  * - Event bubbling prevention (works inside clickable cards)
  *
  * @props
- * - product: Pick<ProductFragment, "id" | "handle" | "title" | "description" | "images">
+ * - product: Pick<ProductFragment, "id" | "handle" | "title" | "description" | "media">
  * - selectedVariant: ProductFragment["selectedOrFirstAvailableVariant"]
  * - className: string (optional) - Additional Tailwind classes
  *
@@ -48,6 +48,7 @@
 
 import {useState} from "react";
 import {useLocation} from "react-router";
+import {Image} from "@shopify/hydrogen";
 import {Share, Loader2, Check, X} from "lucide-react";
 import {useScrollLock} from "~/hooks/useScrollLock";
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} from "~/components/ui/dialog";
@@ -63,6 +64,7 @@ import {
     type SocialSharePlatform
 } from "~/lib/social-share";
 import type {ProductFragment} from "storefrontapi.generated";
+import {extractImagesFromMedia} from "~/lib/media-utils";
 import {parseProductTitle} from "~/lib/product";
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -70,7 +72,7 @@ import {parseProductTitle} from "~/lib/product";
 // ═══════════════════════════════════════════════════════════════════════════
 
 interface ProductShareButtonProps {
-    product: Pick<ProductFragment, "id" | "handle" | "title" | "description" | "images">;
+    product: Pick<ProductFragment, "id" | "handle" | "title" | "description" | "media">;
     selectedVariant: ProductFragment["selectedOrFirstAvailableVariant"];
     className?: string;
 }
@@ -237,7 +239,7 @@ export function ProductShareButton({product, selectedVariant, className}: Produc
     const copyPlatform = platforms.find(p => p.id === "copy");
 
     // Get product info for dialog preview
-    const firstImage = product.images?.nodes?.[0];
+    const firstImage = extractImagesFromMedia(product.media?.nodes)?.[0];
     const {primary, secondary} = parseProductTitle(product.title);
 
     /**
@@ -280,11 +282,13 @@ export function ProductShareButton({product, selectedVariant, className}: Produc
                         <div className="flex flex-col items-center gap-3 rounded-2xl bg-linear-to-br from-primary/5 to-primary/10 p-5">
                             {firstImage && (
                                 <div className="relative size-24 shrink-0 overflow-hidden rounded-xl bg-card shadow-md ring-2 ring-primary/20">
-                                    <img
+                                    <Image
                                         src={firstImage.url}
                                         alt={firstImage.altText || product.title}
                                         className="size-full object-cover"
                                         loading="lazy"
+                                        width={400}
+                                        height={400}
                                     />
                                 </div>
                             )}

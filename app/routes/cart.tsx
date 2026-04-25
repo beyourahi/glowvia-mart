@@ -69,7 +69,10 @@ export async function action({request, context}: Route.ActionArgs) {
     const {action, inputs} = CartForm.getFormInput(formData);
 
     if (!action) {
-        throw new Error("No action provided");
+        return data(
+            {cart: null, errors: ["No cart action provided"], warnings: [], analytics: {}},
+            {status: 400}
+        );
     }
 
     let status = 200;

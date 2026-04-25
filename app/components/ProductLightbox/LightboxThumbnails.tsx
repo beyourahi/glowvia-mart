@@ -32,6 +32,7 @@
  */
 
 import {useRef, useEffect} from "react";
+import {Image} from "@shopify/hydrogen";
 import {PlayIcon} from "lucide-react";
 import {cn} from "~/lib/utils";
 import type {ProductMediaItem} from "types";
@@ -186,7 +187,7 @@ export function LightboxThumbnails({media, currentIndex, onSelect}: LightboxThum
                         >
                             {/* Thumbnail image */}
                             {thumbnailUrl ? (
-                                <img
+                                <Image
                                     // Use Shopify CDN params for optimized small image
                                     src={`${thumbnailUrl}&width=128&height=160&crop=center`}
                                     alt=""

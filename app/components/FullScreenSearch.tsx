@@ -60,7 +60,7 @@
  */
 
 import {useEffect, useRef, useState} from "react";
-import {Link, useFetcher, useNavigate} from "react-router";
+import {Link, useFetcher, useNavigate, useSearchParams} from "react-router";
 import {Image} from "@shopify/hydrogen";
 import {Search, Clock, TrendingUp, Calendar, Newspaper, Package, FolderOpen} from "lucide-react";
 import {useScrollLock} from "~/hooks/useScrollLock";
@@ -111,6 +111,8 @@ const FALLBACK_SEARCH_CONTENT = {
     filterByPrice: "Price",
     filterByColor: "Color",
     filterBySize: "Size",
+    filterAvailability: "Availability",
+    filterInStock: "In Stock",
     resultsCountTemplate: "Showing {count} of {total} products",
     loadMoreButton: "Load More",
     loadingText: "Loading...",
@@ -140,6 +142,8 @@ export function FullScreenSearch({collections, popularSearchTerms = []}: FullScr
     const searchContent = FALLBACK_SEARCH_CONTENT;
     const inputRef = useRef<HTMLInputElement>(null);
     const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
+    const isInStockOnly = searchParams.get("availability") === "in-stock";
 
     // Fetcher for categorized search
     const fetcher = useFetcher<CategorizedSearchResult>({key: "fullscreen-search"});
@@ -201,7 +205,26 @@ export function FullScreenSearch({collections, popularSearchTerms = []}: FullScr
     // Fetch search results using categorized search
     const fetchResults = (term: string) => {
         if (term.trim()) {
-            void fetcher.submit({q: term}, {method: "GET", action: SEARCH_ENDPOINT});
+            const params: Record<string, string> = {q: term};
+            if (isInStockOnly) params.availability = "in-stock";
+            void fetcher.submit(params, {method: "GET", action: SEARCH_ENDPOINT});
+        }
+    };
+
+    const handleAvailabilityToggle = () => {
+        const next = new URLSearchParams(searchParams);
+        if (isInStockOnly) {
+            next.delete("availability");
+        } else {
+            next.set("availability", "in-stock");
+        }
+        setSearchParams(next, {replace: true, preventScrollReset: true});
+        // Re-fetch with updated availability if there's an active search term
+        const term = inputRef.current?.value;
+        if (term?.trim()) {
+            const params: Record<string, string> = {q: term};
+            if (!isInStockOnly) params.availability = "in-stock";
+            void fetcher.submit(params, {method: "GET", action: SEARCH_ENDPOINT});
         }
     };
 
@@ -224,7 +247,10 @@ export function FullScreenSearch({collections, popularSearchTerms = []}: FullScr
         if (term?.trim()) {
             addSearch(term.trim());
         }
-        void navigate(SEARCH_ENDPOINT + (term ? `?q=${term}` : ""));
+        const params = new URLSearchParams();
+        if (term) params.set("q", term);
+        if (isInStockOnly) params.set("availability", "in-stock");
+        void navigate(`${SEARCH_ENDPOINT}?${params.toString()}`);
         close();
     };
 
@@ -350,6 +376,8 @@ export function FullScreenSearch({collections, popularSearchTerms = []}: FullScr
                                     onResultClick={handleResultClick}
                                     onViewAll={goToSearch}
                                     searchContent={searchContent}
+                                    isInStockOnly={isInStockOnly}
+                                    onAvailabilityToggle={handleAvailabilityToggle}
                                 />
                             ) : (
                                 <SearchInitialState
@@ -517,6 +545,7 @@ function SearchInitialState({
                                 to={`/collections/${collection.handle}`}
                                 onClick={onClose}
                                 prefetch="viewport"
+                                viewTransition
                                 className={cn(
                                     "motion-link cursor-pointer",
                                     canHover ? "group" : "motion-press active:scale-[var(--motion-press-scale)]"
@@ -593,6 +622,8 @@ interface SearchResultsSectionProps {
     onResultClick: (meta?: ResultClickMeta) => void;
     onViewAll: () => void;
     searchContent: import("types").SearchContent;
+    isInStockOnly: boolean;
+    onAvailabilityToggle: () => void;
 }
 
 function SearchResultsSection({
@@ -607,7 +638,9 @@ function SearchResultsSection({
     state,
     onResultClick,
     onViewAll,
-    searchContent
+    searchContent,
+    isInStockOnly,
+    onAvailabilityToggle
 }: SearchResultsSectionProps) {
     const [activeTab, setActiveTab] = useState("products");
 
@@ -795,7 +828,18 @@ function SearchResultsSection({
                         {((activeTab === "products" && products.length > 0) ||
                             (activeTab === "collections" && collections.length > 0) ||
                             (activeTab === "articles" && articles.length > 0)) && (
-                            <div className="hidden md:block shrink-0">
+                            <div className="hidden md:flex md:items-center md:gap-3 shrink-0">
+                                {activeTab === "products" && (
+                                    <label className="flex items-center gap-1.5 cursor-pointer select-none text-sm text-primary min-h-11">
+                                        <input
+                                            type="checkbox"
+                                            checked={isInStockOnly}
+                                            onChange={onAvailabilityToggle}
+                                            className="size-4 accent-[var(--color-primary)] cursor-pointer"
+                                        />
+                                        {searchContent.filterInStock}
+                                    </label>
+                                )}
                                 <ViewOptionsSelector
                                     gridColumns={currentGridColumns}
                                     onGridColumnsChange={handleGridColumnsChange}
@@ -811,7 +855,20 @@ function SearchResultsSection({
                     {((activeTab === "products" && products.length > 0) ||
                         (activeTab === "collections" && collections.length > 0) ||
                         (activeTab === "articles" && articles.length > 0)) && (
-                        <div className="md:hidden">
+                        <div className="md:hidden flex items-center justify-between gap-3">
+                            {activeTab === "products" ? (
+                                <label className="flex items-center gap-1.5 cursor-pointer select-none text-sm text-primary min-h-11">
+                                    <input
+                                        type="checkbox"
+                                        checked={isInStockOnly}
+                                        onChange={onAvailabilityToggle}
+                                        className="size-4 accent-[var(--color-primary)] cursor-pointer"
+                                    />
+                                    {searchContent.filterInStock}
+                                </label>
+                            ) : (
+                                <div />
+                            )}
                             <ViewOptionsSelector
                                 gridColumns={currentGridColumns}
                                 onGridColumnsChange={handleGridColumnsChange}
@@ -982,6 +1039,7 @@ function SearchCollectionCard({collection, onClick, index, variant = "card"}: Se
                 to={`/collections/${collection.handle}`}
                 onClick={onClick}
                 prefetch="viewport"
+                viewTransition
                 className={cn(
                     "motion-interactive flex items-center gap-4 border-b border-border/50 py-4 pl-4 no-underline cursor-pointer md:gap-6 md:pl-6",
                     canHover ? "group hover:bg-muted/30" : "motion-press active:bg-muted/30",
@@ -1033,6 +1091,7 @@ function SearchCollectionCard({collection, onClick, index, variant = "card"}: Se
             to={`/collections/${collection.handle}`}
             onClick={onClick}
             prefetch="viewport"
+            viewTransition
             className={cn(
                 "motion-link block animate-product-fade-in cursor-pointer",
                 canHover ? "group" : "motion-press active:scale-[var(--motion-press-scale)]"
@@ -1107,6 +1166,7 @@ function SearchArticleItem({article, term, onClick, index = 0, variant = "card"}
                 to={articleUrl}
                 onClick={onClick}
                 prefetch="viewport"
+                viewTransition
                 className={cn(
                     "motion-interactive flex items-center gap-4 border-b border-border/50 py-4 pl-4 no-underline cursor-pointer md:gap-6 md:pl-6",
                     canHover ? "group hover:bg-muted/30" : "motion-press active:bg-muted/30",
@@ -1165,6 +1225,7 @@ function SearchArticleItem({article, term, onClick, index = 0, variant = "card"}
             to={articleUrl}
             onClick={onClick}
             prefetch="viewport"
+            viewTransition
             className={cn(
                 "motion-link block no-underline animate-product-fade-in cursor-pointer",
                 canHover ? "group" : "motion-press active:scale-[var(--motion-press-scale)]"

@@ -160,7 +160,7 @@ export function LightboxMedia({media}: LightboxMediaProps) {
         return (
             <div className="relative max-w-full max-h-full animate-scale-fade flex flex-col items-center gap-3">
                 {media.previewImage ? (
-                    <img
+                    <Image
                         src={media.previewImage.url}
                         alt={media.alt || "3D model preview"}
                         className="max-w-full max-h-[calc(100vh-220px)] w-auto h-auto object-contain rounded-lg"

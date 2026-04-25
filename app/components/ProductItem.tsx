@@ -61,6 +61,7 @@ import {cn} from "~/lib/utils";
 import type {GridColumns} from "~/lib/gridColumns";
 import {usePointerCapabilities} from "~/hooks/usePointerCapabilities";
 import {ProductImagePlaceholder} from "~/components/ProductImagePlaceholder";
+import {extractImagesFromMedia} from "~/lib/media-utils";
 
 // =============================================================================
 // TYPOGRAPHY UTILITIES
@@ -392,10 +393,13 @@ export function ProductItem({
 
     const layoutClasses = getLayoutVariantClasses();
 
-    // Get all product images for carousel (with type narrowing)
+    // Get all product images for carousel — prefer media nodes (already fetched, includes videos)
     const productImages =
-        "images" in product && product.images?.nodes?.length > 0
-            ? product.images.nodes
+        "media" in product
+            ? extractImagesFromMedia(
+                  (product as {media?: {nodes?: Parameters<typeof extractImagesFromMedia>[0]}}).media
+                      ?.nodes as Parameters<typeof extractImagesFromMedia>[0]
+              )
             : featuredImage
               ? [featuredImage]
               : [];
@@ -432,7 +436,8 @@ export function ProductItem({
             <Link
                 to={linkUrl}
                 target={linkTarget}
-                prefetch="viewport"
+                prefetch="intent"
+                viewTransition
                 className={cn(
                     "flex items-center gap-4 md:gap-6 py-4 md:pl-6 no-underline cursor-pointer",
                     canHover ? "group motion-interactive motion-surface hover:bg-muted/30" : "motion-press active:bg-muted/30",
@@ -609,7 +614,8 @@ export function ProductItem({
         <Link
             to={linkUrl}
             target={linkTarget}
-            prefetch="viewport"
+            prefetch="intent"
+            viewTransition
             className={cn(
                 "block no-underline animate-product-fade-in cursor-pointer relative overflow-visible rounded-lg",
                 canHover ? "group motion-surface" : "motion-press active:scale-[var(--motion-press-scale)]",
@@ -650,7 +656,7 @@ export function ProductItem({
                         {/* Uses secondary token (same as Premium badge) for neutral, non-alarming tone */}
                         {isOutOfStock && (
                             <span
-                                className="inline-flex items-center justify-center rounded-full bg-destructive px-2 py-0.5 text-xs font-medium uppercase tracking-wide text-destructive-foreground shadow-md"
+                                className="inline-flex items-center justify-center rounded-full bg-secondary px-2.5 py-1 text-xs font-medium uppercase tracking-wide text-secondary-foreground shadow-md"
                                 role="status"
                                 aria-label="Out of stock"
                             >

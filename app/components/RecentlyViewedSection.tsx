@@ -26,6 +26,7 @@
  */
 
 import {useState, useCallback, useMemo} from "react";
+import {Image} from "@shopify/hydrogen";
 import {Link} from "react-router";
 import type {ProductItemFragment, CuratedProductFragment} from "storefrontapi.generated";
 import {useRecentlyViewed, type RecentlyViewedProduct} from "~/lib/recently-viewed";
@@ -281,11 +282,11 @@ function OfflineProductCard({product}: {product: RecentlyViewedProduct}) {
     const {primary: mainTitle, secondary: subtitle} = parseProductTitle(product.title);
 
     return (
-        <Link to={`/products/${product.handle}`} className="group block">
+        <Link to={`/products/${product.handle}`} viewTransition className="group block">
             {/* Product Image */}
             <div className="relative aspect-4/5 w-full overflow-hidden rounded-3xl bg-secondary/10">
                 {product.imageUrl ? (
-                    <img
+                    <Image
                         src={product.imageUrl}
                         alt={product.imageAlt || product.title}
                         className="size-full object-cover motion-image group-hover:scale-105"

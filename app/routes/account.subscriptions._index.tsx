@@ -132,6 +132,7 @@ export default function SubscriptionsIndex() {
                                 <Button variant="link" asChild className="text-primary p-0 h-auto group hidden sm:flex">
                                     <Link
                                         to="/collections"
+                                        viewTransition
                                         className="flex items-center gap-1.5 group-hover:gap-2 motion-link hover:text-primary"
                                     >
                                         Browse Products{" "}
@@ -183,13 +184,13 @@ function SubscriptionsEmpty() {
                 {/* CTA buttons - primary action to browse products */}
                 <div className="flex flex-col sm:flex-row gap-3">
                     <Button asChild size="lg" className="motion-interactive">
-                        <Link to="/collections/all-products" className="gap-2">
+                        <Link to="/collections/all-products" viewTransition className="gap-2">
                             <ShoppingBagIcon className="size-4" />
                             Browse Products
                         </Link>
                     </Button>
                     <Button asChild size="lg" variant="outline" className="motion-interactive">
-                        <Link to="/collections">Continue Shopping</Link>
+                        <Link to="/collections" viewTransition>Continue Shopping</Link>
                     </Button>
                 </div>
             </CardContent>
@@ -222,6 +223,7 @@ function SubscriptionCard({subscription, index = 0}: {subscription: Subscription
     return (
         <Link
             to={`/account/subscriptions/${btoa(subscription.id)}`}
+            viewTransition
             className="group block no-underline animate-product-fade-in"
             style={{animationDelay: `${Math.min(index, 11) * 50}ms`}}
         >

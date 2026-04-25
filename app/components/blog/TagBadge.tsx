@@ -151,7 +151,7 @@ export function TagBadge({tag, href, variant = "muted", size = "default", classN
     // Render as Link if href is available
     if (linkHref) {
         return (
-            <Link to={linkHref} prefetch="viewport" className="no-underline cursor-pointer">
+            <Link to={linkHref} prefetch="viewport" viewTransition className="no-underline cursor-pointer">
                 <Badge variant="outline" className={badgeClassName}>
                     {tag}
                 </Badge>

@@ -90,7 +90,8 @@ export async function loader(args: Route.LoaderArgs) {
         variables: {
             first: 100,
             after: cursor
-        }
+        },
+        cache: context.dataAdapter.CacheShort()
     });
 
     // Transform products to flat gallery images

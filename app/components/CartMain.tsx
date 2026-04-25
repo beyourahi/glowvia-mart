@@ -58,7 +58,7 @@
  */
 
 import {Suspense, useCallback, useEffect, useMemo, useRef, useState} from "react";
-import {useOptimisticCart, Image} from "@shopify/hydrogen";
+import {useOptimisticCart, Image, type OptimisticCartLine} from "@shopify/hydrogen";
 import {ShoppingCart, Sparkles} from "lucide-react";
 import {Button} from "~/components/ui/button";
 import {Await, Link, useRouteLoaderData} from "react-router";
@@ -72,7 +72,7 @@ import {type CarouselApi, Carousel, CarouselContent, CarouselItem, CarouselPrevi
 import {Skeleton} from "~/components/ui/skeleton";
 import {cn} from "~/lib/utils";
 import {ProductItem} from "~/components/ProductItem";
-import type {CartSuggestionProductFragment} from "storefrontapi.generated";
+import type {CartSuggestionProductFragment, CartApiQueryFragment} from "storefrontapi.generated";
 
 export type {CartLayout, CartMainProps};
 
@@ -115,7 +115,7 @@ export function CartMain({layout, cart: originalCart, isLoggedIn, hasStoreCredit
                             className="space-y-3 sm:space-y-4 md:space-y-5 lg:space-y-6"
                         >
                             {(cart?.lines?.nodes ?? []).map(line => (
-                                <CartLineItem key={line.id} line={line} layout={layout} />
+                                <CartLineItem key={line.id} line={line as OptimisticCartLine<CartApiQueryFragment>} layout={layout} />
                             ))}
                         </div>
                         {/* Cart summary - sticky on desktop with responsive top offset */}
@@ -154,7 +154,7 @@ export function CartMain({layout, cart: originalCart, isLoggedIn, hasStoreCredit
                                 className="animate-cart-item-enter"
                                 style={{animationDelay: `${Math.min(index, 5) * 50}ms`}}
                             >
-                                <CartLineItem line={line} layout={layout} />
+                                <CartLineItem line={line as OptimisticCartLine<CartApiQueryFragment>} layout={layout} />
                             </div>
                         ))}
                     </div>
@@ -460,24 +460,24 @@ function CartSuggestions({products, layout, cartLines}: CartSuggestionsProps) {
                         ))}
                     </CarouselContent>
 
-                    {/* Navigation arrows - hidden on mobile, shown on tablet+ */}
-                    {/* Custom styling to fit within aside drawer constraints
-                         WCAG Compliance:
-                         - Size: 40px (size-10) → 44px (md:size-11) meets minimum touch target (WCAG 2.5.5)
-                         - Contrast: primary-foreground (#fff) on primary/90 = ~13:1 (WCAG AAA) ✓
-                         - Icons: 3:1 minimum for UI components (WCAG 1.4.11) - actual: ~13:1 ✓
-                         - Focus ring: Inherits from carousel component (14.68:1 contrast) ✓
-                    */}
-                    <CarouselPrevious
-                        className="left-0 sm:left-1 bg-primary/90 hover:bg-primary text-primary-foreground border-0 size-10 md:size-11"
-                        aria-label="Previous products"
-                    />
-                    <CarouselNext
-                        className="right-0 sm:right-1 bg-primary/90 hover:bg-primary text-primary-foreground border-0 size-10 md:size-11"
-                        aria-label="Next products"
-                    />
-                </Carousel>
-            </div>
+                                {/* Navigation arrows - hidden on mobile, shown on tablet+ */}
+                                {/* Custom styling to fit within aside drawer constraints
+                                     WCAG Compliance:
+                                     - Size: 40px (size-10) → 44px (md:size-11) meets minimum touch target (WCAG 2.5.5)
+                                     - Contrast: primary-foreground (#fff) on primary/90 = ~13:1 (WCAG AAA) ✓
+                                     - Icons: 3:1 minimum for UI components (WCAG 1.4.11) - actual: ~13:1 ✓
+                                     - Focus ring: Inherits from carousel component (14.68:1 contrast) ✓
+                                */}
+                                <CarouselPrevious
+                                    className="left-0 sm:left-1 bg-primary/90 hover:bg-primary text-primary-foreground border-0 size-10 md:size-11"
+                                    aria-label="Previous products"
+                                />
+                                <CarouselNext
+                                    className="right-0 sm:right-1 bg-primary/90 hover:bg-primary text-primary-foreground border-0 size-10 md:size-11"
+                                    aria-label="Next products"
+                                />
+                            </Carousel>
+                        </div>
         </section>
     );
 }

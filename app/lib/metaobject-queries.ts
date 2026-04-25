@@ -12,7 +12,7 @@
  * 2. THEME_SETTINGS_QUERY - Fetches theme_settings metaobject (fonts, colors)
  *
  * Note: UI content (product, cart, account, search, etc.) uses fallback constants
- * directly from fallback-data.ts. This follows the 80/20 rule - only high-value,
+ * directly from metaobject-parsers.ts. This follows the 80/20 rule - only high-value,
  * frequently-changed content (brand, hero, promotions, theme) needs Shopify Admin control.
  * Standard UI labels and messages stay in code as they rarely change.
  *
@@ -31,7 +31,7 @@
  * - app/lib/metaobject-fragments.ts - GraphQL fragments for metaobject fields
  * - app/lib/metaobject-parsers.ts - Parse query results into TypeScript types
  * - app/lib/site-content-context.tsx - React Context provider for site content
- * - app/lib/fallback-data.ts - Fallback values for all UI content
+ * - app/lib/metaobject-parsers.ts - Fallback values for all UI content
  * - app/root.tsx - Executes queries and provides context to all routes
  */
 

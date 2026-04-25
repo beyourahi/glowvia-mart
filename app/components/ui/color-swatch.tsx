@@ -56,6 +56,7 @@
  */
 
 import {forwardRef} from "react";
+import {Image} from "@shopify/hydrogen";
 import type {Maybe, ProductOptionValueSwatch} from "@shopify/hydrogen/storefront-api-types";
 import {cn} from "~/lib/utils";
 import {useSmartSwatchBorderColor} from "~/lib/site-content-context";
@@ -210,7 +211,7 @@ export const ColorSwatch = forwardRef<HTMLSpanElement, ColorSwatchProps>(functio
                 borderColor
             }}
         >
-            {image && <img src={image} alt={name} className="size-full object-cover" />}
+            {image && <Image src={image} alt={name} className="size-full object-cover" loading="lazy" decoding="async" />}
         </span>
     );
 });

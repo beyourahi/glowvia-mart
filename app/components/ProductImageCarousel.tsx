@@ -181,7 +181,7 @@ function VideoSlide({
         <div className="relative h-full w-full overflow-hidden rounded-lg">
             {/* Poster layer — holds its aspect until the video can paint. */}
             {posterUrl && !isReady && (
-                <img
+                <Image
                     src={posterUrl}
                     alt={slide.poster?.altText || productTitle}
                     className={cn(

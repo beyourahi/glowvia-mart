@@ -75,7 +75,7 @@ const PRODUCT_RECOMMENDATIONS_QUERY = `#graphql
           currencyCode
         }
       }
-      variants(first: 100) {
+      variants(first: 20) {
         nodes {
           id
           title

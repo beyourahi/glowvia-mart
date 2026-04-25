@@ -364,6 +364,116 @@ export const CART_QUERY_FRAGMENT = `#graphql
 ` as const;
 
 // =============================================================================
+// CART SUGGESTION QUERIES
+// =============================================================================
+
+/**
+ * Cart suggestions query - fetches best-selling products for cart recommendations.
+ *
+ * Used to display product suggestions in the cart drawer when the cart is empty
+ * or as upsell recommendations alongside existing cart items.
+ *
+ * @param $country - Country code for localized pricing
+ * @param $language - Language code for localized content
+ *
+ * @note Fetches first 16 products sorted by BEST_SELLING, filtered to available only.
+ */
+export const CART_SUGGESTIONS_QUERY = `#graphql
+  fragment CartSuggestionProduct on Product {
+    id
+    title
+    handle
+    availableForSale
+    priceRange {
+      minVariantPrice {
+        amount
+        currencyCode
+      }
+      maxVariantPrice {
+        amount
+        currencyCode
+      }
+    }
+    compareAtPriceRange {
+      minVariantPrice {
+        amount
+        currencyCode
+      }
+    }
+    featuredImage {
+      id
+      url
+      altText
+      width
+      height
+    }
+    media(first: 5) {
+      nodes {
+        __typename
+        ... on MediaImage {
+          id
+          alt
+          image {
+            id
+            url
+            altText
+            width
+            height
+          }
+        }
+        ... on Video {
+          id
+          alt
+          sources {
+            url
+            mimeType
+            width
+            height
+          }
+          previewImage {
+            id
+            url
+            altText
+            width
+            height
+          }
+        }
+      }
+    }
+    variants(first: 20) {
+      nodes {
+        id
+        title
+        availableForSale
+        selectedOptions {
+          name
+          value
+        }
+        price {
+          amount
+          currencyCode
+        }
+        compareAtPrice {
+          amount
+          currencyCode
+        }
+      }
+    }
+  }
+
+  query CartSuggestions(
+    $country: CountryCode
+    $language: LanguageCode
+  ) @inContext(country: $country, language: $language) {
+    products(first: 16, sortKey: BEST_SELLING, query: "available_for_sale:true") {
+      nodes {
+        ...CartSuggestionProduct
+      }
+    }
+  }
+` as const;
+
+// =============================================================================
 // MENU FRAGMENTS
 // =============================================================================
 
@@ -476,11 +586,11 @@ export const FOOTER_QUERY = `#graphql
  *
  * Used to populate:
  * - Collection dropdown in header menu
- * - Product type filters
- * - Availability indicators
+ * - Product type filters / popular search terms
+ * - Discount count badge on the SALE link
  *
- * @note Fetches first 50 collections and 250 products per collection.
- * May need pagination for stores with many collections.
+ * allProducts includes featuredImage, handle, priceRange, and variant pricing
+ * so popularProducts can be derived from this single query without a separate request.
  */
 export const MENU_COLLECTIONS_QUERY = `#graphql
   query MenuCollections(
@@ -499,23 +609,90 @@ export const MENU_COLLECTIONS_QUERY = `#graphql
           width
           height
         }
-        products(first: 250) {
+        products(first: 1, filters: [{available: true}]) {
+          nodes {
+            id
+          }
+          pageInfo {
+            hasNextPage
+          }
+        }
+      }
+    }
+    allProducts: products(first: 50, query: "available_for_sale:true") {
+      nodes {
+        id
+        handle
+        title
+        productType
+        availableForSale
+        featuredImage {
+          id
+          url
+          altText
+          width
+          height
+        }
+        priceRange {
+          minVariantPrice {
+            amount
+            currencyCode
+          }
+        }
+        variants(first: 3) {
+          nodes {
+            availableForSale
+            price {
+              amount
+              currencyCode
+            }
+            compareAtPrice {
+              amount
+              currencyCode
+            }
+          }
+        }
+      }
+      pageInfo {
+        hasNextPage
+      }
+    }
+  }
+` as const;
+
+/**
+ * Sidebar collections query - fetches collections and all available products
+ * for the sidebar navigation on collection/product/sale pages.
+ *
+ * Single canonical definition shared across all routes that render a sidebar
+ * (products.$handle, collections.$handle, sale, collections.all-products).
+ * Returned as a deferred Promise so it does not block above-fold rendering.
+ *
+ * - collections.products(first:100): enough for accurate per-collection counts
+ * - allProducts variants(first:3): enough for discount counting without over-fetching
+ */
+export const SIDEBAR_COLLECTIONS_QUERY = `#graphql
+  query SidebarCollections(
+    $country: CountryCode
+    $language: LanguageCode
+  ) @inContext(country: $country, language: $language) {
+    collections(first: 50, sortKey: TITLE) {
+      nodes {
+        id
+        handle
+        title
+        products(first: 100) {
           nodes {
             id
           }
         }
       }
     }
-    allProducts: products(first: 250) {
-      pageInfo {
-        hasNextPage
-      }
+    allProducts: products(first: 250, query: "available_for_sale:true") {
       nodes {
         id
-        title
-        productType
         availableForSale
-        variants(first: 10) {
+        variants(first: 3) {
           nodes {
             availableForSale
             price {

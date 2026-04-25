@@ -41,15 +41,18 @@
  */
 
 import type {Route} from "./+types/sale";
-import {useLoaderData} from "react-router";
+import {useLoaderData, Await} from "react-router";
+import {Suspense} from "react";
 import {getSeoMeta, getPaginationVariables} from "@shopify/hydrogen";
 import {InfiniteScrollSection} from "~/components/InfiniteScrollSection";
 import {ProductItem} from "~/components/ProductItem";
 import {CollectionPageLayout, useGridColumns, useLayoutMode, getGridClassName} from "~/components/CollectionPageLayout";
 import {AnimatedSection} from "~/components/AnimatedSection";
-import type {CollectionWithCount} from "~/components/CollectionSidebar";
-import {filterAndSortDiscountedProducts, type DiscountedProduct, type RawDiscountProduct} from "~/lib/discounts";
+import {CollectionSidebar, type CollectionWithCount} from "~/components/CollectionSidebar";
+import {filterAndSortDiscountedProducts, countDiscountedProducts, type DiscountedProduct, type RawDiscountProduct, type LightweightProduct} from "~/lib/discounts";
 import {buildCanonicalUrl, getBrandNameFromMatches, getSiteUrlFromMatches} from "~/lib/seo";
+import {withTimeoutAndFallback, TIMEOUT_DEFAULTS} from "~/lib/promise-utils";
+import {SIDEBAR_COLLECTIONS_QUERY} from "~/lib/fragments";
 
 export const meta: Route.MetaFunction = ({data, matches}) => {
     const brandName = getBrandNameFromMatches(matches);
@@ -72,9 +75,28 @@ export const meta: Route.MetaFunction = ({data, matches}) => {
     );
 };
 
+function loadDeferredData({context}: Route.LoaderArgs) {
+    const {dataAdapter} = context;
+
+    // Sidebar collections - deferred so it doesn't block sale page above-fold rendering
+    const sidebarData = withTimeoutAndFallback(
+        dataAdapter
+            .query(SIDEBAR_COLLECTIONS_QUERY, {cache: dataAdapter.CacheLong()})
+            .catch((error: unknown) => {
+                console.error("Failed to load sidebar collections:", error);
+                return null;
+            }),
+        null,
+        TIMEOUT_DEFAULTS.API
+    );
+
+    return {sidebarData};
+}
+
 export async function loader(args: Route.LoaderArgs) {
+    const deferredData = loadDeferredData(args);
     const criticalData = await loadCriticalData(args);
-    return criticalData;
+    return {...deferredData, ...criticalData};
 }
 
 /**
@@ -86,15 +108,11 @@ async function loadCriticalData({context, request}: Route.LoaderArgs) {
     // Use official Hydrogen pagination pattern (24 items per page)
     const paginationVariables = getPaginationVariables(request, {pageBy: 24});
 
-    const [{products}, sidebarData, {products: allDiscountedProducts}] = await Promise.all([
+    const [{products}, {products: allDiscountedProducts}] = await Promise.all([
         // Discounted products with prices (cached: short for availability)
         dataAdapter.query(DISCOUNTS_QUERY, {
             variables: paginationVariables,
             cache: dataAdapter.CacheShort()
-        }),
-        // Sidebar collections with product counts (cached: catalog metadata)
-        dataAdapter.query(SIDEBAR_COLLECTIONS_QUERY, {
-            cache: dataAdapter.CacheLong()
         }),
         // Fetch first 250 products to get accurate total count (cached: short)
         dataAdapter.query(DISCOUNTS_QUERY, {
@@ -110,20 +128,6 @@ async function loadCriticalData({context, request}: Route.LoaderArgs) {
     const allDiscounted = filterAndSortDiscountedProducts(allDiscountedProducts.nodes as RawDiscountProduct[]);
     const totalCount = allDiscounted.length;
 
-    // Process collections to get individual product counts for sidebar
-    // Filter out collections with no available products (API already filters unavailable)
-    const {collections, allProducts} = sidebarData!;
-    const collectionsWithCounts: CollectionWithCount[] = collections.nodes
-        .map((collection: any) => ({
-            handle: collection.handle,
-            title: collection.title,
-            productsCount: collection.products.nodes.length
-        }))
-        .filter((collection: any) => collection.productsCount > 0);
-
-    // Count all available products (API-level filter ensures only available products are returned)
-    const totalProductCount = allProducts.nodes.length;
-
     // Calculate max discount from ALL discounted products (not just paginated)
     const maxDiscount = totalCount > 0 ? Math.max(...allDiscounted.map(p => p.maxDiscountPercentage)) : 0;
 
@@ -131,15 +135,22 @@ async function loadCriticalData({context, request}: Route.LoaderArgs) {
         products: discountedProducts,
         pageInfo: products.pageInfo,
         totalCount,
-        maxDiscount,
-        collectionsWithCounts,
-        totalProductCount
+        maxDiscount
     };
 }
 
+const SIDEBAR_SKELETON_KEYS = ["sk-1", "sk-2", "sk-3", "sk-4", "sk-5", "sk-6"] as const;
+
+const SidebarSkeleton = () => (
+    <div className="space-y-1">
+        {SIDEBAR_SKELETON_KEYS.map(key => (
+            <div key={key} className="h-8 rounded-md bg-foreground/5 animate-pulse" />
+        ))}
+    </div>
+);
+
 export default function SalePage() {
-    const {products, pageInfo, totalCount, maxDiscount, collectionsWithCounts, totalProductCount} =
-        useLoaderData<typeof loader>();
+    const {products, pageInfo, totalCount, maxDiscount, sidebarData} = useLoaderData<typeof loader>();
     const [gridColumns, setGridColumns] = useGridColumns("sale-grid-columns");
     const [layoutMode, setLayoutMode] = useLayoutMode("sale-layout-mode");
 
@@ -159,9 +170,7 @@ export default function SalePage() {
         <CollectionPageLayout
             title="SALE"
             description="Limited-time offers on select items. Shop now while supplies last."
-            collections={collectionsWithCounts}
             activeHandle="sale"
-            totalProductCount={totalProductCount}
             collectionProductCount={totalCount}
             discountCount={totalCount}
             maxDiscount={maxDiscount}
@@ -172,6 +181,33 @@ export default function SalePage() {
             layoutMode={layoutMode}
             onLayoutModeChange={setLayoutMode}
             showSortOptions={false}
+            sidebarSlot={
+                <Suspense fallback={<SidebarSkeleton />}>
+                    <Await resolve={sidebarData}>
+                        {(sidebar: any) => {
+                            if (!sidebar) return null;
+                            const {collections, allProducts} = sidebar;
+                            const collectionsWithCounts: CollectionWithCount[] = collections.nodes
+                                .map((col: any) => ({
+                                    handle: col.handle,
+                                    title: col.title,
+                                    productsCount: col.products.nodes.length
+                                }))
+                                .filter((col: any) => col.productsCount > 0);
+                            const totalProductCount = allProducts.nodes.length;
+                            const discountCount = countDiscountedProducts(allProducts.nodes as LightweightProduct[]);
+                            return (
+                                <CollectionSidebar
+                                    collections={collectionsWithCounts}
+                                    activeHandle="sale"
+                                    totalProductCount={totalProductCount}
+                                    discountCount={discountCount}
+                                />
+                            );
+                        }}
+                    </Await>
+                </Suspense>
+            }
         >
             <AnimatedSection animation="slide-up" threshold={0.12}>
                 {totalCount > 0 ? (
@@ -328,43 +364,6 @@ const DISCOUNTS_QUERY = `#graphql
     }
   }
   ${DISCOUNT_PRODUCT_FRAGMENT}
-` as const;
-
-/**
- * Fetches collections for sidebar navigation.
- *
- * Also fetches all products to calculate accurate counts
- * for "All Products" and discount count in sidebar.
- */
-const SIDEBAR_COLLECTIONS_QUERY = `#graphql
-  query SidebarCollectionsForDiscounts(
-    $country: CountryCode
-    $language: LanguageCode
-  ) @inContext(country: $country, language: $language) {
-    collections(first: 50, sortKey: TITLE) {
-      nodes {
-        id
-        handle
-        title
-        products(first: 250) {
-          nodes {
-            id
-          }
-        }
-      }
-    }
-    allProducts: products(first: 250, query: "available_for_sale:true") {
-      nodes {
-        id
-        availableForSale
-        variants(first: 10) {
-          nodes {
-            availableForSale
-          }
-        }
-      }
-    }
-  }
 ` as const;
 
 export {RouteErrorBoundary as ErrorBoundary} from "~/components/RouteErrorBoundary";

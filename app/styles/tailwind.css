@@ -33,6 +33,13 @@ body {
     overflow-x: clip;
 }
 
+/* View Transitions API — keep cross-page animations snappy */
+::view-transition-old(root),
+::view-transition-new(root) {
+    animation-duration: 0.15s;
+    animation-timing-function: ease-in-out;
+}
+
 /* ==========================================
    Default Theme CSS Variables (OKLCH color space)
    Monochromatic black/white - neutral base for any brand

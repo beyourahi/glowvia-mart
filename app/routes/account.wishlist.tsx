@@ -37,7 +37,7 @@ import {useEffect, useState} from "react";
 import {Link, useFetcher} from "react-router";
 import type {Route} from "./+types/account.wishlist";
 import {Heart, ShoppingBag, Trash2, HeartIcon, Share2, ShoppingCart, Loader2, Check, X} from "lucide-react";
-import {CartForm, getSeoMeta, type OptimisticCartLineInput} from "@shopify/hydrogen";
+import {Image, CartForm, getSeoMeta, type OptimisticCartLineInput} from "@shopify/hydrogen";
 import type {ProductItemFragment} from "storefrontapi.generated";
 import {useWishlist} from "~/lib/wishlist-context";
 import {reconstructGids, encodeWishlistIds} from "~/lib/wishlist-utils";
@@ -655,7 +655,7 @@ function WishlistShareDialog({open, onOpenChange, ids, products}: WishlistShareD
                                         className="relative size-14 shrink-0 overflow-hidden rounded-xl bg-card shadow-md ring-2 ring-primary/20"
                                         style={{zIndex: previewImages.length - index}}
                                     >
-                                        <img
+                                        <Image
                                             src={image?.url}
                                             alt={image?.altText || `Product ${index + 1}`}
                                             className="size-full object-cover"

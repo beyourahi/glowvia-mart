@@ -31,7 +31,7 @@
  * @related
  * - app/components/SearchFormPredictive.tsx - Displays popular search suggestions
  * - app/routes/search.tsx - Uses popular searches when query is empty
- * - app/lib/fallback-data.ts - Provides fallback popular searches
+ * - app/lib/metaobject-parsers.ts - Provides fallback popular searches
  */
 
 // Common words to exclude from keyword extraction

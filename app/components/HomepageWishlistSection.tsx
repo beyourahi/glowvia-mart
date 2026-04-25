@@ -148,6 +148,7 @@ export function HomepageWishlistSection({className}: HomepageWishlistSectionProp
                     {/* View All Button - Desktop (pill style matching Recently Viewed) */}
                     <Link
                         to="/wishlist"
+                        viewTransition
                         className="hidden rounded-[var(--radius-pill-raw)] border-2 border-primary px-3 sm:px-4 py-2 font-sans text-sm font-medium text-primary motion-interactive hover:bg-primary hover:text-primary-foreground sm:inline-flex"
                     >
                         View all
@@ -187,6 +188,7 @@ export function HomepageWishlistSection({className}: HomepageWishlistSectionProp
             <div className="mt-6 flex justify-center sm:hidden">
                 <Link
                     to="/wishlist"
+                    viewTransition
                     className="rounded-[var(--radius-pill-raw)] border-2 border-primary px-3 sm:px-4 py-2 font-sans text-sm font-medium text-primary motion-interactive hover:bg-primary hover:text-primary-foreground"
                 >
                     View all
@@ -207,6 +209,7 @@ function FeaturedWishlistCard({product}: {product: ProductItemFragment}) {
         <Link
             to={`/products/${product.handle}`}
             prefetch="viewport"
+            viewTransition
             className={cn(
                 "col-span-2 row-span-2 relative overflow-hidden rounded-2xl cursor-pointer",
                 canHover ? "group" : "motion-press active:scale-[var(--motion-press-scale)]"
@@ -286,6 +289,7 @@ function WishlistCard({
         <Link
             to={`/products/${product.handle}`}
             prefetch="viewport"
+            viewTransition
             className={cn(
                 "relative overflow-hidden rounded-xl sm:rounded-2xl cursor-pointer sm:aspect-auto",
                 canHover ? "group" : "motion-press active:scale-[var(--motion-press-scale)]",
@@ -349,6 +353,7 @@ function ViewMoreTile({count}: {count: number}) {
         <Link
             to="/wishlist"
             prefetch="viewport"
+            viewTransition
             className={cn(
                 "flex flex-col items-center justify-center rounded-xl sm:rounded-2xl bg-black text-white cursor-pointer aspect-[4/5] sm:aspect-auto motion-interactive",
                 canHover

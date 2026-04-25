@@ -237,6 +237,7 @@ export function FullScreenMenu({collections, totalCollections, totalProductCount
                         <Link
                             to="/"
                             prefetch="viewport"
+                            viewTransition
                             onClick={close}
                             className={`motion-link absolute left-1/2 -translate-x-1/2 font-serif ${BRAND_NAME_FONT_CLASS} uppercase tracking-wider text-primary whitespace-nowrap cursor-pointer`}
                         >
@@ -482,7 +483,8 @@ function MenuLink({title, url, count, onNavigate, variant = "collection", stagge
     return (
         <Link
             to={url}
-            prefetch="viewport"
+            prefetch="intent"
+            viewTransition
             onClick={onNavigate}
             className={cn(
                 "motion-link flex items-baseline gap-1 text-primary cursor-pointer",

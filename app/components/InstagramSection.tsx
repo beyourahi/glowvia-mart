@@ -23,6 +23,7 @@
  */
 
 import {Instagram, Play} from "lucide-react";
+import {Image} from "@shopify/hydrogen";
 import {WheelGesturesPlugin} from "embla-carousel-wheel-gestures";
 import {Carousel, CarouselContent, CarouselItem} from "~/components/ui/carousel";
 import AutoScroll from "embla-carousel-auto-scroll";
@@ -140,7 +141,7 @@ function InstagramMediaCard({
                 <>
                     {/* Video with preview image fallback */}
                     {media.previewImage?.url ? (
-                        <img
+                        <Image
                             src={media.previewImage.url}
                             alt={media.altText || `Instagram video ${index + 1}`}
                             width={400}
@@ -162,7 +163,7 @@ function InstagramMediaCard({
                     </div>
                 </>
             ) : (
-                <img
+                <Image
                     src={media.url}
                     alt={media.altText || `Instagram post ${index + 1}`}
                     width={400}

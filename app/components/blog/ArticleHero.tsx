@@ -177,6 +177,7 @@ export function ArticleHero({article, variant = "listing", showReadMore = true, 
             <Link
                 to={articleUrl}
                 prefetch="viewport"
+                viewTransition
                 aria-label={`Read article: ${title}`}
                 className={cn(
                     "group relative block rounded-xl sm:rounded-2xl overflow-hidden no-underline cursor-pointer",

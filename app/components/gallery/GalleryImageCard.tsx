@@ -13,6 +13,7 @@
  */
 
 import {useEffect, useRef, useState} from "react";
+import {Image} from "@shopify/hydrogen";
 import {Link} from "react-router";
 import type {GalleryImageData} from "~/lib/gallery";
 import {cn} from "~/lib/utils";
@@ -102,6 +103,7 @@ export function GalleryImageCard({image, index = 0}: GalleryImageCardProps) {
         <Link
             to={`/products/${image.productHandle}`}
             prefetch="intent"
+            viewTransition
             aria-label={image.productTitle}
             className={cn(
                 "group sleek relative block w-full break-inside-avoid",
@@ -113,7 +115,7 @@ export function GalleryImageCard({image, index = 0}: GalleryImageCardProps) {
         >
             <div className="relative w-full" style={{aspectRatio: image.aspectRatio || 1}}>
                 {/* Main Image — AVIF + responsive srcSet for bandwidth-tuned delivery */}
-                <img
+                <Image
                     ref={imgRef}
                     src={buildShopifyImageUrl(image.url, {format: "avif", width: 800, quality: 85})}
                     srcSet={SRC_SET_WIDTHS.map(

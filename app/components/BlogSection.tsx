@@ -82,7 +82,7 @@ export function BlogSection({articles}: BlogSectionProps) {
                     asChild
                     className="min-h-10 sm:min-h-12 px-6 sm:px-8 text-sm sm:text-base"
                 >
-                    <Link to="/blogs" prefetch="viewport">
+                    <Link to="/blogs" prefetch="viewport" viewTransition>
                         View All Articles
                     </Link>
                 </Button>
@@ -102,6 +102,7 @@ function SectionHeader() {
             <Link
                 to="/blogs"
                 prefetch="viewport"
+                viewTransition
                 className="hidden md:inline-flex shrink-0 rounded-full border-2 border-primary px-3 sm:px-4 py-1.5 lg:py-2 font-sans text-sm font-medium text-primary motion-interactive hover:bg-primary hover:text-primary-foreground no-underline"
             >
                 View All
@@ -117,7 +118,7 @@ function SingleArticleLayout({article}: {article: HomepageArticle}) {
     const authorName = article.author?.name;
 
     return (
-        <Link to={articleUrl} prefetch="viewport" className="group block no-underline animate-product-fade-in">
+        <Link to={articleUrl} prefetch="viewport" viewTransition className="group block no-underline animate-product-fade-in">
             <article
                 className={cn(
                     "grid grid-cols-1 md:grid-cols-2 gap-0 md:gap-responsive-lg",
@@ -225,7 +226,7 @@ function FeaturedArticleCard({article}: {article: HomepageArticle}) {
     const publishedDate = formatArticleDateShort(article.publishedAt);
 
     return (
-        <Link to={articleUrl} prefetch="viewport" className="group block no-underline h-full animate-product-fade-in">
+        <Link to={articleUrl} prefetch="viewport" viewTransition className="group block no-underline h-full animate-product-fade-in">
             <article className="relative h-full min-h-[380px] lg:min-h-[420px] xl:min-h-[480px] 2xl:min-h-[520px] overflow-hidden rounded-xl lg:rounded-2xl xl:rounded-3xl">
                 {/* Full-bleed image */}
                 {article.image && (
@@ -275,6 +276,7 @@ function CompactArticleCard({article, index}: {article: HomepageArticle; index: 
         <Link
             to={articleUrl}
             prefetch="viewport"
+            viewTransition
             className="group block no-underline animate-product-fade-in"
             style={{animationDelay: `${(index + 1) * 80}ms`}}
         >
@@ -339,6 +341,7 @@ function GridArticleCard({article, index}: {article: HomepageArticle; index: num
         <Link
             to={articleUrl}
             prefetch="viewport"
+            viewTransition
             className="group block no-underline animate-product-fade-in"
             style={{animationDelay: `${index * 80}ms`}}
         >

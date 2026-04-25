@@ -205,6 +205,7 @@ export function Header({header, cart}: HeaderProps) {
                     <NavLink
                         to="/"
                         prefetch="viewport"
+                        viewTransition
                         className={cn(
                             // Responsive logo sizing — canonical token from brand-name-sizes.ts
                             `pointer-events-auto font-serif ${BRAND_NAME_FONT_CLASS} uppercase tracking-wider motion-link hover:opacity-80 cursor-pointer whitespace-nowrap`,
@@ -250,7 +251,7 @@ export function HeaderMenu({
     return (
         <nav className={className} role="navigation">
             {viewport === "mobile" && (
-                <NavLink end onClick={close} prefetch="viewport" className={getNavLinkClassName} to="/">
+                <NavLink end onClick={close} prefetch="viewport" viewTransition className={getNavLinkClassName} to="/">
                     Home
                 </NavLink>
             )}
@@ -272,7 +273,8 @@ export function HeaderMenu({
                         end
                         key={item.id}
                         onClick={close}
-                        prefetch="viewport"
+                        prefetch="intent"
+                        viewTransition
                         to={url}
                     >
                         {item.title}
@@ -316,7 +318,7 @@ function HeaderTextLink({
 }) {
     return (
         <Button variant="ghost" asChild className={getHeaderTextActionClassName(actionState, className)}>
-            <NavLink prefetch="viewport" to={to} className={HEADER_ACTION_LINK_RESET_CLASSNAME}>
+            <NavLink prefetch="viewport" viewTransition to={to} className={HEADER_ACTION_LINK_RESET_CLASSNAME}>
                 {children}
             </NavLink>
         </Button>

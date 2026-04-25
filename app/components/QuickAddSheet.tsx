@@ -438,13 +438,9 @@ export function QuickAddSheet({product, open, onOpenChange, sizeChart}: QuickAdd
                             onSuccess={handleCartSuccess}
                         />
                     ) : availableVariants.length === 0 ? (
-                        <Button
-                            variant="outline"
-                            disabled
-                            className="w-full min-h-12 justify-center py-2 text-base sm:text-lg"
-                        >
+                        <div className="w-full min-h-12 inline-flex items-center justify-center rounded-full border-2 border-muted bg-muted/50 px-3 sm:px-4 py-2 text-lg font-medium text-muted-foreground">
                             {OUT_OF_STOCK_LABEL}
-                        </Button>
+                        </div>
                     ) : null}
                 </SheetFooter>
             </SheetContent>
@@ -502,13 +498,13 @@ function QuickAddCartButton({
                 cartFormInput: JSON.stringify({
                     action: CartForm.ACTIONS.LinesAdd,
                     inputs: {
-                        lines: [{merchandiseId: variant.id, quantity}]
+                        lines: [{merchandiseId: variant.id, quantity, selectedVariant: variant}]
                     }
                 })
             },
             {method: "POST", action: "/cart"}
         );
-    }, [fetcher, isLoading, variant.availableForSale, variant.id, quantity]);
+    }, [fetcher, isLoading, variant, quantity]);
 
     return (
         <Button

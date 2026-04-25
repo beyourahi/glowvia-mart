@@ -37,6 +37,7 @@
  * - ~/routes/account.tsx - Parent layout route
  */
 
+import {Image} from "@shopify/hydrogen";
 import {data as remixData, Form, Link, useLoaderData, useNavigation, useOutletContext, useRouteLoaderData} from "react-router";
 import type {Route} from "./+types/account._index";
 import type {RootLoader} from "~/root";
@@ -688,7 +689,7 @@ function OrderCard({order}: {order: OrderNode}) {
                                 style={{zIndex: 10 - index, transitionDelay: `${index * 30}ms`}}
                             >
                                 {item.image?.url ? (
-                                    <img
+                                    <Image
                                         src={item.image.url}
                                         alt={item.image.altText || item.title}
                                         className="size-full object-cover"

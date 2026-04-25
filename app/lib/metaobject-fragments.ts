@@ -12,7 +12,7 @@
  * - THEME_SETTINGS_FRAGMENT - Theme customization fields (8 fields)
  *
  * Note: UI content fragments (product, cart, account, search, etc.) have been removed.
- * These use fallback constants from fallback-data.ts instead, as they represent standard
+ * These use fallback constants from metaobject-parsers.ts instead, as they represent standard
  * UI patterns that rarely need merchant customization. This follows the 80/20 rule:
  * only high-value, frequently-changed content needs Shopify Admin control.
  *
@@ -40,7 +40,7 @@
  * @related
  * - app/lib/metaobject-queries.ts - Uses these fragments in queries
  * - app/lib/metaobject-parsers.ts - Parses fields into TypeScript types
- * - app/lib/fallback-data.ts - Fallback values for all UI content
+ * - app/lib/metaobject-parsers.ts - Fallback values for all UI content
  * - app/lib/site-content-context.tsx - Provides parsed data via React Context
  */
 
@@ -314,6 +314,17 @@ export const SITE_SETTINGS_FRAGMENT = `#graphql
 
     # WhatsApp phone number (digits only, or international format)
     whatsappNumber: field(key: "whatsapp_number") { value }
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # CONTACT INFORMATION
+    # ─────────────────────────────────────────────────────────────────────────
+    contactEmail: field(key: "contact_email") { value }
+    contactPhone: field(key: "contact_phone") { value }
+    businessHours: field(key: "business_hours") { value }
+    streetAddress: field(key: "street_address") { value }
+    city: field(key: "city") { value }
+    state: field(key: "state_province") { value }
+    zipCode: field(key: "postal_code") { value }
 
     # List of links field - Shopify returns [{text, url}, ...] where text is the platform name
     socialLinksData: field(key: "social_links_data") { value }

@@ -1,3 +1,4 @@
+import {Image} from "@shopify/hydrogen";
 import {Link, useLoaderData} from "react-router";
 import type {Route} from "./+types/account.orders.$id";
 import {CUSTOMER_ORDER_QUERY} from "~/graphql/customer-account/CustomerOrderQuery";
@@ -91,8 +92,8 @@ const OrderDetailPage = () => {
                             className={`flex gap-4 p-4 sm:p-5 ${index < (order.lineItems?.nodes?.length ?? 0) - 1 ? "border-b border-border/50" : ""}`}
                         >
                             {item.image && (
-                                <img
-                                    src={item.image.url}
+                                <Image
+                                    data={item.image}
                                     alt={item.image.altText ?? item.title}
                                     className="size-16 rounded-xl ring-1 ring-border/50 shadow-sm object-cover sm:size-20"
                                     width={item.image.width ?? 80}

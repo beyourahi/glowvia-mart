@@ -16,11 +16,11 @@
  * and avoids dimension conflicts with the Google Maps markup.
  *
  * @dependencies
- * - useShopLocations() from ~/lib/site-content-context
+ * - useShopLocation() from ~/lib/site-content-context
  */
 
 import {useState} from "react";
-import {useShopLocations} from "~/lib/site-content-context";
+import {useShopLocation} from "~/lib/site-content-context";
 
 // =============================================================================
 // TYPES
@@ -70,7 +70,7 @@ function locationLabel(index: number): string {
  * The section is completely absent from the DOM when no locations are configured.
  */
 export function ShopLocation() {
-    const {embedUrls, shareLinks} = useShopLocations();
+    const {embedUrls, shareLinks} = useShopLocation();
     const pairs = zipLocationPairs(embedUrls, shareLinks);
     const [activeIndex, setActiveIndex] = useState(0);
 

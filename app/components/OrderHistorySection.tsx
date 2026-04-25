@@ -78,6 +78,7 @@ export function OrderHistorySection({products, loading = false}: OrderHistorySec
                     {!isLoading && products.length > 0 && (
                         <Link
                             to="/account/orders"
+                            viewTransition
                             className="hidden rounded-full border-2 border-primary px-3 sm:px-4 py-2 font-sans text-lg md:text-xl font-medium text-primary motion-interactive hover:bg-primary hover:text-primary-foreground hover:no-underline sm:inline-flex"
                         >
                             View All
@@ -122,6 +123,7 @@ export function OrderHistorySection({products, loading = false}: OrderHistorySec
                 <div className="mt-6 flex justify-center sm:hidden">
                     <Link
                         to="/account/orders"
+                        viewTransition
                         className="rounded-full border-2 border-primary px-3 sm:px-4 py-2 font-sans text-lg font-medium text-primary motion-interactive hover:bg-primary hover:text-primary-foreground hover:no-underline"
                     >
                         View All

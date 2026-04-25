@@ -49,7 +49,7 @@
  * - tailwind.css - Theme CSS variables
  */
 
-import {useEffect} from "react";
+import {useEffect, useMemo} from "react";
 import {Analytics, getShopAnalytics, useNonce, getSeoMeta} from "@shopify/hydrogen";
 import {
     Outlet,
@@ -60,14 +60,14 @@ import {
     Meta,
     Scripts,
     ScrollRestoration,
-    useRouteLoaderData,
-    useLocation
+    useRouteLoaderData
 } from "react-router";
 import type {Route} from "./+types/root";
 import {Toaster} from "~/components/ui/sonner";
+import {toast} from "sonner";
 // Note: favicon.svg is still used as fallback in the favicon[.]ico route
 // The dynamic route handles Shopify metaobject → static fallback chain
-import {FOOTER_QUERY, HEADER_QUERY, MENU_COLLECTIONS_QUERY} from "~/lib/fragments";
+import {CART_SUGGESTIONS_QUERY, FOOTER_QUERY, HEADER_QUERY, MENU_COLLECTIONS_QUERY} from "~/lib/fragments";
 import {extractPopularSearchTerms} from "~/lib/popularSearches";
 import {parseShippingConfig, type ShippingConfig} from "~/lib/shipping";
 import {STORE_LANGUAGE_CODE} from "~/lib/store-locale";
@@ -79,8 +79,8 @@ import {OfflineAwareErrorPage} from "./components/OfflineAwareErrorPage";
 import {trackErrorBoundary} from "~/hooks/usePwaAnalytics";
 import {GtmScript} from "~/components/GtmScript";
 import {GoogleTagManager} from "~/components/GoogleTagManager";
-import type {CartSuggestionProductFragment, MenuCollectionsQuery} from "storefrontapi.generated";
-import {getSeoDefaults} from "~/lib/seo";
+import type {CartSuggestionProductFragment} from "storefrontapi.generated";
+import {generateWebsiteSchema, getSeoDefaults} from "~/lib/seo";
 import {SITE_CONTENT_QUERY, THEME_SETTINGS_QUERY} from "~/lib/metaobject-queries";
 import {parseSiteContent} from "~/lib/metaobject-parsers";
 import {SiteContentProvider} from "~/lib/site-content-context";
@@ -98,6 +98,22 @@ import {withTimeoutAndFallback, TIMEOUT_DEFAULTS} from "~/lib/promise-utils";
 
 export type RootLoader = typeof loader;
 
+export type PopularProduct = {
+    id: string;
+    handle: string;
+    title: string;
+    availableForSale: boolean;
+    featuredImage: {url: string; altText: string | null} | null;
+    priceRange: {minVariantPrice: {amount: string; currencyCode: string}};
+    variants: {
+        nodes: Array<{
+            availableForSale: boolean;
+            price: {amount: string; currencyCode: string};
+            compareAtPrice: {amount: string; currencyCode: string} | null;
+        }>;
+    };
+};
+
 /**
  * Root meta function - provides base SEO for the entire site
  * Child routes can override by using getSeoMeta with their own data
@@ -114,7 +130,10 @@ export const meta: Route.MetaFunction = ({data}) => {
             media: seoDefaults.media
         }) ?? [];
 
-    return [...seoMeta];
+    return [
+        ...seoMeta,
+        ...(data?.websiteSchema ? [{"script:ld+json": data.websiteSchema}] : [])
+    ];
 };
 
 /**
@@ -152,7 +171,9 @@ export function links() {
         {rel: "preconnect", href: "https://shop.app"},
         {rel: "preconnect", href: "https://fonts.googleapis.com"},
         {rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" as const},
-        // Note: Google Fonts link is now dynamically generated in Layout from metaobject theme settings
+        // Tailwind CSS stylesheet — standard Hydrogen pattern via links() rather than inline JSX
+        {rel: "stylesheet", href: tailwindCss},
+        // Note: Google Fonts link is dynamically generated in Layout from metaobject theme settings
         // Favicon - dynamic route that redirects to Shopify CDN or static fallback
         {rel: "icon", href: "/favicon.ico"},
         // PWA manifest (dynamic route)
@@ -206,26 +227,44 @@ async function loadCriticalData({context}: Route.LoaderArgs) {
             variables: {
                 headerMenuHandle: "main-menu"
             }
+        }).catch((error: unknown) => {
+            console.error("Failed to load header:", error);
+            return null;
         }),
         // Menu collections with product counts (cached: catalog metadata)
         dataAdapter.query(MENU_COLLECTIONS_QUERY, {
             cache: dataAdapter.CacheLong()
+        }).catch((error: unknown) => {
+            console.error("Failed to load menu collections:", error);
+            return null;
         }),
         // Shipping config (cached: metafield, changes rarely)
         dataAdapter.query(SHOP_SHIPPING_CONFIG_QUERY, {
             cache: dataAdapter.CacheLong()
+        }).catch((error: unknown) => {
+            console.error("Failed to load shipping config:", error);
+            return null;
         }),
         // Blog existence check (cached: blog existence barely changes)
         dataAdapter.query(HAS_BLOG_QUERY, {
             cache: dataAdapter.CacheLong()
+        }).catch((error: unknown) => {
+            console.error("Failed to check blog availability:", error);
+            return null;
         }),
         // Site content - brand name, announcements, social links (cached: CMS metaobject)
         dataAdapter.query(SITE_CONTENT_QUERY, {
             cache: dataAdapter.CacheLong()
+        }).catch((error: unknown) => {
+            console.error("Failed to load site content:", error);
+            return null;
         }),
         // Theme settings - colors and fonts (cached: merchant-updated)
         dataAdapter.query(THEME_SETTINGS_QUERY, {
             cache: dataAdapter.CacheLong()
+        }).catch((error: unknown) => {
+            console.error("Failed to load theme settings:", error);
+            return null;
         })
     ]);
 
@@ -237,44 +276,79 @@ async function loadCriticalData({context}: Route.LoaderArgs) {
     );
 
     // Capture raw total before filtering — used for "All Collections" count in FullScreenMenu
-    const totalCollections = menuCollectionsData.collections.nodes.length;
+    const totalCollections = menuCollectionsData?.collections?.nodes?.length ?? 0;
 
     // Process collections to compute product counts (all products, regardless of availability)
     // Filter out collections with no products at all (truly empty collections)
-    const menuCollections = menuCollectionsData.collections.nodes
-        .map((collection: any) => ({
-            id: collection.id,
-            handle: collection.handle,
-            title: collection.title,
-            productsCount: collection.products.nodes.length,
-            image: collection.image
-        }))
-        .filter((collection: any) => collection.productsCount > 0);
+    const menuCollections =
+        menuCollectionsData?.collections?.nodes
+            ?.map((collection: any) => ({
+                id: collection.id,
+                handle: collection.handle,
+                title: collection.title,
+                productsCount: (collection.products?.nodes?.length ?? 0) > 0 ? 1 : 0,
+                image: collection.image
+            }))
+            .filter((collection: any) => collection.productsCount > 0) ?? [];
 
     // Count all products for "All Products" link — no availability filter,
     // consistent with how collection product counts are calculated (raw node count)
-    const totalProductCount = menuCollectionsData.allProducts.nodes.length;
+    const totalProductCount = menuCollectionsData?.allProducts?.nodes?.length ?? 0;
 
     // Count discounted products for "SALE" link
-    const discountCount = countDiscountedProducts(menuCollectionsData.allProducts.nodes as LightweightProduct[]);
+    const discountCount = menuCollectionsData?.allProducts?.nodes
+        ? countDiscountedProducts(menuCollectionsData.allProducts.nodes as LightweightProduct[])
+        : 0;
 
     // Extract popular search terms from product titles and collections
-    const allProducts = menuCollectionsData.allProducts.nodes.map((p: any) => ({
-        title: p.title,
-        productType: p.productType,
-        availableForSale: p.availableForSale
-    }));
-    const collectionData = menuCollectionsData.collections.nodes.map((c: any) => ({
-        title: c.title,
-        handle: c.handle
-    }));
-    const popularSearchTerms = extractPopularSearchTerms(allProducts, collectionData);
+    const popularSearchTerms = menuCollectionsData
+        ? extractPopularSearchTerms(
+              menuCollectionsData.allProducts?.nodes?.map((p: any) => ({
+                  title: p.title,
+                  productType: p.productType,
+                  availableForSale: p.availableForSale
+              })) ?? [],
+              menuCollectionsData.collections?.nodes?.map((c: any) => ({
+                  title: c.title,
+                  handle: c.handle
+              })) ?? []
+          )
+        : [];
+
+    // Top 10 products with images — used by SearchOverlay popular products grid
+    const popularProducts: PopularProduct[] = (menuCollectionsData?.allProducts?.nodes ?? [])
+        .filter((p: any) => p.featuredImage)
+        .slice(0, 10)
+        .map((p: any) => ({
+            id: p.id,
+            handle: p.handle,
+            title: p.title,
+            availableForSale: p.availableForSale,
+            featuredImage: p.featuredImage
+                ? {url: p.featuredImage.url, altText: p.featuredImage.altText ?? null}
+                : null,
+            priceRange: {
+                minVariantPrice: {
+                    amount: p.priceRange.minVariantPrice.amount,
+                    currencyCode: p.priceRange.minVariantPrice.currencyCode
+                }
+            },
+            variants: {
+                nodes: (p.variants?.nodes ?? []).map((v: any) => ({
+                    availableForSale: v.availableForSale,
+                    price: {amount: v.price.amount, currencyCode: v.price.currencyCode},
+                    compareAtPrice: v.compareAtPrice
+                        ? {amount: v.compareAtPrice.amount, currencyCode: v.compareAtPrice.currencyCode}
+                        : null
+                }))
+            }
+        }));
 
     // Check if there's at least one blog article
     const hasBlog = (blogData?.articles?.nodes?.length ?? 0) > 0;
 
     // Parse site content from metaobjects (site_settings + theme_settings only)
-    // UI content uses FALLBACK_* constants directly from fallback-data.ts (80/20 simplification)
+    // UI content uses FALLBACK_* constants directly from metaobject-parsers.ts (80/20 simplification)
     const siteContent = parseSiteContent(siteContentData, themeSettingsData);
 
     // Generate dynamic theme from theme_settings metaobject (fonts + colors)
@@ -284,6 +358,9 @@ async function loadCriticalData({context}: Route.LoaderArgs) {
         siteContent.themeConfig.borderRadius
     );
 
+    // Generate JSON-LD WebSite schema for structured data (SEO)
+    const websiteSchema = generateWebsiteSchema(siteContent.siteSettings);
+
     return {
         header,
         menuCollections,
@@ -291,10 +368,12 @@ async function loadCriticalData({context}: Route.LoaderArgs) {
         totalProductCount,
         discountCount,
         popularSearchTerms,
+        popularProducts,
         shippingConfig,
         hasBlog,
         siteContent,
-        generatedTheme
+        generatedTheme,
+        websiteSchema
     };
 }
 
@@ -334,7 +413,7 @@ function loadDeferredData({context}: Route.LoaderArgs) {
         })
         .then((response: any) => {
             if (!response?.products?.nodes) return null;
-            return response.products.nodes;
+            return response.products.nodes.filter((p: any) => p.availableForSale);
         })
         .catch((error: Error) => {
             console.error("Failed to load cart suggestions:", error);
@@ -373,6 +452,9 @@ function loadDeferredData({context}: Route.LoaderArgs) {
     // Cart data with 10 second timeout
     // Falls back to null if API hangs (stale cart ID, network issues)
     // This is the most critical promise - hung cart causes permanent loading
+    // cart.get() is typed as Promise<CartReturn | null> (the SDK's native return type).
+    // CartReturn includes metafields (required by Analytics.Provider), so we keep the
+    // full type here instead of casting down to CartApiQueryFragment.
     const cartWithTimeout = withTimeoutAndFallback(
         cart.get(),
         null, // Fallback: empty cart state
@@ -430,6 +512,25 @@ function ThemeStyleTag({css}: {css: string}) {
     return <style dangerouslySetInnerHTML={{__html: css}} />;
 }
 
+/**
+ * Loads the Google Fonts stylesheet asynchronously to avoid render-blocking.
+ * Renders null on the server — the <link rel="preload"> in <head> is the server hint.
+ * On the client, useEffect appends the stylesheet after hydration so it never blocks
+ * the initial paint. The &display=swap URL param in the href ensures Google Fonts
+ * includes font-display:swap in all generated @font-face rules.
+ */
+function NonBlockingFontLoader({url}: {url?: string}) {
+    useEffect(() => {
+        if (!url) return;
+        if (document.querySelector(`link[href="${url}"][rel="stylesheet"]`)) return;
+        const link = document.createElement("link");
+        link.rel = "stylesheet";
+        link.href = url;
+        document.head.appendChild(link);
+    }, [url]);
+    return null;
+}
+
 export function Layout({children}: {children?: React.ReactNode}) {
     const nonce = useNonce();
     const data = useRouteLoaderData<RootLoader>("root");
@@ -463,10 +564,11 @@ export function Layout({children}: {children?: React.ReactNode}) {
                 {/* PWA install capture - MUST be first script, loaded synchronously (no async/defer)
                     to catch beforeinstallprompt event before React hydration on mobile browsers */}
                 <script src="/pwa-install-capture.js" nonce={nonce} suppressHydrationWarning />
-                {/* Dynamic Google Fonts — preload first, then stylesheet, loaded BEFORE Tailwind for font-family availability */}
+                {/* Google Fonts: preload hints the browser to fetch CSS early, NonBlockingFontLoader appends
+                    the actual <link rel="stylesheet"> via useEffect on the client — never render-blocking.
+                    The &display=swap URL param makes Google Fonts include font-display:swap in @font-face rules. */}
                 {generatedTheme?.googleFontsUrl && <link rel="preload" as="style" href={generatedTheme.googleFontsUrl} />}
-                {generatedTheme?.googleFontsUrl && <link rel="stylesheet" href={generatedTheme.googleFontsUrl} />}
-                <link rel="stylesheet" href={tailwindCss}></link>
+                <NonBlockingFontLoader url={generatedTheme?.googleFontsUrl} />
                 {/* Dynamic CSS variables - injected AFTER Tailwind to override defaults */}
                 {generatedTheme?.cssVariables && <ThemeStyleTag css={generatedTheme.cssVariables} />}
                 <Meta />
@@ -506,6 +608,34 @@ export default function App() {
         }
     }, [data?.generatedTheme]);
 
+    // Show toast notifications for discount code application results.
+    // The discount route appends ?discount_applied=CODE or ?discount_error=invalid.
+    // NOTE: sonner's Toaster may not hydrate in time for the initial mount toast —
+    // if toasts don't appear, investigate sonner SSR hydration with Hydrogen.
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+        const params = new URLSearchParams(window.location.search);
+        const applied = params.get("discount_applied");
+        const error = params.get("discount_error");
+        if (!applied && !error) return;
+
+        // Defer to allow sonner's Toaster to mount after hydration
+        const tid = setTimeout(() => {
+            if (applied) {
+                toast.success(`Discount code "${applied}" applied!`);
+            } else if (error) {
+                toast.error("That discount code is invalid or has expired.");
+            }
+        }, 300);
+
+        params.delete("discount_applied");
+        params.delete("discount_error");
+        const clean = `${window.location.pathname}${params.toString() ? "?" + params.toString() : ""}`;
+        window.history.replaceState({}, "", clean);
+
+        return () => clearTimeout(tid);
+    }, []);
+
     // Force a clean reload when the browser restores this page from bfcache.
     // Hydrogen's Analytics.Provider calls Object.defineProperty(window, 'shopify', { configurable: false })
     // on mount. bfcache preserves that locked property in the JS heap, so when React re-runs effects
@@ -518,6 +648,33 @@ export default function App() {
         window.addEventListener("pageshow", onPageShow);
         return () => window.removeEventListener("pageshow", onPageShow);
     }, []);
+
+    // Memoized before the early return guard to satisfy the Rules of Hooks.
+    const menuCollections = useMemo(() => data?.menuCollections ?? [], [data?.menuCollections]);
+    const mobileMenuCollections = useMemo(() => menuCollections.map((collection: any) => ({
+        id: collection.id,
+        title: collection.title,
+        handle: collection.handle,
+        description: "",
+        image: collection.image
+            ? {
+                  url: collection.image.url,
+                  altText: collection.image.altText ?? null
+              }
+            : null,
+        productCount: collection.productsCount ?? 0
+    })), [menuCollections]);
+    const searchCollections = useMemo(() => menuCollections.map((collection: any) => ({
+        id: collection.id,
+        title: collection.title,
+        handle: collection.handle,
+        image: collection.image
+            ? {
+                  url: collection.image.url,
+                  altText: collection.image.altText ?? null
+              }
+            : null
+    })), [menuCollections]);
 
     if (!data) {
         return <Outlet />;
@@ -586,31 +743,27 @@ export default function App() {
  */
 function FloatingButtonStack() {
     const offset = useFooterClearance();
-    const {pathname} = useLocation();
-
-    // On the product page, the sticky mobile "Get Now" bar (~78px tall) sits at
-    // bottom-0, so the default mobile bottom (72px) overlaps it. Lift to 96px
-    // to clear the bar with comfortable spacing. Desktop is unaffected (md:bottom-4)
-    // because StickyMobileGetNow is md:hidden.
-    const isProductPage = pathname.startsWith("/products/");
 
     return (
         <div
             className={[
-                isProductPage
-                    ? "fixed bottom-[calc(6rem+env(safe-area-inset-bottom))] md:bottom-4 right-4 z-[102]"
-                    : "fixed bottom-[calc(3.5rem+env(safe-area-inset-bottom)+1rem)] md:bottom-4 right-4 z-[102]",
+                "fixed right-4 z-[var(--z-navbar)]",
                 "flex flex-col items-end gap-3",
                 // Smooth lift when footer bar enters viewport.
                 // Only the transform axis is transitioned — no opacity/scale side-effects.
                 // motion-reduce: instant reposition is acceptable per WCAG 2.3.3.
                 "transition-transform duration-300 ease-in-out motion-reduce:transition-none"
             ].join(" ")}
-            style={offset > 0 ? {transform: `translateY(-${offset}px)`} : undefined}
+            style={{
+                // Base bottom: clears the product sticky action bar (0 on non-product pages)
+                // plus a 1rem gutter from the safe-area / viewport edge.
+                bottom: "calc(var(--product-sticky-bar-height, 0px) + max(env(safe-area-inset-bottom), 1rem))",
+                transform: offset > 0 ? `translateY(-${offset}px)` : undefined
+            }}
         >
             {/* Chat widget first → sits above the PWA button in the visual stack */}
             <FloatingChatWidget />
-            {/* PWA install button last → lowest in the stack, desktop only (hidden lg:flex) */}
+            {/* PWA install button last → lowest in the stack, desktop only (max-lg:hidden) */}
             <OpenInAppButton variant="desktop-fixed" />
         </div>
     );
@@ -701,102 +854,6 @@ export function ErrorBoundary() {
         </>
     );
 }
-
-// GraphQL query to fetch products for cart suggestions carousel
-const CART_SUGGESTIONS_QUERY = `#graphql
-  fragment CartSuggestionProduct on Product {
-    id
-    title
-    handle
-    availableForSale
-    priceRange {
-      minVariantPrice {
-        amount
-        currencyCode
-      }
-      maxVariantPrice {
-        amount
-        currencyCode
-      }
-    }
-    compareAtPriceRange {
-      minVariantPrice {
-        amount
-        currencyCode
-      }
-    }
-    featuredImage {
-      id
-      url
-      altText
-      width
-      height
-    }
-    media(first: 5) {
-      nodes {
-        __typename
-        ... on MediaImage {
-          id
-          alt
-          image {
-            id
-            url
-            altText
-            width
-            height
-          }
-        }
-        ... on Video {
-          id
-          alt
-          sources {
-            url
-            mimeType
-            width
-            height
-          }
-          previewImage {
-            id
-            url
-            altText
-            width
-            height
-          }
-        }
-      }
-    }
-    variants(first: 250) {
-      nodes {
-        id
-        title
-        availableForSale
-        selectedOptions {
-          name
-          value
-        }
-        price {
-          amount
-          currencyCode
-        }
-        compareAtPrice {
-          amount
-          currencyCode
-        }
-      }
-    }
-  }
-
-  query CartSuggestions(
-    $country: CountryCode
-    $language: LanguageCode
-  ) @inContext(country: $country, language: $language) {
-    products(first: 16, sortKey: BEST_SELLING, query: "available_for_sale:true") {
-      nodes {
-        ...CartSuggestionProduct
-      }
-    }
-  }
-` as const;
 
 // GraphQL query to fetch shop metafields for shipping configuration
 const SHOP_SHIPPING_CONFIG_QUERY = `#graphql

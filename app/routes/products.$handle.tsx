@@ -41,8 +41,8 @@
  * - cart.tsx - Cart actions handler
  */
 
-import {useEffect} from "react";
-import {useLoaderData, useRouteError, isRouteErrorResponse} from "react-router";
+import {useEffect, Suspense} from "react";
+import {useLoaderData, useRouteError, isRouteErrorResponse, Await} from "react-router";
 import type {Route} from "./+types/products.$handle";
 import {
     getSelectedProductOptions,
@@ -85,9 +85,12 @@ import {hasSpecialTag, getSpecialTags} from "~/lib/product-tags";
 import {ProductBadgeStack} from "~/components/product/ProductBadge";
 import {ProductTagList} from "~/components/product/ProductTagList";
 import {countDiscountedProducts, type LightweightProduct} from "~/lib/discounts";
+import {withTimeoutAndFallback, TIMEOUT_DEFAULTS} from "~/lib/promise-utils";
+import {SIDEBAR_COLLECTIONS_QUERY} from "~/lib/fragments";
 import {formatShopifyMoney} from "~/lib/currency-formatter";
 import {parseProductTitle} from "~/lib/product";
 import {ProductReviews, type ReviewNode} from "~/components/ProductReviews";
+import {extractImagesFromMedia} from "~/lib/media-utils";
 
 // =============================================================================
 // META FUNCTION
@@ -103,7 +106,7 @@ export const meta: Route.MetaFunction = ({data, matches}) => {
     const {primary, secondary} = parseProductTitle(product.title);
     const title = product.seo?.title || (secondary ? `${primary} + ${secondary}` : primary);
     const description = truncateDescription(product.seo?.description || stripHtml(product.description));
-    const image = variant?.image || product.images?.nodes?.[0];
+    const image = variant?.image || extractImagesFromMedia(product.media?.nodes)?.[0];
 
     const seoMeta =
         getSeoMeta({
@@ -122,7 +125,10 @@ export const meta: Route.MetaFunction = ({data, matches}) => {
             jsonLd: generateProductSchema(product, variant, siteUrl) as any
         }) ?? [];
 
-    return seoMeta;
+    const preloadHref = data?.product?.images?.nodes?.[0]?.url;
+    return preloadHref
+        ? [...seoMeta, {tagName: "link" as const, rel: "preload", as: "image", href: preloadHref}]
+        : seoMeta;
 };
 
 export async function loader(args: Route.LoaderArgs) {
@@ -147,17 +153,10 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
         throw new Error("Expected product handle to be defined");
     }
 
-    const [{product}, sidebarData] = await Promise.all([
-        // Product data - variants, prices, inventory (cached: short for availability)
-        dataAdapter.query(PRODUCT_QUERY, {
-            variables: {handle, selectedOptions: getSelectedProductOptions(request)},
-            cache: dataAdapter.CacheShort()
-        }),
-        // Sidebar collections with product counts (cached: catalog metadata)
-        dataAdapter.query(SIDEBAR_COLLECTIONS_QUERY, {
-            cache: dataAdapter.CacheLong()
-        })
-    ]);
+    const {product} = await dataAdapter.query(PRODUCT_QUERY, {
+        variables: {handle, selectedOptions: getSelectedProductOptions(request)},
+        cache: dataAdapter.CacheShort()
+    });
 
     if (!product?.id) {
         throw new Response(null, {status: 404});
@@ -166,25 +165,8 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
     // The API handle might be localized, so redirect to the localized handle
     redirectIfHandleIsLocalized(request, {handle, data: product});
 
-    // Process collections to get individual product counts
-    // Filter out collections with no available products (API already filters unavailable)
-    const {collections, allProducts} = sidebarData;
-    const collectionsWithCounts: CollectionWithCount[] = collections.nodes
-        .map((col: any) => ({
-            handle: col.handle,
-            title: col.title,
-            productsCount: col.products.nodes.length
-        }))
-        .filter((col: any) => col.productsCount > 0);
-
-    // Count all available products directly (includes products not in any collection)
-    // API-level filter (query: "available_for_sale:true") ensures only available products are returned
-    const totalProductCount = allProducts.nodes.length;
-
-    // Count discounted products for sidebar SALE link
-    const discountCount = countDiscountedProducts(allProducts.nodes as LightweightProduct[]);
-
     // Get the first collection handle this product belongs to (for sidebar active state)
+    // Derived from product.collections — must stay in critical data, not in deferred sidebar
     const productCollectionHandles = product.collections?.nodes?.map((c: any) => c.handle) ?? [];
     const activeCollectionHandle = productCollectionHandles[0] || "all-products";
 
@@ -203,16 +185,9 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
         }
     }
 
-    // Extract reviews from the metafield references — cast to ReviewNode[] for the component
-    const reviews = ((product as any).reviews?.references?.nodes ?? []) as ReviewNode[];
-
     return {
         product,
-        reviews,
         selectedSellingPlan,
-        collectionsWithCounts,
-        totalProductCount,
-        discountCount,
         activeCollectionHandle
     };
 }
@@ -237,19 +212,48 @@ function loadDeferredData({context}: Route.LoaderArgs, productId: string) {
         })
         .catch(() => null);
 
+    const reviews = dataAdapter
+        .query(PRODUCT_REVIEWS_QUERY, {
+            variables: {id: productId},
+            cache: dataAdapter.CacheShort()
+        })
+        .then((data: any) => (data.product?.reviews?.references?.nodes ?? []) as ReviewNode[])
+        .catch(() => [] as ReviewNode[]);
+
+    const sidebarData = withTimeoutAndFallback(
+        dataAdapter
+            .query(SIDEBAR_COLLECTIONS_QUERY, {cache: dataAdapter.CacheLong()})
+            .catch((error: unknown) => {
+                console.error("Failed to load sidebar collections:", error);
+                return null;
+            }),
+        null,
+        TIMEOUT_DEFAULTS.API
+    );
+
     return {
-        recommendations
+        recommendations,
+        reviews,
+        sidebarData
     };
 }
+
+const SIDEBAR_SKELETON_KEYS = ["sk-1", "sk-2", "sk-3", "sk-4", "sk-5", "sk-6"] as const;
+
+const SidebarSkeleton = () => (
+    <div className="space-y-1">
+        {SIDEBAR_SKELETON_KEYS.map(key => (
+            <div key={key} className="h-8 rounded-md bg-foreground/5 animate-pulse" />
+        ))}
+    </div>
+);
 
 export default function Product() {
     const {
         product,
         recommendations,
         reviews,
-        collectionsWithCounts,
-        totalProductCount,
-        discountCount,
+        sidebarData,
         activeCollectionHandle,
         selectedSellingPlan
     } = useLoaderData<typeof loader>();
@@ -283,7 +287,7 @@ export default function Product() {
     useEffect(() => {
         if (product?.id && product?.handle && product?.title) {
             const timeoutId = setTimeout(() => {
-                const firstImage = product.images?.nodes?.[0];
+                const firstImage = extractImagesFromMedia(product.media?.nodes)?.[0];
 
                 // Format price using the shared CurrencyFormatter for consistent symbol display
                 const formatPrice = (price: {amount: string; currencyCode: string} | null | undefined) => {
@@ -306,7 +310,7 @@ export default function Product() {
 
             return () => clearTimeout(timeoutId);
         }
-    }, [product?.id, product?.handle, product?.title, product?.images, selectedVariant, addProduct]);
+    }, [product?.id, product?.handle, product?.title, product.media?.nodes, selectedVariant, addProduct]);
 
     const {title, descriptionHtml} = product;
     const {badgeTypes} = getSpecialTags(product.tags);
@@ -381,12 +385,33 @@ export default function Product() {
                                     : "top-[calc(var(--total-header-height)+var(--page-breathing-room))]"
                             )}
                         >
-                            <CollectionSidebar
-                                collections={collectionsWithCounts}
-                                activeHandle={activeCollectionHandle}
-                                totalProductCount={totalProductCount}
-                                discountCount={discountCount}
-                            />
+                            <Suspense fallback={<SidebarSkeleton />}>
+                                <Await resolve={sidebarData}>
+                                    {(sidebar: any) => {
+                                        if (!sidebar) return null;
+                                        const {collections, allProducts} = sidebar;
+                                        const collectionsWithCounts: CollectionWithCount[] = collections.nodes
+                                            .map((col: any) => ({
+                                                handle: col.handle,
+                                                title: col.title,
+                                                productsCount: col.products.nodes.length
+                                            }))
+                                            .filter((col: any) => col.productsCount > 0);
+                                        const totalProductCount = allProducts.nodes.length;
+                                        const discountCount = countDiscountedProducts(
+                                            allProducts.nodes as LightweightProduct[]
+                                        );
+                                        return (
+                                            <CollectionSidebar
+                                                collections={collectionsWithCounts}
+                                                activeHandle={activeCollectionHandle}
+                                                totalProductCount={totalProductCount}
+                                                discountCount={discountCount}
+                                            />
+                                        );
+                                    }}
+                                </Await>
+                            </Suspense>
                         </div>
                     </div>
 
@@ -467,7 +492,11 @@ export default function Product() {
                 </div>
             </div>
 
-            <ProductReviews reviews={reviews} />
+            <Suspense fallback={null}>
+                <Await resolve={reviews}>
+                    {resolvedReviews => <ProductReviews reviews={resolvedReviews ?? []} />}
+                </Await>
+            </Suspense>
 
             <RelatedProducts products={recommendations} />
 
@@ -595,20 +624,7 @@ const PRODUCT_FRAGMENT = `#graphql
     sizeChart: metafield(namespace: "custom", key: "size_chart") {
       value
     }
-    reviews: metafield(namespace: "custom", key: "reviews") {
-      references(first: 20) {
-        nodes {
-          ... on Metaobject {
-            reviewerName: field(key: "reviewer_name") { value }
-            rating: field(key: "rating") { value }
-            reviewTitle: field(key: "review_title") { value }
-            body: field(key: "body") { value }
-            date: field(key: "date") { value }
-          }
-        }
-      }
-    }
-    collections(first: 10) {
+    collections(first: 1) {
       nodes {
         handle
         title
@@ -623,7 +639,7 @@ const PRODUCT_FRAGMENT = `#graphql
         height
       }
     }
-    media(first: 20) {
+    media(first: 10) {
       nodes {
         __typename
         mediaContentType
@@ -677,7 +693,7 @@ const PRODUCT_FRAGMENT = `#graphql
         }
       }
     }
-    variants(first: 100) {
+    variants(first: 10) {
       nodes {
         id
         availableForSale
@@ -719,7 +735,7 @@ const PRODUCT_FRAGMENT = `#graphql
       title
     }
     requiresSellingPlan
-    sellingPlanGroups(first: 10) {
+    sellingPlanGroups(first: 5) {
       nodes {
         name
         appName
@@ -779,45 +795,7 @@ const PRODUCT_QUERY = `#graphql
   ${PRODUCT_FRAGMENT}
 ` as const;
 
-// Query to fetch all collections with product counts for sidebar
-const SIDEBAR_COLLECTIONS_QUERY = `#graphql
-  query SidebarCollectionsProduct(
-    $country: CountryCode
-    $language: LanguageCode
-  ) @inContext(country: $country, language: $language) {
-    collections(first: 50, sortKey: TITLE) {
-      nodes {
-        id
-        handle
-        title
-        products(first: 250) {
-          nodes {
-            id
-          }
-        }
-      }
-    }
-    allProducts: products(first: 250, query: "available_for_sale:true") {
-      nodes {
-        id
-        availableForSale
-        variants(first: 10) {
-          nodes {
-            availableForSale
-            price {
-              amount
-              currencyCode
-            }
-            compareAtPrice {
-              amount
-              currencyCode
-            }
-          }
-        }
-      }
-    }
-  }
-` as const;
+
 
 // Fragment for recommended products
 const RECOMMENDED_PRODUCT_FRAGMENT = `#graphql
@@ -833,15 +811,6 @@ const RECOMMENDED_PRODUCT_FRAGMENT = `#graphql
       url
       width
       height
-    }
-    images(first: 10) {
-      nodes {
-        id
-        url
-        altText
-        width
-        height
-      }
     }
     media(first: 5) {
       nodes {
@@ -892,7 +861,7 @@ const RECOMMENDED_PRODUCT_FRAGMENT = `#graphql
         currencyCode
       }
     }
-    variants(first: 100) {
+    variants(first: 3) {
       nodes {
         id
         title
@@ -926,6 +895,26 @@ const RECOMMENDATIONS_QUERY = `#graphql
     }
   }
   ${RECOMMENDED_PRODUCT_FRAGMENT}
+` as const;
+
+const PRODUCT_REVIEWS_QUERY = `#graphql
+  query ProductReviews($id: ID!) {
+    product(id: $id) {
+      reviews: metafield(namespace: "custom", key: "reviews") {
+        references(first: 20) {
+          nodes {
+            ... on Metaobject {
+              reviewerName: field(key: "reviewer_name") { value }
+              rating: field(key: "rating") { value }
+              reviewTitle: field(key: "review_title") { value }
+              body: field(key: "body") { value }
+              date: field(key: "date") { value }
+            }
+          }
+        }
+      }
+    }
+  }
 ` as const;
 
 // =============================================================================

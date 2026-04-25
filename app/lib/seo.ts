@@ -28,7 +28,7 @@
  *
  * @dependencies
  * - schema-dts - TypeScript types for schema.org
- * - fallback-data.ts - Default SEO values
+ * - metaobject-parsers.ts - Default SEO values
  *
  * @related
  * - root.tsx - Uses getSeoMeta for base meta tags
@@ -61,6 +61,7 @@ import type {WithContext, Organization, WebSite, Product, ItemList, BlogPosting,
 import type {SiteSettings, ThemeConfig} from "types";
 import {STORE_LOCALE} from "~/lib/store-locale";
 import {toHex} from "./color";
+import {extractImagesFromMedia} from "./media-utils";
 
 /** Lightweight stand-in for schema-dts WithContext — avoids TS stack overflow on deep union resolution */
 type JsonLdSchema = Record<string, unknown>;
@@ -240,7 +241,7 @@ export function generateProductSchema(
         description?: string | null;
         handle: string;
         vendor?: string | null;
-        images?: {nodes: Array<{url: string; altText?: string | null}>};
+        media?: {nodes: Array<{__typename: string; image?: {id?: string | null; url: string; altText?: string | null; width?: number | null; height?: number | null} | null}>};
     },
     variant?: {
         sku?: string | null;
@@ -250,7 +251,7 @@ export function generateProductSchema(
     } | null,
     siteUrl?: string
 ): JsonLdSchema {
-    const images = product.images?.nodes?.map(img => img.url) || [];
+    const images = extractImagesFromMedia(product.media?.nodes).map(img => img.url);
 
     return {
         "@context": "https://schema.org",

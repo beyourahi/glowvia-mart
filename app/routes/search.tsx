@@ -612,6 +612,7 @@ function SearchPageInitialState({
                                 key={collection.id}
                                 to={`/collections/${collection.handle}`}
                                 prefetch="viewport"
+                                viewTransition
                                 className="group"
                             >
                                 <div className="aspect-square rounded-xl sm:rounded-2xl overflow-hidden bg-muted/50 mb-2 sm:mb-3">
@@ -768,6 +769,7 @@ function SearchProductItem({
             <Link
                 to={productUrl}
                 prefetch="viewport"
+                viewTransition
                 className={cn(
                     "flex items-center gap-4 md:gap-6 py-4 pl-4 border-b border-border/50 no-underline",
                     canHover ? "group hover:bg-muted/30" : "motion-press active:bg-muted/30",
@@ -816,6 +818,7 @@ function SearchProductItem({
         <Link
             to={productUrl}
             prefetch="viewport"
+            viewTransition
             className={cn(
                 "block no-underline animate-product-fade-in",
                 canHover ? "group" : "motion-press active:scale-[var(--motion-press-scale)]"
@@ -916,6 +919,7 @@ function SearchCollectionCard({
             <Link
                 to={`/collections/${collection.handle}`}
                 prefetch="viewport"
+                viewTransition
                 className={cn(
                     "flex items-center gap-4 md:gap-6 py-4 border-b border-border/50 no-underline",
                     canHover ? "group hover:bg-muted/30" : "motion-press active:bg-muted/30",
@@ -958,6 +962,7 @@ function SearchCollectionCard({
         <Link
             to={`/collections/${collection.handle}`}
             prefetch="viewport"
+            viewTransition
             className={cn(
                 "block animate-product-fade-in",
                 canHover ? "group" : "motion-press active:scale-[var(--motion-press-scale)]"
@@ -1072,6 +1077,7 @@ function SearchArticleCard({
             <Link
                 to={articleUrl}
                 prefetch="viewport"
+                viewTransition
                 className={cn(
                     "flex items-center gap-4 md:gap-6 py-4 border-b border-border/50 no-underline",
                     canHover ? "group hover:bg-muted/30" : "motion-press active:bg-muted/30",
@@ -1121,6 +1127,7 @@ function SearchArticleCard({
         <Link
             to={articleUrl}
             prefetch="viewport"
+            viewTransition
             className={cn(
                 "block no-underline animate-product-fade-in",
                 canHover ? "group" : "motion-press active:scale-[var(--motion-press-scale)]"
@@ -1215,7 +1222,7 @@ const SEARCH_PRODUCT_FRAGMENT = `#graphql
       width
       height
     }
-    images(first: 10) {
+    images(first: 3) {
       nodes {
         id
         url
@@ -1273,7 +1280,7 @@ const SEARCH_PRODUCT_FRAGMENT = `#graphql
         currencyCode
       }
     }
-    variants(first: 100) {
+    variants(first: 20) {
       nodes {
         id
         title
@@ -1390,6 +1397,7 @@ export const SEARCH_QUERY = `#graphql
     $articleAfter: String
     $sortKey: SearchSortKeys!
     $reverse: Boolean!
+    $unavailableProducts: SearchUnavailableProductsType
   ) @inContext(country: $country, language: $language) {
     products: search(
       query: $term,
@@ -1398,7 +1406,7 @@ export const SEARCH_QUERY = `#graphql
       after: $productAfter,
       sortKey: $sortKey,
       reverse: $reverse,
-      unavailableProducts: SHOW,
+      unavailableProducts: $unavailableProducts,
     ) {
       nodes {
         ...on Product {
@@ -1442,6 +1450,7 @@ const SEARCH_PRODUCTS_QUERY = `#graphql
     $after: String
     $sortKey: SearchSortKeys!
     $reverse: Boolean!
+    $unavailableProducts: SearchUnavailableProductsType
   ) @inContext(country: $country, language: $language) {
     products: search(
       query: $term,
@@ -1450,7 +1459,7 @@ const SEARCH_PRODUCTS_QUERY = `#graphql
       after: $after,
       sortKey: $sortKey,
       reverse: $reverse,
-      unavailableProducts: SHOW,
+      unavailableProducts: $unavailableProducts,
     ) {
       nodes {
         ...on Product {
@@ -1639,6 +1648,7 @@ async function regularSearch({
     const url = new URL(request.url);
     const term = String(url.searchParams.get("q") || "");
     const searchSortOption = getSearchSortOption(url.searchParams.get("sort"));
+    const unavailableProducts = url.searchParams.get("availability") === "in-stock" ? "HIDE" : "SHOW";
 
     // Execute search and collections queries in parallel
     // Collections query is wrapped with error handling to prevent cascading failures
@@ -1649,8 +1659,10 @@ async function regularSearch({
                 productFirst: 24,
                 articleFirst: 12,
                 sortKey: searchSortOption.sortKey,
-                reverse: searchSortOption.reverse
-            }
+                reverse: searchSortOption.reverse,
+                unavailableProducts
+            },
+            cache: dataAdapter.CacheShort()
         }),
         fetchCollections(dataAdapter, term)
     ]);
@@ -1699,6 +1711,7 @@ async function fetchMoreProducts({request, context}: Pick<Route.LoaderArgs, "req
     const term = String(url.searchParams.get("q") || "");
     const cursor = url.searchParams.get("cursor");
     const searchSortOption = getSearchSortOption(url.searchParams.get("sort"));
+    const unavailableProducts = url.searchParams.get("availability") === "in-stock" ? "HIDE" : "SHOW";
 
     const {products} = (await dataAdapter.query(SEARCH_PRODUCTS_QUERY, {
         variables: {
@@ -1706,8 +1719,10 @@ async function fetchMoreProducts({request, context}: Pick<Route.LoaderArgs, "req
             first: 24,
             after: cursor,
             sortKey: searchSortOption.sortKey,
-            reverse: searchSortOption.reverse
-        }
+            reverse: searchSortOption.reverse,
+            unavailableProducts
+        },
+        cache: dataAdapter.CacheShort()
     })) as {products: {nodes: SearchProduct[]; pageInfo: {hasNextPage: boolean; endCursor: string | null}}};
 
     // Keep promoted products pinned first even when the backend sort changes.

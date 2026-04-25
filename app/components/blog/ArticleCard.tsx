@@ -180,6 +180,7 @@ export function ArticleCard({
             <Link
                 to={articleUrl}
                 prefetch="viewport"
+                viewTransition
                 className={cn(
                     "flex items-start gap-3 sm:gap-4 py-3 sm:py-4 no-underline group cursor-pointer",
                     "motion-interactive hover:bg-muted/30 rounded-lg px-2 -mx-2",
@@ -235,6 +236,7 @@ export function ArticleCard({
             <Link
                 to={articleUrl}
                 prefetch="viewport"
+                viewTransition
                 className={cn("block no-underline group animate-product-fade-in cursor-pointer", className)}
                 style={{animationDelay: `${staggerDelay}ms`}}
             >
@@ -310,6 +312,7 @@ export function ArticleCard({
         <Link
             to={articleUrl}
             prefetch="viewport"
+            viewTransition
             className={cn("block no-underline group animate-product-fade-in cursor-pointer", className)}
             style={{animationDelay: `${staggerDelay}ms`}}
         >

@@ -77,17 +77,17 @@ Backend behavior, data flow, and Hydrogen conventions **must remain consistent**
 storefront_002/
 ├── app/
 │   ├── routes/              # 51 routes
-│   ├── components/          # 132 components
+│   ├── components/          # 135 components
 │   │   ├── ui/              # 27 shadcn
 │   │   ├── blog/            # 7 blog
 │   │   ├── changelog/       # 2 changelog
 │   │   ├── pwa/             # 5 PWA
-│   │   ├── product/         # ShoppingSummary, ProductBadge
+│   │   ├── product/         # ShoppingSummary, ProductBadge, ProductTagList
 │   │   ├── motion/          # Parallax
 │   │   ├── gallery/         # Gallery grid
 │   │   ├── icons/           # Custom icons
 │   │   └── ProductLightbox/ # Lightbox system
-│   ├── lib/                 # 70 utilities
+│   ├── lib/                 # 71 utilities
 │   │   ├── metaobject-*.ts  # CMS
 │   │   ├── pwa-*.ts         # PWA
 │   │   ├── changelog-data.ts # Static changelog entries
@@ -206,8 +206,10 @@ For portfolio Workers deploys, demo-store credentials live in `wrangler.jsonc`. 
 **GraphQL**: `storefrontapi.generated.d.ts`, `customer-accountapi.generated.d.ts`
 **Solutions**: `lib/color/contrast.ts` (WCAG), `lib/wishlist-context.tsx` (SSR), `lib/smoothScroll.ts` (Lenis), `lib/cart-utils.ts` (global cart fetcher key + mutation hooks — `CART_FETCHER_KEY` must be passed to all CartForm components; `useCartMutationPending()` checks if any cart op is in flight; `useLineItemMutating(lineId)` scopes loading state to a specific line item only)
 **Shared UI Patterns**: `components/PageHeading.tsx` — unified page heading + optional description used across all content pages (changelog, gallery, search, blog, FAQ, policies, etc.); use this instead of ad-hoc heading markup
+**Skeleton Library**: `components/skeletons.tsx` — comprehensive skeleton loading components for all content types (products, articles, collections, cart, orders); use this instead of ad-hoc loading states
 **Data Source Resolver**: `app/lib/data-source.ts` — validates store env and proxies Shopify queries used by the app context
 **Content Defaults**: `app/lib/metaobject-parsers.ts` — fallback UI and content constants used when metaobject fields are missing
+**Promise Utils**: `lib/promise-utils.ts` — timeout and fallback wrappers for deferred data; `withTimeoutAndFallback` prevents permanent loading states when promises hang (used in `root.tsx` for all deferred loaders — cart, footer, suggestions, auth)
 
 ## Critical Warnings
 
@@ -258,6 +260,11 @@ For portfolio Workers deploys, demo-store credentials live in `wrangler.jsonc`. 
 - **Status**: TODO - refactor to comply
 - **Disabled**: `set-state-in-effect`, `refs`, `purity`
 
+**10. `links()` in React Router 7**
+
+- **Problem**: React Router 7 calls `links()` with zero arguments — destructuring `{data}` from `undefined` throws TypeError, causing 500s on every page load
+- **Solution**: Never export `links()` that accesses loader data. For `<link rel="preload">`, add a `{tagName: "link", rel: "preload", ...}` descriptor inside `meta()` using resolved loader data instead
+
 ## Execution Strategy
 
 - Use **multiple sub-agents** for independent tasks (research, implementation, review)
@@ -298,6 +305,8 @@ Read all comments before editing. Update when changing code. Add for complex log
 
 **Lenis**: GPU-accelerated smooth scrolling, `LenisProvider` in `PageLayout.tsx`, scroll hooks: `lib/useScrolled.ts`, `lib/useScrollProgress.ts`
 
+**View Transitions + Prefetch**: All nav and product links use React Router 7's `viewTransition` prop for native browser page transitions, paired with `prefetch="viewport"` (links visible in the viewport) or `prefetch="intent"` (hover-intent). Any new `Link` or `NavLink` in navigation, product grids, or collection layouts MUST include both props to stay consistent with the established pattern (55 usages across the app).
+
 **Service Worker**: Workbox 7.0.0, 5 caching strategies:
 
 1. Shopify CDN (images/fonts): CacheFirst, 30 days
@@ -322,7 +331,7 @@ Read all comments before editing. Update when changing code. Add for complex log
 
 **Metaobject CMS**:
 
-- `site_settings` (singleton): Brand, hero, testimonials, FAQs, Instagram, shipping
+- `site_settings` (singleton): Brand, hero, testimonials, FAQs, Instagram, shipping, search content (labels, placeholders, filter text), messaging widgets (Messenger page_id, WhatsApp number — powers FloatingChatWidget)
 - `theme_settings` (singleton): Fonts (Google), colors (OKLCH/HEX)
 - 80/20 architecture: High-value content only
 - Files: `lib/metaobject-queries.ts`, `lib/metaobject-parsers.ts`, `lib/site-content-context.tsx`
@@ -350,13 +359,29 @@ Read all comments before editing. Update when changing code. Add for complex log
 
 **Animations**: 26 `@keyframes` in `tailwind.css` - product (fade-in, image-hover), cart (cart-item-enter, success-pulse, price-dot), wishlist (heart-beat, heart-glow, burst-ring), hero (shimmer), GPU-accelerated, respects `prefers-reduced-motion`
 
-**Search**: Regular (full data), predictive (autocomplete), popular terms, recent (LocalStorage), keyboard (Cmd/Ctrl+K), full-screen overlay
+**Search**: Regular (full data), predictive (autocomplete), popular terms, recent (LocalStorage), keyboard (Cmd/Ctrl+K), full-screen overlay. Availability/in-stock filter labels and all UI text are CMS-configurable via `site_settings` search content fields (with hardcoded fallbacks in `metaobject-parsers.ts`)
 
-**Blog**: 7 components in `components/blog/` - ArticleCard, ArticleHero, AuthorBio, ReadingTime, RelatedArticles, ShareButtons, TagBadge. SEO-optimized (JSON-LD), tag filtering. Routes: `/blogs`, `/blogs/:blogHandle`, `/blogs/:blogHandle/:articleHandle`
+**Blog**: 7 components in `components/blog/` - ArticleCard, ArticleHero, AuthorBio, ReadingTime, RelatedArticles, ShareButtons, TagBadge. SEO-optimized (JSON-LD), tag filtering. Routes: `/blogs`, `/blogs/:blogHandle`, `/blogs/:blogHandle/:articleHandle`, `/blogs/feed.xml` (RSS feed, returns XML with last 50 articles)
 
 **Gallery**: Responsive grid + lightbox, route: `/gallery`, components: GalleryGrid, GalleryImageCard, metaobject-driven
 
 **Changelog**: Changelog page for shoppers, route: `/changelog`, components: ChangelogEntry, ChangelogPage, hook: `useChangelogFilter`. Entries live in `lib/changelog-data.ts` (static file — add entries manually at commit time, see Changelog Entries section). The loader returns static entries directly — no external API calls.
+
+**Recently Viewed**: Cookie-based product tracking across sessions. `lib/recently-viewed.ts` reads/writes product IDs via a cookie. `components/RecentlyViewedSection.tsx` renders a personalized product row on the homepage; products are fetched server-side in `routes/_index.tsx` by resolving the stored IDs against the Storefront API.
+
+**Homepage Hero System**: `VideoHero.tsx` — full-viewport hero with separate mobile/desktop media from `site_settings`, integrated collection card overlay, and scroll-driven brand text animation via `BrandAnimationProvider` (`lib/brand-animation-layout.ts`, `lib/brand-name-sizes.ts`). `BrandMarquee.tsx` renders a scrolling marquee of trust signals below the hero. These three components form the homepage's above-the-fold section in `routes/_index.tsx`.
+
+**Subscriptions**: Customer subscription contract management. Routes: `/account/subscriptions` (list), `/account/subscriptions/:id` (detail/management). `SellingPlanSelector.tsx` on the PDP renders delivery frequency options for products with selling plans; state is managed via the `?selling_plan=` URL query parameter (variant-aware filtering, price adjustment display).
+
+**Size Chart**: Metafield-driven size chart dialog for clothing products. `lib/size-chart.ts` parses the `custom.size_chart` JSON product metafield — supports multiple garment categories, international size conversions (US/UK/EU/Asia), metric/imperial units, fit notes. Components: `SizeChartButton.tsx` (trigger) + `SizeChartDialog.tsx` (modal).
+
+**Chat Widgets**: `FloatingChatWidget.tsx` — floating column of Messenger + WhatsApp buttons, driven entirely by `site_settings.messengerPageId` and `site_settings.whatsappNumber`. Returns null and leaves no DOM trace when both fields are empty.
+
+**Infinite Scroll**: `InfiniteScrollSection.tsx` — Hydrogen Pagination-based infinite scroll; navigates to next page URL when the "Load more" link enters viewport (replace mode, preserves history). `InfiniteScrollGrid.tsx` wraps the grid layout. Used by collections, search, and the sale page.
+
+**Sale Page**: `/sale` route — auto-filters all products to those with compare-at pricing (on-sale items), sorted by highest discount percentage. Shows max discount in page title/meta. Uses `InfiniteScrollSection` + collection sidebar layout.
+
+**Newsletter**: `api.newsletter.tsx` — POST endpoint that creates a Shopify customer with `acceptsMarketing: true`. Components: `NewsletterForm.tsx` (email input + submission) + `NewsletterSection.tsx` (section wrapper that also renders `PromotionalBanner.tsx` above the form). `PromotionalBanner.tsx` renders full-width media (image or video, 90dvh) for hero/campaign banners on the homepage and newsletter section.
 
 ---
 

@@ -148,9 +148,9 @@ interface CollectionPageLayoutProps {
     title: string;
     /** Collection description from Shopify (rendered below title) */
     description?: string;
-    collections: CollectionWithCount[];
+    collections?: CollectionWithCount[];
     activeHandle: string | "all-products" | "sale";
-    totalProductCount: number;
+    totalProductCount?: number;
     /** Number of products in the CURRENT collection (displayed as superscript next to title) */
     collectionProductCount?: number;
     discountCount?: number;
@@ -165,6 +165,13 @@ interface CollectionPageLayoutProps {
     onLayoutModeChange: (mode: LayoutMode) => void;
     /** Whether to show sort options in ViewOptionsSelector. Default: true */
     showSortOptions?: boolean;
+    /**
+     * Optional pre-rendered sidebar content. When provided, renders in the sticky sidebar
+     * div instead of <CollectionSidebar>. Use with <Suspense> + <Await> for deferred sidebar data.
+     * When absent, falls back to the existing <CollectionSidebar> with collections/activeHandle/
+     * totalProductCount/discountCount props.
+     */
+    sidebarSlot?: React.ReactNode;
 }
 
 export type SortOption = "title-asc" | "title-desc" | "price-asc" | "price-desc" | "newest" | "best-selling";
@@ -186,7 +193,8 @@ export function CollectionPageLayout({
     onSortChange,
     layoutMode,
     onLayoutModeChange,
-    showSortOptions = true
+    showSortOptions = true,
+    sidebarSlot
 }: CollectionPageLayoutProps) {
     // Track scroll state to match header behavior
     // Header adds pt-3 (12px) when scrolled, sidebar needs to match this offset
@@ -254,12 +262,14 @@ export function CollectionPageLayout({
                                 : "top-[calc(var(--total-header-height)+var(--page-breathing-room-dense))]"
                         )}
                     >
-                        <CollectionSidebar
-                            collections={collections}
-                            activeHandle={activeHandle}
-                            totalProductCount={totalProductCount}
-                            discountCount={discountCount}
-                        />
+                        {sidebarSlot ?? (
+                            <CollectionSidebar
+                                collections={collections ?? []}
+                                activeHandle={activeHandle}
+                                totalProductCount={totalProductCount ?? 0}
+                                discountCount={discountCount}
+                            />
+                        )}
                     </div>
                 </div>
 

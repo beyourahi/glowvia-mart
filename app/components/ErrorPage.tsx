@@ -119,17 +119,17 @@ export function ErrorPage({statusCode, title, message}: ErrorPageProps) {
                 {is404 ? (
                     <>
                         <Button asChild>
-                            <Link to="/">{errorContent.notFoundPrimaryCta}</Link>
+                            <Link to="/" prefetch="intent">{errorContent.notFoundPrimaryCta}</Link>
                         </Button>
                         <Button variant="outline" asChild>
-                            <Link to="/collections/all-products">{errorContent.notFoundSecondaryCta}</Link>
+                            <Link to="/collections/all-products" prefetch="intent">{errorContent.notFoundSecondaryCta}</Link>
                         </Button>
                     </>
                 ) : (
                     <>
                         <Button onClick={() => window.location.reload()}>{errorContent.serverErrorRetry}</Button>
                         <Button variant="outline" asChild>
-                            <Link to="/">{errorContent.serverErrorHome}</Link>
+                            <Link to="/" prefetch="intent">{errorContent.serverErrorHome}</Link>
                         </Button>
                     </>
                 )}

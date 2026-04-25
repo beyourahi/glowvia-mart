@@ -42,6 +42,7 @@ export function FeaturedProductSpotlight({product}: {product: FeaturedProductSec
             <Link
                 to={`/products/${product.handle}`}
                 prefetch="intent"
+                viewTransition
                 className="group relative overflow-hidden rounded-[var(--radius-2xl-raw)] bg-muted/35"
             >
                 {displayImage ? (
@@ -117,7 +118,7 @@ export function FeaturedProductSpotlight({product}: {product: FeaturedProductSec
                             size="lg"
                             className="group/cta w-full justify-between rounded-[var(--radius-pill-raw)] px-6 py-6 text-sm uppercase tracking-[0.24em] hover:translate-y-0 md:w-auto"
                         >
-                            <Link to={`/products/${product.handle}`} prefetch="intent">
+                            <Link to={`/products/${product.handle}`} prefetch="intent" viewTransition>
                                 View featured product
                                 <ArrowUpRight className="h-4 w-4" />
                             </Link>

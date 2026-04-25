@@ -52,7 +52,7 @@
 
 import {useState, useEffect, useMemo, useCallback, useRef} from "react";
 import {useFetcher} from "react-router";
-import {CartForm} from "@shopify/hydrogen";
+import {CartForm, Image} from "@shopify/hydrogen";
 import {Loader2, Share2} from "lucide-react";
 import {cn} from "~/lib/utils";
 import {useScrollLock} from "~/hooks/useScrollLock";
@@ -71,6 +71,7 @@ import {parseProductTitle} from "~/lib/product";
 import {OUT_OF_STOCK_LABEL} from "~/lib/product/product-card-utils";
 import {ProductImagePlaceholder} from "~/components/ProductImagePlaceholder";
 import {getCardVideoMedia, type CardVideoMedia} from "~/lib/product/product-card-media";
+import {extractImagesFromMedia} from "~/lib/media-utils";
 import {ProductMediaThumb} from "~/components/ProductMediaThumb";
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -219,13 +220,13 @@ export function QuickAddDialog({product, open, onOpenChange, sizeChart}: QuickAd
         }
     }, [product.handle, product.title]);
 
-    // Get all product images (fallback to featured image if no images array)
-    const productImages: QuickAddImage[] =
-        product.images?.nodes && product.images.nodes.length > 0
-            ? product.images.nodes
-            : product.featuredImage
-              ? [product.featuredImage]
-              : [];
+    // Get all product images — prefer media (already fetched) over the redundant images field
+    const productImages: QuickAddImage[] = (() => {
+        const mediaImages = extractImagesFromMedia(product.media?.nodes as Parameters<typeof extractImagesFromMedia>[0]);
+        if (mediaImages.length > 0) return mediaImages;
+        if (product.featuredImage) return [product.featuredImage];
+        return [];
+    })();
 
     // Detect primary-media video — first slide in the gallery when the first
     // media node is a Video. Parity with product cards (video-first rendering).
@@ -304,9 +305,11 @@ export function QuickAddDialog({product, open, onOpenChange, sizeChart}: QuickAd
                                         className="relative w-full overflow-hidden bg-muted/50 rounded-lg"
                                     >
                                         <div className="aspect-4/5 w-full">
-                                            <img
-                                                src={image.url}
-                                                alt={image.altText || `${product.title} - Image ${index + 1}`}
+                                            <Image
+                                                data={{url: image.url, altText: image.altText || `${product.title} - Image ${index + 1}`}}
+                                                sizes="(min-width: 1024px) 40vw, 100vw"
+                                                aspectRatio="4/5"
+                                                loading={index === 0 ? "eager" : "lazy"}
                                                 className="w-full h-full object-cover"
                                             />
                                         </div>
@@ -535,13 +538,13 @@ function QuickAddCartButton({
                 cartFormInput: JSON.stringify({
                     action: CartForm.ACTIONS.LinesAdd,
                     inputs: {
-                        lines: [{merchandiseId: variant.id, quantity}]
+                        lines: [{merchandiseId: variant.id, quantity, selectedVariant: variant}]
                     }
                 })
             },
             {method: "POST", action: "/cart"}
         );
-    }, [fetcher, isLoading, variant.availableForSale, variant.id, quantity]);
+    }, [fetcher, isLoading, variant, quantity]);
 
     return (
         <button

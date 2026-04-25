@@ -89,12 +89,12 @@ export async function loader({context, request}: Route.LoaderArgs) {
         // Collections list (real-time, no cache)
         context.dataAdapter.query(COLLECTIONS_QUERY, {
             variables: paginationVariables,
-            cache: context.dataAdapter.CacheNone()
+            cache: context.dataAdapter.CacheShort()
         }),
         // Discounted products for SALE collection (fetch first 250 to count and get image)
         context.dataAdapter.query(SALE_PRODUCTS_QUERY, {
             variables: {first: 250},
-            cache: context.dataAdapter.CacheNone()
+            cache: context.dataAdapter.CacheShort()
         })
     ]);
 
@@ -276,6 +276,7 @@ function CollectionCard({collection, index}: {collection: CollectionFragment; in
         <Link
             to={linkTo}
             prefetch="viewport"
+            viewTransition
             className="group block no-underline animate-product-fade-in"
             style={{animationDelay: `${staggerDelay}ms`}}
         >

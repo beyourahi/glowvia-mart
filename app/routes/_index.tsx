@@ -92,7 +92,8 @@
  * - VideoHero.tsx - Hero banner component (#1 - brand introduction)
  */
 
-import {useLoaderData, useRouteLoaderData} from "react-router";
+import {Suspense} from "react";
+import {useLoaderData, useRouteLoaderData, Await} from "react-router";
 import type {Route} from "./+types/_index";
 import type {RootLoader} from "~/root";
 import {getSeoMeta} from "@shopify/hydrogen";
@@ -115,12 +116,13 @@ import {NewsletterSection} from "~/components/NewsletterSection";
 import {Container} from "~/components/Container";
 import {buildCollectionTabs} from "~/lib/collections";
 import {getRecentlyViewedIds} from "~/lib/recently-viewed";
+import {withTimeoutAndFallback, TIMEOUT_DEFAULTS} from "~/lib/promise-utils";
 import {
     CUSTOMER_ORDER_HISTORY_QUERY,
     extractOrderHistoryProducts,
     type OrderHistoryProduct
 } from "~/graphql/customer-account/CustomerOrderHistoryQuery";
-import type {CuratedProductFragment, ExploreCollectionFragment} from "storefrontapi.generated";
+import type {CuratedProductFragment, CuratedCollectionsQuery, ExploreCollectionFragment} from "storefrontapi.generated";
 import {
     getSeoDefaults,
     generateOrganizationSchema,
@@ -129,6 +131,140 @@ import {
 import {useTestimonials, useInstagramMedia, useFaqItems, usePromotionalBanners} from "~/lib/site-content-context";
 import {ShopLocation} from "~/components/ShopLocation";
 import {useWishlist} from "~/lib/wishlist-context";
+
+// =============================================================================
+// BELOW-FOLD DATA LOADERS (deferred — do not block TTFB)
+// =============================================================================
+
+async function loadExploreCollections(context: Route.LoaderArgs["context"]): Promise<ExploreCollectionFragment[]> {
+    try {
+        const response = await context.dataAdapter.query(EXPLORE_COLLECTIONS_QUERY, {
+            cache: context.dataAdapter.CacheLong()
+        });
+        return response?.collections?.nodes ?? [];
+    } catch (error) {
+        console.error("Failed to load explore collections:", error);
+        return [];
+    }
+}
+
+async function loadRecentlyViewed(
+    context: Route.LoaderArgs["context"],
+    cookieHeader: string | null
+): Promise<{products: CuratedProductFragment[]; allProducts: CuratedProductFragment[]}> {
+    const recentlyViewedIds = getRecentlyViewedIds(cookieHeader);
+
+    // Run both queries concurrently — neither depends on the other's result.
+    const [recentlyViewedResponse, allProductsResponse] = await Promise.all([
+        recentlyViewedIds.length > 0
+            ? context.dataAdapter
+                  .query(RECENTLY_VIEWED_PRODUCTS_QUERY, {
+                      variables: {ids: recentlyViewedIds},
+                      cache: context.dataAdapter.CacheShort()
+                  })
+                  .catch((error: unknown) => {
+                      console.error("Failed to load recently viewed products:", error);
+                      return null;
+                  })
+            : Promise.resolve(null),
+        context.dataAdapter
+            .query(ALL_PRODUCTS_QUERY, {
+                cache: context.dataAdapter.CacheShort()
+            })
+            .catch(() => null) // Silent fail - client will use store data
+    ]);
+
+    // Reconstruct `products` preserving original cookie order
+    let products: CuratedProductFragment[] = [];
+    if (recentlyViewedResponse?.nodes) {
+        const productMap = new Map<string, CuratedProductFragment>();
+        for (const node of recentlyViewedResponse.nodes) {
+            if (node && node.__typename === "Product") {
+                productMap.set(node.id, node as CuratedProductFragment);
+            }
+        }
+        products = recentlyViewedIds
+            .map(id => productMap.get(id))
+            .filter((p): p is CuratedProductFragment => p !== undefined);
+    }
+
+    const allProducts: CuratedProductFragment[] = allProductsResponse?.products?.nodes ?? [];
+
+    return {products, allProducts};
+}
+
+async function loadRecentArticles(context: Route.LoaderArgs["context"]): Promise<HomepageArticle[]> {
+    try {
+        const blogsResponse = await context.dataAdapter.query(RECENT_BLOG_ARTICLES_QUERY, {
+            cache: context.dataAdapter.CacheLong()
+        });
+        if (blogsResponse?.blogs?.nodes) {
+            const allArticles: HomepageArticle[] = [];
+            for (const blog of blogsResponse.blogs.nodes) {
+                if (blog.articles?.nodes) {
+                    allArticles.push(...blog.articles.nodes);
+                }
+            }
+            return allArticles
+                .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
+                .slice(0, 4);
+        }
+    } catch (error) {
+        console.error("Failed to load recent blog articles:", error);
+    }
+    return [];
+}
+
+async function loadOrderHistory(
+    context: Route.LoaderArgs["context"]
+): Promise<{products: OrderHistoryProduct[]; isLoggedIn: boolean}> {
+    try {
+        const isLoggedIn = await context.customerAccount.isLoggedIn();
+        if (!isLoggedIn) return {products: [], isLoggedIn: false};
+
+        const {data} = await context.customerAccount.query(CUSTOMER_ORDER_HISTORY_QUERY, {
+            variables: {
+                first: 10,
+                language: context.customerAccount.i18n.language
+            }
+        });
+
+        let products = extractOrderHistoryProducts(data?.customer?.orders?.nodes ?? [], 16);
+
+        if (products.length > 0) {
+            const productIds = products
+                .map(p => p.productId)
+                .filter((id): id is string => id !== null);
+
+            if (productIds.length > 0) {
+                try {
+                    const handlesResponse = await context.dataAdapter.query(PRODUCT_HANDLES_QUERY, {
+                        variables: {ids: productIds}
+                    });
+                    if (handlesResponse?.nodes) {
+                        const handleMap = new Map<string, string>();
+                        for (const node of handlesResponse.nodes) {
+                            if (node && node.__typename === "Product") {
+                                handleMap.set(node.id, node.handle);
+                            }
+                        }
+                        products = products.map(product => ({
+                            ...product,
+                            handle: product.productId ? handleMap.get(product.productId) || null : null
+                        }));
+                    }
+                } catch (error) {
+                    console.error("Failed to fetch product handles:", error);
+                }
+            }
+        }
+
+        return {products, isLoggedIn: true};
+    } catch (error) {
+        console.error("Failed to load order history:", error);
+        return {products: [], isLoggedIn: false};
+    }
+}
 
 // =============================================================================
 // META FUNCTION
@@ -162,12 +298,62 @@ export const meta: Route.MetaFunction = ({matches}) => {
 };
 
 export async function loader({context, request}: Route.LoaderArgs) {
-    // Fetch collections suitable for hero card display (with images and descriptions)
+    const cookieHeader = request.headers.get("Cookie");
+
+    // START ALL DEFERRED QUERIES — they run concurrently with the hero await below.
+    // Initiating these Promises before the awaited hero fetch means they are already
+    // in-flight during the ~300-500ms hero network round-trip, so they resolve sooner.
+
+    // DEFERRED: curatedCollections — CuratedCollections component handles streaming via <Suspense><Await>
+    // Timeout guard prevents hung Promises from keeping the section in permanent loading state
+    const curatedCollections = withTimeoutAndFallback(
+        context.dataAdapter
+            .query<CuratedCollectionsQuery>(CURATED_COLLECTIONS_QUERY, {cache: context.dataAdapter.CacheShort()})
+            .then(response => {
+                if (!response?.collections?.nodes) return null;
+                const tabs = buildCollectionTabs(response.collections.nodes);
+                if (tabs.length === 0) return null;
+                return {tabs};
+            })
+            .catch((error: Error) => {
+                console.error("Failed to load curated collections:", error);
+                return null;
+            }),
+        null,
+        TIMEOUT_DEFAULTS.API
+    );
+
+    // DEFERRED: below-fold sections — returned as Promises so the initial HTML response
+    // is not blocked. Each resolves and streams in after the critical above-fold content.
+    const exploreCollections = withTimeoutAndFallback(
+        loadExploreCollections(context),
+        [] as ExploreCollectionFragment[],
+        TIMEOUT_DEFAULTS.API
+    );
+    const recentlyViewed = withTimeoutAndFallback(
+        loadRecentlyViewed(context, cookieHeader),
+        {products: [] as CuratedProductFragment[], allProducts: [] as CuratedProductFragment[]},
+        TIMEOUT_DEFAULTS.API
+    );
+    const recentArticles = withTimeoutAndFallback(
+        loadRecentArticles(context),
+        [] as HomepageArticle[],
+        TIMEOUT_DEFAULTS.API
+    );
+    const orderHistory = withTimeoutAndFallback(
+        loadOrderHistory(context),
+        {products: [] as OrderHistoryProduct[], isLoggedIn: false},
+        TIMEOUT_DEFAULTS.AUTH
+    );
+
+    // CRITICAL: Fetch hero collection data — awaited because VideoHero is above the fold.
+    // Deferred queries are already in-flight by this point so their latency is hidden.
     let randomHeroCollection: HeroCollection | null = null;
     try {
-        const heroCollectionsResponse = await context.dataAdapter.query(HERO_COLLECTIONS_QUERY);
+        const heroCollectionsResponse = await context.dataAdapter.query(HERO_COLLECTIONS_QUERY, {
+            cache: context.dataAdapter.CacheLong()
+        });
         if (heroCollectionsResponse?.collections?.nodes) {
-            // Type guard to ensure collection has required image and description
             const isValidHeroCollection = (collection: any): collection is HeroCollection => {
                 return (
                     collection.image &&
@@ -178,11 +364,7 @@ export async function loader({context, request}: Route.LoaderArgs) {
                     collection.handle
                 );
             };
-
-            // Filter collections that have both image and description
             const eligibleCollections = heroCollectionsResponse.collections.nodes.filter(isValidHeroCollection);
-
-            // Randomly select one collection if we have any
             if (eligibleCollections.length > 0) {
                 const randomIndex = Math.floor(Math.random() * eligibleCollections.length);
                 randomHeroCollection = eligibleCollections[randomIndex];
@@ -193,177 +375,13 @@ export async function loader({context, request}: Route.LoaderArgs) {
         // Fall back to null - VideoHero will use metaobject content
     }
 
-    const curatedCollections: Promise<CuratedCollectionsData> = context.storefront
-        .query(CURATED_COLLECTIONS_QUERY)
-        .then(response => {
-            if (!response?.collections?.nodes) return null;
-
-            const tabs = buildCollectionTabs(response.collections.nodes);
-
-            if (tabs.length === 0) return null;
-
-            return {tabs};
-        })
-        .catch((error: Error) => {
-            console.error("Failed to load curated collections:", error);
-            return null;
-        });
-
-    // Get recently viewed product IDs from cookie
-    const cookieHeader = request.headers.get("Cookie");
-    const recentlyViewedIds = getRecentlyViewedIds(cookieHeader);
-
-    // Fetch recently viewed products if we have IDs
-    let recentlyViewedProducts: CuratedProductFragment[] = [];
-
-    if (recentlyViewedIds.length > 0) {
-        try {
-            const response = await context.dataAdapter.query(RECENTLY_VIEWED_PRODUCTS_QUERY, {
-                variables: {ids: recentlyViewedIds}
-            });
-
-            if (response?.nodes) {
-                // Filter out null values and sort by original order
-                const productMap = new Map<string, CuratedProductFragment>();
-                for (const node of response.nodes) {
-                    // Include all products regardless of availability so OOS items remain visible
-                    if (node && node.__typename === "Product") {
-                        productMap.set(node.id, node as CuratedProductFragment);
-                    }
-                }
-
-                // Maintain the order from recentlyViewedIds
-                recentlyViewedProducts = recentlyViewedIds
-                    .map(id => productMap.get(id))
-                    .filter((p): p is CuratedProductFragment => p !== undefined);
-            }
-        } catch (error) {
-            console.error("Failed to load recently viewed products:", error);
-        }
-    }
-
-    // Fetch all available products for client-side use (API-level filter applied)
-    let allProductsData: CuratedProductFragment[] = [];
-    try {
-        const response = await context.dataAdapter.query(ALL_PRODUCTS_QUERY);
-        if (response?.products?.nodes) {
-            allProductsData = response.products.nodes;
-        }
-    } catch {
-        // Silent fail - client will use store data
-    }
-
-    // Fetch collections for Explore Collections section
-    let exploreCollections: ExploreCollectionFragment[] = [];
-    try {
-        const response = await context.dataAdapter.query(EXPLORE_COLLECTIONS_QUERY);
-        if (response?.collections?.nodes) {
-            exploreCollections = response.collections.nodes;
-        }
-    } catch (error) {
-        console.error("Failed to load explore collections:", error);
-    }
-
-    // Fetch order history for logged-in customers
-    let orderHistoryProducts: OrderHistoryProduct[] = [];
-    let isLoggedIn = false;
-
-    try {
-        isLoggedIn = await context.customerAccount.isLoggedIn();
-
-        if (isLoggedIn) {
-            const {data} = await context.customerAccount.query(CUSTOMER_ORDER_HISTORY_QUERY, {
-                variables: {
-                    first: 10,
-                    language: context.customerAccount.i18n.language
-                }
-            });
-
-            if (data?.customer?.orders?.nodes) {
-                orderHistoryProducts = extractOrderHistoryProducts(data.customer.orders.nodes, 16);
-
-                // Fetch product handles from Storefront API for linking to product pages
-                if (orderHistoryProducts.length > 0) {
-                    const productIds = orderHistoryProducts
-                        .map(p => p.productId)
-                        .filter((id): id is string => id !== null);
-
-                    if (productIds.length > 0) {
-                        try {
-                            const handlesResponse = await context.dataAdapter.query(PRODUCT_HANDLES_QUERY, {
-                                variables: {ids: productIds}
-                            });
-
-                            if (handlesResponse?.nodes) {
-                                // Create a map of productId -> handle
-                                const handleMap = new Map<string, string>();
-                                for (const node of handlesResponse.nodes) {
-                                    if (node && node.__typename === "Product") {
-                                        handleMap.set(node.id, node.handle);
-                                    }
-                                }
-
-                                // Update orderHistoryProducts with handles
-                                orderHistoryProducts = orderHistoryProducts.map(product => ({
-                                    ...product,
-                                    handle: product.productId ? handleMap.get(product.productId) || null : null
-                                }));
-                            }
-                        } catch (error) {
-                            console.error("Failed to fetch product handles:", error);
-                            // Continue without handles - products will fall back to non-clickable state
-                        }
-                    }
-                }
-            }
-        }
-    } catch (error) {
-        console.error("Failed to load order history:", error);
-    }
-
-    // Note: Announcement banner is now rendered globally in PageLayout
-    // Data comes from site_settings metaobject via root loader (siteContent.siteSettings.announcementBanner)
-    // HOMEPAGE_METAFIELDS_QUERY is no longer needed for announcements
-
-    // Fetch recent blog articles
-    let recentArticles: HomepageArticle[] = [];
-
-    try {
-        const blogsResponse = await context.dataAdapter.query(RECENT_BLOG_ARTICLES_QUERY);
-        if (blogsResponse?.blogs?.nodes) {
-            // Flatten articles from all blogs and get the most recent ones
-            const allArticles: HomepageArticle[] = [];
-            for (const blog of blogsResponse.blogs.nodes) {
-                if (blog.articles?.nodes) {
-                    allArticles.push(...blog.articles.nodes);
-                }
-            }
-            // Sort by publishedAt descending and take the 4 most recent for blog section layout
-            recentArticles = allArticles
-                .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
-                .slice(0, 4);
-        }
-    } catch (error) {
-        console.error("Failed to load recent blog articles:", error);
-    }
-
-    // Note: Testimonials and Instagram media are now loaded from site_settings
-    // via context hooks in the component (useTestimonials, useInstagramMedia)
-
     return {
         randomHeroCollection,
         curatedCollections,
-        recentlyViewed: {
-            products: recentlyViewedProducts,
-            hasProducts: recentlyViewedProducts.length > 0
-        },
-        allProducts: allProductsData,
         exploreCollections,
-        orderHistory: {
-            products: orderHistoryProducts,
-            isLoggedIn
-        },
-        recentArticles
+        recentlyViewed,
+        recentArticles,
+        orderHistory
     };
 }
 
@@ -473,24 +491,33 @@ export default function Homepage() {
                      WHY: "What else do you have?" at perfect moment in journey
                      IMPACT: +10-15% collection page visits, better category discovery
                      AUDIENCE: 100% of visitors */}
-                {data.exploreCollections && data.exploreCollections.length > 0 && (
-                    <AnimatedSection animation="section" threshold={0.1} className="mt-12 md:mt-16 lg:mt-20">
-                        <ExploreCollectionsSection collections={data.exploreCollections} />
-                    </AnimatedSection>
-                )}
+                <Suspense fallback={null}>
+                    <Await resolve={data.exploreCollections}>
+                        {(collections) =>
+                            collections && collections.length > 0 ? (
+                                <AnimatedSection animation="section" threshold={0.1} className="mt-12 md:mt-16 lg:mt-20">
+                                    <ExploreCollectionsSection collections={collections} />
+                                </AnimatedSection>
+                            ) : null
+                        }
+                    </Await>
+                </Suspense>
 
                 {/* 7. RecentlyViewedSection - Personalized re-engagement (MOVED DOWN FROM #5)
                      WHY: Returning visitors (30%) see personalized content at natural depth
                      IMPACT: Better experience for new visitors (70%), meaningful for returning users
                      AUDIENCE: ~30% of visitors (has browsing history) */}
-                {(data.recentlyViewed?.products ?? []).length > 0 && (
-                    <AnimatedSection animation="slide-up" threshold={0.1} className="mt-12 md:mt-16 lg:mt-20">
-                        <RecentlyViewedSection
-                            products={data.recentlyViewed?.products ?? []}
-                            allProducts={data.allProducts}
-                        />
-                    </AnimatedSection>
-                )}
+                <Suspense fallback={null}>
+                    <Await resolve={data.recentlyViewed}>
+                        {(rv) =>
+                            rv?.products?.length > 0 ? (
+                                <AnimatedSection animation="slide-up" threshold={0.1} className="mt-12 md:mt-16 lg:mt-20">
+                                    <RecentlyViewedSection products={rv.products} allProducts={rv.allProducts} />
+                                </AnimatedSection>
+                            ) : null
+                        }
+                    </Await>
+                </Suspense>
 
                 {/* ═══════════════════════════════════════════════════════════════════
                     TIER 4: PERSONALIZED ENGAGEMENT - VIP treatment for engaged users
@@ -510,11 +537,17 @@ export default function Homepage() {
                      WHY: Logged-in customers (10%) get prominent reorder access
                      IMPACT: +15-20% reorder rate, loyalty boost
                      AUDIENCE: ~10% of visitors (logged-in customers) */}
-                {data.orderHistory?.isLoggedIn && data.orderHistory.products.length > 0 && (
-                    <AnimatedSection animation="slide-up" threshold={0.1} className="mt-12 md:mt-16 lg:mt-20">
-                        <OrderHistorySection products={data.orderHistory.products} />
-                    </AnimatedSection>
-                )}
+                <Suspense fallback={null}>
+                    <Await resolve={data.orderHistory}>
+                        {(oh) =>
+                            oh?.isLoggedIn && oh.products.length > 0 ? (
+                                <AnimatedSection animation="slide-up" threshold={0.1} className="mt-12 md:mt-16 lg:mt-20">
+                                    <OrderHistorySection products={oh.products} />
+                                </AnimatedSection>
+                            ) : null
+                        }
+                    </Await>
+                </Suspense>
 
                 {/* 10. PromotionalBannerOne - Visual break & lifestyle (MOVED DOWN FROM #9)
                       WHY: Breathing room after product-heavy sections, aspiration + storytelling
@@ -539,11 +572,17 @@ export default function Homepage() {
                       WHY: Brand storytelling for engaged users (25%)
                       IMPACT: SEO benefit, brand depth, content marketing
                       AUDIENCE: ~25% of visitors (high engagement) */}
-                {data.recentArticles && data.recentArticles.length > 0 && (
-                    <AnimatedSection animation="section" threshold={0.1} className="mt-12 md:mt-16 lg:mt-20">
-                        <BlogSection articles={data.recentArticles} />
-                    </AnimatedSection>
-                )}
+                <Suspense fallback={null}>
+                    <Await resolve={data.recentArticles}>
+                        {(articles) =>
+                            articles && articles.length > 0 ? (
+                                <AnimatedSection animation="section" threshold={0.1} className="mt-12 md:mt-16 lg:mt-20">
+                                    <BlogSection articles={articles} />
+                                </AnimatedSection>
+                            ) : null
+                        }
+                    </Await>
+                </Suspense>
 
                 {/* 12. FAQSection - Pre-footer support (UNCHANGED POSITION)
                       WHY: Last-minute objection handling before footer
@@ -628,7 +667,7 @@ const CURATED_COLLECTIONS_QUERY = `#graphql
       width
       height
     }
-    images(first: 10) {
+    images(first: 3) {
       nodes {
         id
         url
@@ -670,7 +709,7 @@ const CURATED_COLLECTIONS_QUERY = `#graphql
         }
       }
     }
-    variants(first: 100) {
+    variants(first: 5) {
       nodes {
         id
         title
@@ -746,7 +785,7 @@ const RECENTLY_VIEWED_PRODUCTS_QUERY = `#graphql
           width
           height
         }
-        images(first: 10) {
+        images(first: 3) {
           nodes {
             id
             url
@@ -788,7 +827,7 @@ const RECENTLY_VIEWED_PRODUCTS_QUERY = `#graphql
             }
           }
         }
-        variants(first: 100) {
+        variants(first: 5) {
           nodes {
             id
             title
@@ -813,12 +852,13 @@ const RECENTLY_VIEWED_PRODUCTS_QUERY = `#graphql
 ` as const;
 
 // GraphQL query to fetch all products for client-side filtering
+// Reduced payload: 50 products (down from 250), 3 images, 2 media, 3 variants (down from 10/5/100)
 const ALL_PRODUCTS_QUERY = `#graphql
   query AllProducts(
     $country: CountryCode
     $language: LanguageCode
   ) @inContext(country: $country, language: $language) {
-    products(first: 250) {
+    products(first: 50) {
       nodes {
         id
         title
@@ -848,7 +888,7 @@ const ALL_PRODUCTS_QUERY = `#graphql
           width
           height
         }
-        images(first: 10) {
+        images(first: 3) {
           nodes {
             id
             url
@@ -857,7 +897,7 @@ const ALL_PRODUCTS_QUERY = `#graphql
             height
           }
         }
-        media(first: 5) {
+        media(first: 2) {
           nodes {
             __typename
             ... on MediaImage {
@@ -890,7 +930,7 @@ const ALL_PRODUCTS_QUERY = `#graphql
             }
           }
         }
-        variants(first: 100) {
+        variants(first: 3) {
           nodes {
             id
             title
@@ -934,7 +974,7 @@ const HERO_COLLECTIONS_QUERY = `#graphql
     $country: CountryCode
     $language: LanguageCode
   ) @inContext(country: $country, language: $language) {
-    collections(first: 50) {
+    collections(first: 10) {
       nodes {
         ...HeroCollection
       }

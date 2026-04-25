@@ -92,6 +92,8 @@ export function ExploreCollectionsSection({collections}: ExploreCollectionsSecti
                 </h2>
                 <Link
                     to="/collections"
+                    prefetch="intent"
+                    viewTransition
                     className={cn(
                         "motion-interactive motion-press hidden w-fit rounded-[var(--radius-pill-raw)] border-2 border-primary px-3 py-1.5 font-sans text-sm font-medium text-primary active:scale-[var(--motion-press-scale)] cursor-pointer sm:block sm:px-4 sm:py-2",
                         canHover
@@ -138,6 +140,7 @@ export function ExploreCollectionsSection({collections}: ExploreCollectionsSecti
                 <div className="mt-6 flex justify-center sm:hidden">
                     <Link
                         to="/collections"
+                        viewTransition
                         className={cn(
                             "motion-interactive motion-press rounded-[var(--radius-pill-raw)] border-2 border-primary px-3 sm:px-4 py-2 font-sans text-sm font-medium text-primary active:scale-[var(--motion-press-scale)] cursor-pointer",
                             canHover
@@ -188,7 +191,8 @@ function CollectionCard({collection, isExpanded, onTap}: CollectionCardProps) {
     return (
         <Link
             to={`/collections/${collection.handle}`}
-            prefetch="viewport"
+            prefetch="intent"
+            viewTransition
             onClick={handleClick}
             className={cn(
                 "relative flex-1 cursor-pointer",
@@ -277,6 +281,7 @@ function MobileCollectionCard({collection}: {collection: ExploreCollectionFragme
         <Link
             to={`/collections/${collection.handle}`}
             prefetch="viewport"
+            viewTransition
             className="group motion-link motion-press block hover:no-underline active:scale-[var(--motion-press-scale)] cursor-pointer"
         >
             {/* Consistent 3:4 aspect ratio across all mobile/tablet sizes */}

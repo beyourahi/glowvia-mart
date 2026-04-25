@@ -392,11 +392,13 @@ export function ProductImageGallery({images, selectedVariantImage, media, isAvai
             >
                 <div className="relative w-full aspect-4/5">
                     {item.previewImage ? (
-                        <img
+                        <Image
                             src={item.previewImage.url}
                             alt={item.alt || `Video thumbnail ${index + 1}`}
                             className={cn("w-full h-full object-cover sleek", isAvailableForSale && "group-hover:scale-105")}
-                            loading="lazy"
+                            loading={index === 0 ? "eager" : "lazy"}
+                            width={800}
+                            height={800}
                         />
                     ) : (
                         <div className="w-full h-full bg-muted" />
@@ -447,11 +449,13 @@ export function ProductImageGallery({images, selectedVariantImage, media, isAvai
             >
                 <div className="relative w-full aspect-4/5">
                     {item.previewImage ? (
-                        <img
+                        <Image
                             src={item.previewImage.url}
                             alt={item.alt || `3D model ${index + 1}`}
                             className={cn("w-full h-full object-cover sleek", isAvailableForSale && "group-hover:scale-105")}
-                            loading="lazy"
+                            loading={index === 0 ? "eager" : "lazy"}
+                            width={800}
+                            height={800}
                         />
                     ) : (
                         <div className="w-full h-full bg-muted" />

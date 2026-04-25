@@ -98,7 +98,7 @@ export const meta: Route.MetaFunction = ({data, matches}) => {
                   }
                 : undefined
         }) ?? []),
-        {rel: "alternate", type: "application/rss+xml", title: `${pageTitle} RSS Feed`, href: "/blogs/feed.xml"}
+        {tagName: "link" as const, rel: "alternate", type: "application/rss+xml", title: `${pageTitle} RSS Feed`, href: "/blogs/feed.xml"}
     ];
 };
 

@@ -123,42 +123,39 @@ export function CollectionSidebar({
     discountCount
 }: CollectionSidebarProps) {
     return (
-        <>
-            {/* Desktop Sidebar - nav only, parent handles sticky positioning */}
-            <nav className="hidden md:block">
-                <ul className="space-y-1">
-                    {/* All Products Link */}
+        <nav className="hidden md:block">
+            <ul className="space-y-1">
+                {/* All Products Link */}
+                <CollectionLink
+                    href="/collections/all-products"
+                    title="All Products"
+                    count={totalProductCount}
+                    isActive={activeHandle === "all-products"}
+                />
+
+                {/* SALE Link - only show if discountCount > 0, highlighted differently */}
+                {discountCount !== undefined && discountCount > 0 && (
                     <CollectionLink
-                        href="/collections/all-products"
-                        title="All Products"
-                        count={totalProductCount}
-                        isActive={activeHandle === "all-products"}
+                        href="/sale"
+                        title="SALE"
+                        count={discountCount}
+                        isActive={activeHandle === "sale"}
+                        isSale
                     />
+                )}
 
-                    {/* SALE Link - only show if discountCount > 0, highlighted differently */}
-                    {discountCount !== undefined && discountCount > 0 && (
-                        <CollectionLink
-                            href="/sale"
-                            title="SALE"
-                            count={discountCount}
-                            isActive={activeHandle === "sale"}
-                            isSale
-                        />
-                    )}
-
-                    {/* Individual Collections */}
-                    {collections.map(collection => (
-                        <CollectionLink
-                            key={collection.handle}
-                            href={`/collections/${collection.handle}`}
-                            title={collection.title}
-                            count={collection.productsCount}
-                            isActive={activeHandle === collection.handle}
-                        />
-                    ))}
-                </ul>
-            </nav>
-        </>
+                {/* Individual Collections */}
+                {collections.map(collection => (
+                    <CollectionLink
+                        key={collection.handle}
+                        href={`/collections/${collection.handle}`}
+                        title={collection.title}
+                        count={collection.productsCount}
+                        isActive={activeHandle === collection.handle}
+                    />
+                ))}
+            </ul>
+        </nav>
     );
 }
 
@@ -183,6 +180,7 @@ function CollectionLink({
             <Link
                 to={href}
                 prefetch="viewport"
+                viewTransition
                 className={cn(
                     "group flex items-center gap-1 py-1 text-fluid-h4 motion-link hover:text-primary",
                     // SALE link gets emerald green styling to match discount badges

@@ -29,6 +29,61 @@ import type {ChangelogEntry} from "~/lib/types/changelog";
 // Newest entries at the top. Add new entries here in the same commit that ships the change.
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
+        date: "2026-04-25",
+        category: "New Feature",
+        headline: "Search can now be filtered to show only in-stock products",
+        summary: "A new 'In Stock' toggle has been added to the full-screen search overlay. Switch it on to hide products that are currently unavailable, so every result you see is something you can order right now. The filter carries through when you navigate from the overlay to the main search results page. Quick Add has also been corrected to ensure the variant you select is the one that actually goes into your cart."
+    },
+    {
+        date: "2026-04-25",
+        category: "Fix",
+        headline: "Homepage, product pages, and collection pages load reliably again",
+        summary: "A recent update accidentally broke three of the most important pages in the store — the homepage, individual product pages, and every collection page would all crash with a server error instead of showing content. This has been corrected. All pages load normally again, including the collection sidebar which was also causing a flicker during page transitions."
+    },
+    {
+        date: "2026-04-24",
+        category: "Performance",
+        headline: "Fonts and product pages load without blocking the screen",
+        summary:
+            "Custom fonts now load in the background instead of holding up the first paint, so text appears sooner on slower connections. The product page also fetches a smaller set of data — fewer media items, one collection lookup instead of ten, and no duplicate fields. Both changes combine to make pages feel noticeably faster on first visit."
+    },
+    {
+        date: "2026-04-24",
+        category: "Performance",
+        headline: "Faster browsing with leaner product queries and CDN image optimisation",
+        summary: "Product reviews now load separately from product details so the buy button and images appear sooner. The homepage, cart, and search now request fewer product variants, reducing data on every page load. Images use Shopify's CDN transforms for the right size on any screen. Page transitions between products use smooth native browser animations."
+    },
+    {
+        date: "2026-04-24",
+        category: "Performance",
+        headline: "Faster page loads with smarter Shopify API caching",
+        summary: "The homepage and gallery now cache their Shopify data instead of fetching it fresh on every visit. Collections, blog articles, and product lists are held in a long-lived cache so repeat visits load almost instantly. Recently viewed products and gallery pages use a shorter cache so they stay up to date without hitting the API every time. Navigation links on error pages now prefetch their destination the moment you hover, so the next page feels instant when you click."
+    },
+    {
+        date: "2026-04-24",
+        category: "New Feature",
+        headline: "Gift card codes can now be applied directly in your cart",
+        summary: "The cart now fully supports gift card redemption — enter a gift card code in the dedicated field to apply your balance before reaching checkout. You can replace or clear a code at any time while your bag is open. Previously, the gift card field was visible but applying a code had no effect."
+    },
+    {
+        date: "2026-04-24",
+        category: "Improvement",
+        headline: "Collection pages now include a sidebar for easier browsing",
+        summary: "A sidebar now sits alongside the product grid on collection and catalogue pages, making it easier to navigate categories and apply filters without losing your place in the results. On smaller screens the sidebar stays tucked away and slides in when you need it."
+    },
+    {
+        date: "2026-04-24",
+        category: "Design",
+        headline: "Out-of-stock product cards no longer show a diagonal strikethrough overlay",
+        summary: "The semi-transparent diagonal stripe that used to appear over the product photo when an item was unavailable has been removed. The out-of-stock state is now communicated through the badge label and a subtle desaturated tint on the card image, keeping the photography fully visible and unobscured."
+    },
+    {
+        date: "2026-04-24",
+        category: "Fix",
+        headline: "App offline features now work without depending on Google's CDN",
+        summary: "The service worker that powers offline browsing and PWA installation previously loaded its core libraries from an external Google CDN. If that CDN was slow, blocked, or unreachable, the offline layer would fail silently. Those libraries are now bundled with the app itself so offline support stays reliable under any network conditions."
+    },
+    {
         date: "2026-04-23",
         category: "Improvement",
         headline: "Search links now keep their chosen price order",
@@ -39,6 +94,12 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
         category: "Improvement",
         headline: "Wrong-URL pages now open a browsable carousel of collections instead of a dead end",
         summary: "Typing a link that doesn't exist — or landing on an old URL that's been removed — used to show a plain error screen with a single Return Home button. The 404 page now shows a drag-to-scroll carousel of the store's collections directly below the heading, with the same card style used on the homepage: a tall photo tile, the collection name at the bottom, and a soft gradient for readability. You can sweep through them with a swipe, a mouse wheel, or the arrow keys and jump straight into the aisle you were probably looking for. The same upgrade touches smaller error screens scattered across the store (account sub-pages, order detail pages, policies that have been renamed): each now shows a proper status, a clearer message, and a Try Again button alongside Return Home, instead of a bare link."
+    },
+    {
+        date: "2026-04-23",
+        category: "Improvement",
+        headline: "Contact section removed — reach support through the live chat button instead",
+        summary: "The dedicated contact card on the homepage and the email and phone strip in the footer have been retired to keep the layout cleaner and more focused. The floating Messenger and WhatsApp chat button is still available on every page, giving you a faster and more direct way to reach support from wherever you are in the store."
     },
     {
         date: "2026-04-22",

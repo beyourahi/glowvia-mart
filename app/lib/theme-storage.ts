@@ -27,7 +27,7 @@
  * 1. User browses site → theme loaded from Shopify → saved to localStorage
  * 2. Network goes offline → user navigates → /offline route served by SW
  * 3. Offline page reads theme from localStorage → displays brand colors/fonts
- * 4. Fallback: If no cached theme, uses default theme from fallback-data.ts
+ * 4. Fallback: If no cached theme, uses default theme constants from metaobject-parsers.ts
  *
  * @dependencies
  * - TypeScript types from types/index.ts (GeneratedTheme)

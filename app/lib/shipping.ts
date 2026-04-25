@@ -24,9 +24,6 @@ import {formatPrice} from "~/lib/currency-formatter";
  * - Cart must reach or exceed threshold for free shipping
  * - UI shows progress toward free shipping goal
  *
- * @dependencies
- * - fallback-data.ts - Default threshold when metafield not set
- *
  * @related
  * - root.tsx - Fetches shipping config in loader
  * - CartSummary.tsx - Displays free shipping progress
@@ -38,7 +35,7 @@ export interface ShippingConfig {
     currencyCode: string;
 }
 
-const FALLBACK_FREE_SHIPPING_THRESHOLD = 5000;
+const FALLBACK_FREE_SHIPPING_THRESHOLD = 0;
 const FALLBACK_CURRENCY_CODE = "USD";
 
 export const DEFAULT_FREE_SHIPPING_THRESHOLD = FALLBACK_FREE_SHIPPING_THRESHOLD;

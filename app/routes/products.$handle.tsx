@@ -418,32 +418,33 @@ export default function Product() {
                     {/* Image Gallery + Product Info */}
                     <div className="flex-1 min-w-0">
                         <div className="grid md:grid-cols-2 gap-8 md:gap-12 xl:gap-14 2xl:gap-16">
-                            {/* Product Image Gallery - scrolls naturally so the user can browse all images.
-                                     self-start prevents the grid item from stretching to row height.
-                                     The gallery's stacked height (N × 4:5 images) defines the grid row height,
-                                     which in turn determines when the sticky details panel releases. */}
-                            <div className="self-start">
-                                <ProductImageGallery
-                                    images={product.images.nodes}
-                                    selectedVariantImage={selectedVariant?.image}
-                                    media={product.media?.nodes}
-                                    isAvailableForSale={product.availableForSale}
-                                />
+                            {/* Product Image Gallery - sticky on md+ screens until all product copy scrolls away.
+                                     No self-start: defaults to stretch so this grid item fills the row height
+                                     set by the taller product-info column, giving the inner sticky element room
+                                     to travel. Sticky releases naturally when the row's bottom exits the viewport
+                                     sticky threshold — i.e. after all right-side copy has scrolled past. */}
+                            <div>
+                                <div
+                                    className={cn(
+                                        "md:sticky md:transition-[top] md:duration-300 md:ease-out",
+                                        isScrolled
+                                            ? "md:top-[calc(var(--total-header-height)+0.75rem+var(--page-breathing-room))]"
+                                            : "md:top-[calc(var(--total-header-height)+var(--page-breathing-room))]"
+                                    )}
+                                >
+                                    <ProductImageGallery
+                                        images={product.images.nodes}
+                                        selectedVariantImage={selectedVariant?.image}
+                                        media={product.media?.nodes}
+                                        isAvailableForSale={product.availableForSale}
+                                    />
+                                </div>
                             </div>
-                            {/* Product Info - sticky on md+ screens while the image gallery is in view.
-                                     Uses the same breathing-room calculation as the collection sidebar for
-                                     visual alignment. When scrolled, +0.75rem matches the header's floating offset.
-                                     self-start shrinks the element to its content height — required for sticky to
-                                     have room to travel. CSS sticky releases naturally when the parent grid's
-                                     bottom edge (= gallery bottom) clears the viewport sticky position, so the
-                                     panel scrolls away after all product images have been passed. */}
+                            {/* Product Info - scrolls naturally while the media panel is sticky.
+                                     self-start keeps the element at its natural content height, which defines
+                                     the grid row height and therefore how long the media stays sticky. */}
                             <div
-                                className={cn(
-                                    "space-y-6 animate-slide-left-fade self-start md:sticky md:transition-[top] md:duration-300 md:ease-out",
-                                    isScrolled
-                                        ? "md:top-[calc(var(--total-header-height)+0.75rem+var(--page-breathing-room))]"
-                                        : "md:top-[calc(var(--total-header-height)+var(--page-breathing-room))]"
-                                )}
+                                className="space-y-6 animate-slide-left-fade self-start"
                                 style={{animationDelay: "100ms"}}
                             >
                                 {/* Product Tag Badges - desktop only, hidden on mobile */}

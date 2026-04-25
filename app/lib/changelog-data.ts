@@ -30,6 +30,12 @@ import type {ChangelogEntry} from "~/lib/types/changelog";
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
         date: "2026-04-25",
+        category: "Improvement",
+        headline: "Product images stay in view while you read product details",
+        summary: "On desktop, the product media panel — including images and videos — now stays fixed on screen while you scroll through the product description, variants, and purchase options. Once you've scrolled past all the product information, the media naturally scrolls away. This makes it easier to reference product visuals while reading copy without having to scroll back up."
+    },
+    {
+        date: "2026-04-25",
         category: "Fix",
         headline: "Brand colors now display correctly across the entire store",
         summary: "The store's custom color theme — set through the brand settings — was being overridden by a default blue color scheme on every page. This affected text, buttons, backgrounds, and all branded UI elements. The issue has been corrected, so the colors you configure in your brand settings now appear exactly as intended for every visitor."

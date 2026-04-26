@@ -58,7 +58,7 @@ Backend behavior, data flow, and Hydrogen conventions **must remain consistent**
 |               | OKLCH colors     | -          | WCAG 2.1 AA compliant               |
 | **Features**  | Lenis            | 1.3.16     | GPU-accelerated smooth scroll       |
 |               | Workbox          | 7.0.0      | Service worker, offline support     |
-|               | Embla Carousel   | -          | Autoplay, auto-scroll               |
+|               | Embla Carousel   | 8.6.x      | Auto-scroll, wheel gestures         |
 |               | colorjs.io       | -          | Color manipulation                  |
 |               | Sonner           | 2.x        | Toast notifications                 |
 |               | tw-animate-css   | 1.x        | CSS animation utilities             |

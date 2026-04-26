@@ -122,7 +122,7 @@ export const meta: Route.MetaFunction = ({data, matches}) => {
                       type: "image" as const
                   }
                 : undefined,
-            jsonLd: generateProductSchema(product, variant, siteUrl) as any
+            jsonLd: generateProductSchema(product, variant, null, siteUrl) as any
         }) ?? [];
 
     const preloadHref = data?.product?.images?.nodes?.[0]?.url;
@@ -556,6 +556,8 @@ const PRODUCT_VARIANT_FRAGMENT = `#graphql
       value
     }
     sku
+    barcode
+    currentlyNotInStock
     title
     unitPrice {
       amount
@@ -619,6 +621,7 @@ const PRODUCT_FRAGMENT = `#graphql
     descriptionHtml
     description
     tags
+    publishedAt
     encodedVariantExistence
     encodedVariantAvailability
     sizeChart: metafield(namespace: "custom", key: "size_chart") {

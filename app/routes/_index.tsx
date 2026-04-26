@@ -124,9 +124,10 @@ import {
 } from "~/graphql/customer-account/CustomerOrderHistoryQuery";
 import type {CuratedProductFragment, CuratedCollectionsQuery, ExploreCollectionFragment} from "storefrontapi.generated";
 import {
-    getSeoDefaults,
+    generateFAQPageSchema,
     generateOrganizationSchema,
-    generateWebsiteSchema
+    generateWebsiteSchema,
+    getSeoDefaults
 } from "~/lib/seo";
 import {useTestimonials, useInstagramMedia, useFaqItems, usePromotionalBanners} from "~/lib/site-content-context";
 import {ShopLocation} from "~/components/ShopLocation";
@@ -282,19 +283,21 @@ export const meta: Route.MetaFunction = ({matches}) => {
         | undefined;
     const seoDefaults = getSeoDefaults(rootData?.siteContent?.siteSettings, rootData?.siteContent?.themeConfig);
     const socialLinks = rootData?.siteContent?.siteSettings?.socialLinks;
+    const faqItems = (rootData?.siteContent?.siteSettings as {faqItems?: Array<{question: string; answer: string}>} | undefined)?.faqItems;
     const organizationSchema = generateOrganizationSchema(rootData?.siteContent?.siteSettings, socialLinks);
     const websiteSchema = generateWebsiteSchema(rootData?.siteContent?.siteSettings);
 
-    return (
-        getSeoMeta({
+    return [
+        ...(getSeoMeta({
             title: seoDefaults.brandName,
             titleTemplate: null, // No template for homepage - just the site name
             description: seoDefaults.description,
             url: seoDefaults.siteUrl,
             media: seoDefaults.media,
             jsonLd: [organizationSchema, websiteSchema] as any
-        }) ?? []
-    );
+        }) ?? []),
+        ...(faqItems && faqItems.length > 0 ? [{"script:ld+json": generateFAQPageSchema(faqItems) as any}] : [])
+    ];
 };
 
 export async function loader({context, request}: Route.LoaderArgs) {

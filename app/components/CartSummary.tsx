@@ -79,7 +79,9 @@ import type {CartSummaryProps} from "types";
 import {CartForm} from "@shopify/hydrogen";
 import {Money} from "~/components/Money";
 import {useEffect, useRef, useState} from "react";
-import {useFetcher} from "react-router";
+import {useFetcher, useRouteLoaderData} from "react-router";
+import type {RootLoader} from "~/root";
+import {appendAiAttribution} from "~/lib/ai-attribution";
 import {useCartMutationPending} from "~/lib/cart-utils";
 import {Progress} from "~/components/ui/progress";
 import {Wallet, Check, Truck, Loader2, Sparkles, PartyPopper, WifiOff, ArrowRight} from "lucide-react";
@@ -423,9 +425,14 @@ function CartCheckoutActions({
 }) {
     const {isOnline} = useNetworkStatus();
     const isMutating = useCartMutationPending();
+    const rootData = useRouteLoaderData<RootLoader>("root");
     const cartContent = FALLBACK_CART_CONTENT;
 
     if (!checkoutUrl) return null;
+
+    const taggedCheckoutUrl = rootData?.aiAttribution
+        ? appendAiAttribution(checkoutUrl, rootData.aiAttribution)
+        : checkoutUrl;
 
     const hasSubtotal = subtotal?.amount && subtotal?.currencyCode;
 
@@ -487,7 +494,7 @@ function CartCheckoutActions({
 
     return (
         <a
-            href={checkoutUrl}
+            href={taggedCheckoutUrl}
             target="_self"
             aria-disabled={isMutating || undefined}
             onClick={isMutating ? e => e.preventDefault() : undefined}

@@ -81,6 +81,7 @@ import {GtmScript} from "~/components/GtmScript";
 import {GoogleTagManager} from "~/components/GoogleTagManager";
 import type {CartSuggestionProductFragment} from "storefrontapi.generated";
 import {generateWebsiteSchema, getSeoDefaults} from "~/lib/seo";
+import {detectAiAttribution} from "~/lib/ai-attribution";
 import {SITE_CONTENT_QUERY, THEME_SETTINGS_QUERY} from "~/lib/metaobject-queries";
 import {parseSiteContent} from "~/lib/metaobject-parsers";
 import {SiteContentProvider} from "~/lib/site-content-context";
@@ -217,7 +218,8 @@ export async function loader(args: Route.LoaderArgs) {
  * Load data necessary for rendering content above the fold. This is the critical data
  * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
  */
-async function loadCriticalData({context}: Route.LoaderArgs) {
+async function loadCriticalData({context, request}: Route.LoaderArgs) {
+    const aiAttribution = detectAiAttribution(request.headers, new URL(request.url).searchParams);
     const {dataAdapter} = context;
 
     const [header, menuCollectionsData, shopData, blogData, siteContentData, themeSettingsData] = await Promise.all([
@@ -373,7 +375,8 @@ async function loadCriticalData({context}: Route.LoaderArgs) {
         hasBlog,
         siteContent,
         generatedTheme,
-        websiteSchema
+        websiteSchema,
+        aiAttribution
     };
 }
 

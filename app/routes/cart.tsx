@@ -78,6 +78,12 @@ export async function action({request, context}: Route.ActionArgs) {
     let status = 200;
     let result: CartQueryDataReturn;
 
+    // TODO: Checkout MCP integration — implement when GA
+    // Docs: https://shopify.dev/docs/agents/checkout/mcp
+    // Gate: Shopify limited-partner preview as of 2026-04.
+    //       No logic changes required here — Checkout MCP operates via a separate MCP
+    //       server endpoint, not via CartForm. Cart permalinks (checkout URLs) are the
+    //       current bridge between AI agents and Shopify checkout.
     switch (action) {
         case CartForm.ACTIONS.LinesAdd:
             result = await cart.addLines(inputs.lines);

@@ -233,7 +233,7 @@ export function generateWebsiteSchema(
 
 /**
  * Generate Product schema for product pages
- * @param siteUrl - Optional absolute site URL for generating absolute offer URLs (e.g. https://example.com)
+ * Enhanced for Shopify Agentic Commerce: GTIN, aggregateRating, LimitedAvailability, compareAtPrice spec
  */
 export function generateProductSchema(
     product: {
@@ -241,74 +241,141 @@ export function generateProductSchema(
         description?: string | null;
         handle: string;
         vendor?: string | null;
+        productType?: string | null;
+        tags?: string[];
+        publishedAt?: string | null;
         media?: {nodes: Array<{__typename: string; image?: {id?: string | null; url: string; altText?: string | null; width?: number | null; height?: number | null} | null}>};
+        images?: {nodes: Array<{id?: string | null; url: string; altText?: string | null; width?: number | null; height?: number | null}>};
     },
     variant?: {
         sku?: string | null;
+        barcode?: string | null;
         price?: {amount: string; currencyCode: string};
         compareAtPrice?: {amount: string; currencyCode: string} | null;
         availableForSale?: boolean;
+        quantityAvailable?: number | null;
+        currentlyNotInStock?: boolean;
+        image?: {url: string; altText?: string | null; width?: number | null; height?: number | null} | null;
     } | null,
+    reviews?: Array<{rating?: {value: string | null} | null}> | null,
     siteUrl?: string
 ): JsonLdSchema {
-    const images = extractImagesFromMedia(product.media?.nodes).map(img => img.url);
+    const mediaImages = extractImagesFromMedia(product.media?.nodes).map(img => img.url);
+    const productImages = product.images?.nodes?.map(img => img.url) ?? [];
+    const allImages = mediaImages.length > 0 ? mediaImages : productImages;
+    const cleanTitle = product.title.split(" + ")[0].trim();
+
+    let availability = "https://schema.org/OutOfStock";
+    if (variant?.availableForSale) {
+        if (variant.quantityAvailable != null && variant.quantityAvailable <= 5 && variant.quantityAvailable > 0) {
+            availability = "https://schema.org/LimitedAvailability";
+        } else {
+            availability = "https://schema.org/InStock";
+        }
+    } else if (variant?.currentlyNotInStock) {
+        availability = "https://schema.org/BackOrder";
+    }
+
+    let aggregateRating: Record<string, unknown> | undefined;
+    if (reviews && reviews.length > 0) {
+        const ratings = reviews
+            .map(r => parseFloat(r?.rating?.value ?? ""))
+            .filter(n => !isNaN(n));
+        if (ratings.length > 0) {
+            const avg = ratings.reduce((a, b) => a + b, 0) / ratings.length;
+            aggregateRating = {
+                "@type": "AggregateRating",
+                ratingValue: Math.round(avg * 10) / 10,
+                reviewCount: ratings.length,
+                bestRating: 5,
+                worstRating: 1
+            };
+        }
+    }
+
+    const offers: Record<string, unknown> = {
+        "@type": "Offer",
+        url: buildCanonicalUrl(`/products/${product.handle}`, siteUrl),
+        priceCurrency: variant?.price?.currencyCode ?? "USD",
+        price: variant?.price ? formatSchemaPrice(variant.price.amount) : undefined,
+        availability,
+        itemCondition: "https://schema.org/NewCondition",
+        priceValidUntil: new Date(new Date().getFullYear(), 11, 31).toISOString().split("T")[0],
+        ...(variant?.compareAtPrice && {
+            priceSpecification: {
+                "@type": "PriceSpecification",
+                price: formatSchemaPrice(variant.compareAtPrice.amount),
+                priceCurrency: variant.compareAtPrice.currencyCode,
+                description: "Original price before discount"
+            }
+        })
+    };
 
     return {
         "@context": "https://schema.org",
         "@type": "Product",
-        name: product.title,
+        name: cleanTitle,
         description: stripHtml(product.description) || undefined,
-        image: images.length > 0 ? images : undefined,
+        image: allImages.length > 0 ? allImages : undefined,
+        ...(variant?.image?.url && {thumbnail: variant.image.url}),
         sku: variant?.sku || undefined,
-        brand: product.vendor
-            ? {
-                  "@type": "Brand",
-                  name: product.vendor
-              }
-            : undefined,
-        offers: variant?.price
-            ? {
-                  "@type": "Offer",
-                  url: buildCanonicalUrl(`/products/${product.handle}`, siteUrl),
-                  priceCurrency: variant.price.currencyCode,
-                  price: formatSchemaPrice(variant.price.amount),
-                  availability: variant.availableForSale
-                      ? "https://schema.org/InStock"
-                      : "https://schema.org/OutOfStock",
-                  priceValidUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0] // 30 days
-              }
-            : undefined
+        ...(variant?.barcode && {gtin: variant.barcode}),
+        brand: product.vendor ? {"@type": "Brand", name: product.vendor} : undefined,
+        ...(product.productType && {category: product.productType}),
+        ...(product.tags && product.tags.length > 0 && {keywords: product.tags.join(", ")}),
+        ...(product.publishedAt && {datePublished: formatSchemaDate(product.publishedAt)}),
+        ...(aggregateRating && {aggregateRating}),
+        offers: variant?.price ? offers : undefined,
+        ...(variant?.sku && {
+            identifier: [{
+                "@type": "PropertyValue",
+                propertyID: "SKU",
+                value: variant.sku
+            }]
+        })
     };
 }
 
 /**
- * Generate ItemList schema for collection pages
- * @param siteUrl - Optional absolute site URL for generating absolute item URLs (e.g. https://example.com)
+ * Generate CollectionPage + ItemList schema for collection pages
  */
 export function generateCollectionSchema(
     collection: {
         title: string;
         description?: string | null;
         handle: string;
+        image?: {url: string; altText?: string | null; width?: number | null; height?: number | null} | null;
     },
     products?: Array<{
         title: string;
         handle: string;
+        description?: string | null;
+        featuredImage?: {url: string} | null;
+        priceRange?: {minVariantPrice?: {amount: string; currencyCode: string}};
     }> | null,
     siteUrl?: string
 ): JsonLdSchema {
+    const collectionUrl = buildCanonicalUrl(`/collections/${collection.handle}`, siteUrl);
     return {
         "@context": "https://schema.org",
-        "@type": "ItemList",
+        "@type": "CollectionPage",
         name: collection.title,
         description: stripHtml(collection.description) || undefined,
-        numberOfItems: products?.length || 0,
-        itemListElement: products?.slice(0, 20).map((product, index) => ({
-            "@type": "ListItem" as const,
-            position: index + 1,
-            url: buildCanonicalUrl(`/products/${product.handle}`, siteUrl),
-            name: product.title
-        }))
+        url: collectionUrl,
+        ...(collection.image?.url && {image: collection.image.url}),
+        mainEntity: {
+            "@type": "ItemList",
+            name: collection.title,
+            numberOfItems: products?.length || 0,
+            itemListElement: products?.slice(0, 20).map((product, index) => ({
+                "@type": "ListItem",
+                position: index + 1,
+                url: buildCanonicalUrl(`/products/${product.handle}`, siteUrl),
+                name: product.title.split(" + ")[0].trim(),
+                ...(product.description && {description: stripHtml(product.description)}),
+                ...(product.featuredImage?.url && {image: product.featuredImage.url})
+            }))
+        }
     };
 }
 

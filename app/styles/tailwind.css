@@ -434,6 +434,31 @@ body {
 }
 
 /* ==========================================
+   Stories Page Animations
+   Fade-in for image, slide-up for info panel
+   ========================================== */
+
+@keyframes stories-fade {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes stories-info {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ==========================================
    Comprehensive Animation System
    GPU-accelerated, accessible animations
    ========================================== */
@@ -877,6 +902,9 @@ body {
     --animate-announcement-scroll: announcement-scroll var(--announcement-scroll-duration) linear infinite;
     --animate-bounce-slow: bounce-slow 2s infinite;
     --animate-float-gentle: float-gentle 3s ease-in-out infinite;
+    /* Stories page — image fade-in and info slide-up */
+    --animate-stories-fade: stories-fade 0.5s ease-out;
+    --animate-stories-info: stories-info 0.45s ease-out 0.12s;
     /* Pure black/white - used for overlays, lightbox, glassmorphism (bg-dark, text-light, etc.) */
     --color-dark: oklch(0 0 0);
     --color-light: oklch(1 0 0);
@@ -1190,6 +1218,14 @@ body {
     }
 
     .motion-press:active {
+        transform: scale(var(--motion-press-scale));
+    }
+
+    /* intent-press: JS-driven scale feedback for large touch targets (product cards).
+       Activated via data-pressing="true" by useIntentPress hook, which cancels the
+       press state if pointer movement exceeds the scroll threshold — preventing the
+       scale-down from firing during passive scroll-through gestures. */
+    .intent-press[data-pressing="true"] {
         transform: scale(var(--motion-press-scale));
     }
 
@@ -1573,7 +1609,8 @@ button:active {
     }
 
     .motion-lift:hover,
-    .motion-press:active {
+    .motion-press:active,
+    .intent-press[data-pressing="true"] {
         transform: none !important;
     }
 

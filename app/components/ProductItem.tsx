@@ -60,6 +60,7 @@ import {OUT_OF_STOCK_LABEL} from "~/lib/product/product-card-utils";
 import {cn} from "~/lib/utils";
 import type {GridColumns} from "~/lib/gridColumns";
 import {usePointerCapabilities} from "~/hooks/usePointerCapabilities";
+import {useIntentPress} from "~/hooks/useIntentPress";
 import {ProductImagePlaceholder} from "~/components/ProductImagePlaceholder";
 import {extractImagesFromMedia} from "~/lib/media-utils";
 
@@ -339,6 +340,7 @@ export function ProductItem({
     // Get dynamic font sizes based on grid columns and variant
     const fontSizes = getProductFontSizes(gridColumns, variant);
     const {canHover} = usePointerCapabilities();
+    const {isPressing, handlers: pressHandlers} = useIntentPress(canHover);
     const variantUrl = useVariantUrl(product.handle);
     const featuredImage = product.featuredImage;
 
@@ -448,7 +450,7 @@ export function ProductItem({
                 viewTransition
                 className={cn(
                     "flex items-center gap-4 md:gap-6 py-4 md:pl-6 no-underline cursor-pointer",
-                    canHover ? "group motion-interactive motion-surface hover:bg-muted/30" : "motion-press active:bg-muted/30",
+                    canHover ? "group motion-interactive motion-surface hover:bg-muted/30" : "motion-surface intent-press active:bg-muted/30",
                     "animate-product-fade-in",
                     "relative overflow-visible",
                     compactMode && "py-2 gap-2 md:gap-3",
@@ -456,6 +458,8 @@ export function ProductItem({
                     className
                 )}
                 style={{animationDelay: `${staggerDelay}ms`}}
+                data-pressing={isPressing ? "true" : undefined}
+                {...pressHandlers}
             >
                 {/* Pin icon - positioned relative to Link wrapper for highest z-index */}
                 {specialTags.isPinned && <PinIcon size="default" className="absolute -top-2 -left-1 z-100" />}
@@ -639,7 +643,7 @@ export function ProductItem({
             viewTransition
             className={cn(
                 "block no-underline animate-product-fade-in cursor-pointer relative overflow-visible rounded-lg",
-                canHover ? "group motion-surface" : "motion-press active:scale-[var(--motion-press-scale)]",
+                canHover ? "group motion-surface" : "motion-surface intent-press",
                 // Muted visual treatment for out-of-stock products: reduced opacity + desaturated
                 // opacity-[0.82] keeps text legible; saturate(0.65) signals unavailability without
                 // making the card invisible — both preserve WCAG contrast minimums
@@ -648,6 +652,8 @@ export function ProductItem({
                 className
             )}
             style={{animationDelay: `${staggerDelay}ms`}}
+            data-pressing={isPressing ? "true" : undefined}
+            {...pressHandlers}
         >
             {/* Pin icon - positioned relative to Link wrapper to escape overflow-x-clip */}
             {/* Must be outside the image container which clips horizontal overflow */}

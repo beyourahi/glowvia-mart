@@ -367,7 +367,7 @@ export function QuickAddSheet({product, open, onOpenChange, sizeChart}: QuickAdd
 
                                                 // Pill button styling — matches PDP variant pills exactly
                                                 const buttonClasses = cn(
-                                                    "inline-flex min-h-11 select-none items-center justify-center gap-1.5 sm:gap-2 rounded-full border-2 px-2.5 sm:px-4 py-1.5 text-sm sm:text-base lg:text-lg font-medium sleek hover:scale-[1.02] hover:shadow-md active:scale-[0.98]",
+                                                    "inline-flex min-h-11 min-w-11 select-none items-center justify-center gap-1.5 sm:gap-2 rounded-full border-2 px-2.5 sm:px-4 py-1.5 text-sm sm:text-base lg:text-lg font-medium sleek hover:scale-[1.02] hover:shadow-md active:scale-[0.98]",
                                                     isSelected
                                                         ? "border-primary bg-primary text-primary-foreground"
                                                         : "border-primary text-primary hover:bg-primary hover:text-primary-foreground",

@@ -295,6 +295,13 @@ interface ProductItemProps {
      * @default undefined
      */
     quickAddClassName?: string;
+    /**
+     * When true, passes inCarousel={true} to ProductImageCarousel so media
+     * scrolling is disabled and only the first asset renders statically.
+     * Set this whenever the card lives inside a horizontal parent carousel.
+     * @default false
+     */
+    inCarousel?: boolean;
 }
 
 export function ProductItem({
@@ -326,7 +333,8 @@ export function ProductItem({
     quickAddLargeScreenOnly = false,
     skipCartOpen = false,
     orderHistoryContext = false,
-    quickAddClassName
+    quickAddClassName,
+    inCarousel = false
 }: ProductItemProps) {
     // Get dynamic font sizes based on grid columns and variant
     const fontSizes = getProductFontSizes(gridColumns, variant);
@@ -708,6 +716,7 @@ export function ProductItem({
                             !!customActions ||
                             (!hideDefaultActions && showQuickAdd && "variants" in product)
                         }
+                        inCarousel={inCarousel}
                     />
                 ) : (
                     <ProductImagePlaceholder aspectRatio="4/5" />

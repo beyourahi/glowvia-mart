@@ -93,6 +93,13 @@ interface ProductImageCarouselProps {
      * button's fade-in.
      */
     hasBottomAction?: boolean;
+    /**
+     * When true, disables the internal Embla carousel and renders only the
+     * first media asset statically (no arrows, no pagination dots). Use this
+     * whenever the product card itself is placed inside a parent horizontal
+     * carousel to avoid nested scroll-interaction conflicts.
+     */
+    inCarousel?: boolean;
 }
 
 // =============================================================================
@@ -278,7 +285,8 @@ export function ProductImageCarousel({
     loading = "lazy",
     className,
     isOutOfStock = false,
-    hasBottomAction = false
+    hasBottomAction = false,
+    inCarousel = false
 }: ProductImageCarouselProps) {
     const [api, setApi] = useState<CarouselApi>();
     const [activeIndex, setActiveIndex] = useState(0);
@@ -322,6 +330,36 @@ export function ProductImageCarousel({
     // =============================================================================
     // RENDER
     // =============================================================================
+
+    // Inside a parent carousel — render the first slide only, no Embla, no dots,
+    // no arrows. Prevents nested scroll conflicts with the outer carousel.
+    if (inCarousel) {
+        const slide = slides[0];
+        if (!slide) {
+            return <ProductImagePlaceholder aspectRatio="4/5" className={cn("rounded-lg", className)} />;
+        }
+        return (
+            <div ref={containerRef} className={cn("relative w-full overflow-hidden rounded-lg aspect-[4/5]", className)}>
+                {slide.type === "video" ? (
+                    <VideoSlide
+                        slide={slide}
+                        productTitle={productTitle}
+                        isActive
+                        cardInView={cardInView}
+                        isOutOfStock={isOutOfStock}
+                    />
+                ) : (
+                    <ImageSlide
+                        image={slide.image}
+                        productTitle={productTitle}
+                        loading={loading}
+                        isOutOfStock={isOutOfStock}
+                        index={0}
+                    />
+                )}
+            </div>
+        );
+    }
 
     // Empty — placeholder keeps the 4:5 slot stable.
     if (slides.length === 0) {

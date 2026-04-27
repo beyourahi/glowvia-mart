@@ -103,7 +103,7 @@ export function CuratedCollections({collections}: CuratedCollectionsProps) {
                                                             key={product.id}
                                                             className="pl-2 md:pl-3 basis-[80%] sm:basis-[45%] lg:basis-[32%] xl:basis-[27%] 2xl:basis-[22%]"
                                                         >
-                                                            <ProductItem product={product} />
+                                                            <ProductItem product={product} inCarousel />
                                                         </CarouselItem>
                                                     ))}
                                                 </CarouselContent>

@@ -29,6 +29,42 @@ import type {ChangelogEntry} from "~/lib/types/changelog";
 // Newest entries at the top. Add new entries here in the same commit that ships the change.
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
+        date: "2026-04-28",
+        category: "Improvement",
+        headline: "Smoother browsing in product carousels",
+        summary: "Product cards inside horizontal carousels (New Arrivals, You May Also Like, Recently Viewed, Cart Suggestions) now scroll cleanly without triggering the card's own media switcher. Cards displayed in the main grid still support swiping through all product photos."
+    },
+    {
+        date: "2026-04-28",
+        category: "New Feature",
+        headline: "Smart policy search for AI shopping agents",
+        summary: "AI assistants can now search shipping, return, and privacy policies along with FAQs to answer customer questions in natural language. Uses BM25-ranked search across all policy documents and FAQ content."
+    },
+    {
+        date: "2026-04-28",
+        category: "Improvement",
+        headline: "Richer breadcrumb navigation in search results",
+        summary: "Product, collection, and blog pages now include structured breadcrumb data, making them eligible for breadcrumb-enhanced Google search results. Added BreadcrumbList structured data (Schema.org) to every page that displays visual breadcrumbs."
+    },
+    {
+        date: "2026-04-28",
+        category: "Improvement",
+        headline: "Enhanced product information for AI agents",
+        summary: "Gift card badges, digital product indicators, and subscription plan chips now appear on product pages when applicable. Product pages now surface extended catalog fields: gift card detection, digital-product shipping status, available subscription plans, and collection membership."
+    },
+    {
+        date: "2026-04-27",
+        category: "New Feature",
+        headline: "Stories: swipeable editorial product showcase at /stories",
+        summary: "Browse the newest arrivals as a full-screen editorial experience — product image on the left, info on the right. Stories auto-advance every 6 seconds, support keyboard navigation with the arrow keys, and show a thumbnail strip so you can jump to any product directly."
+    },
+    {
+        date: "2026-04-27",
+        category: "New Feature",
+        headline: "Compare products side by side at /compare",
+        summary: "Add up to four products to a side-by-side comparison table. Price, brand, type, and availability are laid out in aligned rows so you can evaluate options at a glance. Remove any product with a single click and add your pick directly to the cart from the comparison view."
+    },
+    {
         date: "2026-04-26",
         category: "New Feature",
         headline: "AI assistants can now browse and shop the store in natural language",

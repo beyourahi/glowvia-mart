@@ -455,6 +455,7 @@ function CartSuggestions({products, layout, cartLines}: CartSuggestionsProps) {
                                     darkContext={true}
                                     skipCartOpen={true}
                                     quickAddClassName="!h-9"
+                                    inCarousel
                                 />
                             </CarouselItem>
                         ))}

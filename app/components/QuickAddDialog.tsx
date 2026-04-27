@@ -387,7 +387,7 @@ export function QuickAddDialog({product, open, onOpenChange, sizeChart}: QuickAd
 
                                             // Pill button styling - consistent for all options
                                             const buttonClasses = cn(
-                                                "inline-flex min-h-10 select-none items-center justify-center gap-2 rounded-full border-2 px-3 sm:px-4 py-1.5 text-base sm:text-lg font-medium sleek hover:scale-[1.02] hover:shadow-md active:scale-[0.98]",
+                                                "inline-flex min-h-10 min-w-10 select-none items-center justify-center gap-2 rounded-full border-2 px-3 sm:px-4 py-1.5 text-base sm:text-lg font-medium sleek hover:scale-[1.02] hover:shadow-md active:scale-[0.98]",
                                                 isSelected
                                                     ? "border-primary bg-primary text-primary-foreground"
                                                     : "border-primary text-primary hover:bg-primary hover:text-primary-foreground",

@@ -591,10 +591,23 @@ export function ProductItem({
                 </div>
 
                 {/* Action button group - Custom actions or default (Quick Add + Wishlist) */}
+                {/* onClick + onPointerDown isolation: same portal-bubbling concern as card variant. */}
                 {customActions ? (
-                    <div className="flex items-center gap-2 md:gap-3 shrink-0 md:mr-6">{customActions}</div>
+                    <div
+                        role="presentation"
+                        className="flex items-center gap-2 md:gap-3 shrink-0 md:mr-6"
+                        onClick={e => e.stopPropagation()}
+                        onPointerDown={e => e.stopPropagation()}
+                    >
+                        {customActions}
+                    </div>
                 ) : !hideDefaultActions ? (
-                    <div className="flex items-center gap-2 md:gap-3 shrink-0 md:mr-6">
+                    <div
+                        role="presentation"
+                        className="flex items-center gap-2 md:gap-3 shrink-0 md:mr-6"
+                        onClick={e => e.stopPropagation()}
+                        onPointerDown={e => e.stopPropagation()}
+                    >
                         {showQuickAdd && "variants" in product && (
                             <QuickAddButton
                                 product={product}
@@ -729,18 +742,33 @@ export function ProductItem({
                 )} />
 
                 {/* Quick Add Button or Custom Actions - full width at bottom, visible on mobile, show on hover for desktop */}
+                {/* onClick + onPointerDown stop propagation: React portal events (Sheet/Dialog overlay
+                    backdrop clicks) bubble through the React fiber tree — not the DOM tree — back to
+                    this wrapper and then to the parent <Link>. Stopping both events here creates an
+                    isolation boundary so no interaction inside the Quick Add surface can accidentally
+                    trigger a Link navigation. */}
                 {customActions ? (
-                    <div className={cn(
-                        "absolute bottom-0 left-0 right-0 p-2 sm:p-3 z-20 motion-overlay",
-                        canHover && "md:opacity-0 md:group-hover:opacity-100"
-                    )}>
+                    <div
+                        role="presentation"
+                        className={cn(
+                            "absolute bottom-0 left-0 right-0 p-2 sm:p-3 z-20 motion-overlay",
+                            canHover && "md:opacity-0 md:group-hover:opacity-100"
+                        )}
+                        onClick={e => e.stopPropagation()}
+                        onPointerDown={e => e.stopPropagation()}
+                    >
                         {customActions}
                     </div>
                 ) : !hideDefaultActions && showQuickAdd && "variants" in product ? (
-                    <div className={cn(
-                        "absolute bottom-0 left-0 right-0 p-2 sm:p-3 z-20 motion-overlay",
-                        canHover && "md:opacity-0 md:group-hover:opacity-100"
-                    )}>
+                    <div
+                        role="presentation"
+                        className={cn(
+                            "absolute bottom-0 left-0 right-0 p-2 sm:p-3 z-20 motion-overlay",
+                            canHover && "md:opacity-0 md:group-hover:opacity-100"
+                        )}
+                        onClick={e => e.stopPropagation()}
+                        onPointerDown={e => e.stopPropagation()}
+                    >
                         <QuickAddButton
                             product={product}
                             fullWidth

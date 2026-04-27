@@ -30,6 +30,12 @@ import type {ChangelogEntry} from "~/lib/types/changelog";
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
         date: "2026-04-28",
+        category: "Fix",
+        headline: "Quick Add no longer accidentally navigates to the product page",
+        summary: "Tapping the backdrop to dismiss a Quick Add sheet or dialog would occasionally open the full product page instead. All Quick Add interactions — variant selection, adding to cart, and closing — are now fully isolated from the product card's navigation."
+    },
+    {
+        date: "2026-04-28",
         category: "Improvement",
         headline: "Smoother browsing in product carousels",
         summary: "Product cards inside horizontal carousels (New Arrivals, You May Also Like, Recently Viewed, Cart Suggestions) now scroll cleanly without triggering the card's own media switcher. Cards displayed in the main grid still support swiping through all product photos."

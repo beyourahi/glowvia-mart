@@ -320,6 +320,7 @@ export function QuickAddButton({
                         <Button
                             type="submit"
                             disabled={isLoading || isMutating}
+                            onPointerDown={e => e.stopPropagation()}
                             onClick={e => {
                                 e.stopPropagation();
                                 // Open cart drawer on click (form will submit)
@@ -375,6 +376,7 @@ export function QuickAddButton({
             <Button
                 type="button"
                 disabled={isMutating}
+                onPointerDown={e => e.stopPropagation()}
                 onClick={handleClick}
                 className={cn(
                     baseStyles,

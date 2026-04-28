@@ -691,8 +691,9 @@ function deriveBrandRoles(
     return {
         brandPrimary: primary,
         // Brand buttons are always large text — WCAG AA large-text threshold (3:1) applies.
-        // Prefer white when it qualifies; only fall back to black for very light backgrounds where white fails even that bar.
-        brandPrimaryForeground: getContrastRatio(WHITE, primary) >= 3.0 ? WHITE : BLACK,
+        // Check against true white (1 0 0) since WHITE constant is off-white (0.980), which would
+        // otherwise land just under 3:1 for mid-range colors that white should win on aesthetically.
+        brandPrimaryForeground: getContrastRatio("oklch(1 0 0)", primary) >= 3.0 ? WHITE : BLACK,
         brandPrimaryHover: withLightness(primary, clamp(primaryParsed.l + (seeds.isDark ? -0.05 : -0.04), 0, 1)),
         brandPrimaryActive: withLightness(primary, clamp(primaryParsed.l + (seeds.isDark ? -0.09 : -0.08), 0, 1)),
         brandPrimarySubtle,

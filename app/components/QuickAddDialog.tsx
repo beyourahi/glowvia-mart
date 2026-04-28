@@ -66,6 +66,7 @@ import {SizeChartButtonCompact} from "~/components/SizeChartButton";
 import type {SizeChartData} from "~/lib/size-chart";
 import {toast} from "sonner";
 import {getButtonLabel} from "~/lib/product-tags";
+import {BuyNowButton} from "~/components/BuyNowButton";
 import {ProductTagList} from "~/components/product/ProductTagList";
 import {parseProductTitle} from "~/lib/product";
 import {OUT_OF_STOCK_LABEL} from "~/lib/product/product-card-utils";
@@ -192,8 +193,9 @@ export function QuickAddDialog({product, open, onOpenChange, sizeChart}: QuickAd
     const [quantity, setQuantity] = useState(1);
     const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
 
-    // Get appropriate button label ("Pre Order" for preorder products)
-    const buttonLabel = getButtonLabel(product.tags, "Get it now");
+    // Labels: add-to-cart uses "Add to Bag", buy-now uses "Get it now" (both respect preorder)
+    const buttonLabel = getButtonLabel(product.tags, "Add to Bag");
+    const buyNowLabel = getButtonLabel(product.tags, "Get it now");
 
     // Lock Lenis smooth scroll when dialog is open (native scroll lock handled by Radix)
     useScrollLock(open);
@@ -459,7 +461,7 @@ export function QuickAddDialog({product, open, onOpenChange, sizeChart}: QuickAd
                                         </button>
                                     </div>
                                 </div>
-                                {/* Cart button - full width */}
+                                {/* Add to Bag — adds to cart and opens cart drawer */}
                                 <QuickAddCartButton
                                     variant={selectedVariant}
                                     quantity={quantity}
@@ -468,6 +470,14 @@ export function QuickAddDialog({product, open, onOpenChange, sizeChart}: QuickAd
                                     productId={product.id}
                                     productTitle={product.title}
                                     productHandle={product.handle}
+                                />
+                                {/* Get it now — Buy Now, redirects directly to checkout */}
+                                <BuyNowButton
+                                    lines={[{merchandiseId: selectedVariant.id, quantity}]}
+                                    price={selectedVariant.price}
+                                    compareAtPrice={selectedVariant.compareAtPrice}
+                                    label={buyNowLabel}
+                                    className="min-h-12 text-lg"
                                 />
                             </div>
                         ) : availableVariants.length === 0 ? (
@@ -571,8 +581,8 @@ function QuickAddCartButton({
             onClick={handleAddToCart}
             disabled={isLoading || !variant.availableForSale}
             className={cn(
-                "w-full min-h-12 inline-flex select-none items-center justify-between gap-4 rounded-full border-2 border-primary bg-transparent px-3 sm:px-4 py-2 text-lg font-medium text-primary sleek",
-                "hover:bg-primary hover:text-primary-foreground active:bg-primary active:text-primary-foreground",
+                "w-full min-h-12 inline-flex select-none items-center justify-between gap-4 rounded-full border-2 border-primary bg-primary px-3 sm:px-4 py-2 text-lg font-medium text-primary-foreground sleek",
+                "hover:bg-primary/90",
                 (isLoading || !variant.availableForSale) && "opacity-50 cursor-not-allowed"
             )}
         >

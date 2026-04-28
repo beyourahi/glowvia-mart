@@ -69,6 +69,7 @@ import {SizeChartButtonCompact} from "~/components/SizeChartButton";
 import type {SizeChartData} from "~/lib/size-chart";
 import {toast} from "sonner";
 import {getButtonLabel} from "~/lib/product-tags";
+import {BuyNowButton} from "~/components/BuyNowButton";
 import {ProductTagList} from "~/components/product/ProductTagList";
 import {parseProductTitle} from "~/lib/product";
 import {OUT_OF_STOCK_LABEL} from "~/lib/product/product-card-utils";
@@ -193,8 +194,9 @@ export function QuickAddSheet({product, open, onOpenChange, sizeChart}: QuickAdd
     const [quantity, setQuantity] = useState(1);
     const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
 
-    // Get appropriate button label ("Pre Order" for preorder products)
-    const buttonLabel = getButtonLabel(product.tags, "Get it now");
+    // Labels: add-to-cart uses "Add to Bag", buy-now uses "Get it now" (both respect preorder)
+    const buttonLabel = getButtonLabel(product.tags, "Add to Bag");
+    const buyNowLabel = getButtonLabel(product.tags, "Get it now");
 
     // Lock Lenis smooth scroll when sheet is open (native scroll lock handled by Radix)
     useScrollLock(open);
@@ -439,17 +441,26 @@ export function QuickAddSheet({product, open, onOpenChange, sizeChart}: QuickAdd
                         </div>
                     )}
 
-                    {/* Add to cart button - full width */}
+                    {/* Add to Bag — adds to cart and closes sheet */}
                     {selectedVariant && selectedVariant.availableForSale ? (
-                        <QuickAddCartButton
-                            variant={selectedVariant}
-                            quantity={quantity}
-                            buttonLabel={buttonLabel}
-                            onSuccess={handleCartSuccess}
-                            productId={product.id}
-                            productTitle={product.title}
-                            productHandle={product.handle}
-                        />
+                        <>
+                            <QuickAddCartButton
+                                variant={selectedVariant}
+                                quantity={quantity}
+                                buttonLabel={buttonLabel}
+                                onSuccess={handleCartSuccess}
+                                productId={product.id}
+                                productTitle={product.title}
+                                productHandle={product.handle}
+                            />
+                            {/* Get it now — Buy Now, redirects directly to checkout */}
+                            <BuyNowButton
+                                lines={[{merchandiseId: selectedVariant.id, quantity}]}
+                                price={selectedVariant.price}
+                                compareAtPrice={selectedVariant.compareAtPrice}
+                                label={buyNowLabel}
+                            />
+                        </>
                     ) : availableVariants.length === 0 ? (
                         <div className="w-full min-h-12 inline-flex items-center justify-center rounded-full border-2 border-muted bg-muted/50 px-3 sm:px-4 py-2 text-lg font-medium text-muted-foreground">
                             {OUT_OF_STOCK_LABEL}
@@ -528,10 +539,10 @@ function QuickAddCartButton({
     return (
         <Button
             type="button"
-            variant="outline"
+            variant="default"
             onClick={handleAddToCart}
             disabled={isLoading || !variant.availableForSale}
-            className="w-full min-h-12 justify-between gap-4 py-2 text-base sm:text-lg active:bg-primary active:text-primary-foreground"
+            className="w-full min-h-12 justify-between gap-4 py-2 text-base sm:text-lg"
         >
             <span className="flex items-center gap-2">
                 <Money data={variant.price} />

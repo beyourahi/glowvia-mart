@@ -107,13 +107,10 @@ export function AddToCartButton({
                             <input name="analytics" type="hidden" value={JSON.stringify(analytics)} />
                             <Button
                                 type="submit"
-                                variant="outline"
+                                variant="default"
                                 onClick={() => { setForceIdle(false); onClick?.(); }}
                                 disabled={isDisabled}
-                                className={cn(
-                                    "w-full min-h-10 justify-between gap-4 py-1.5 text-base sm:text-lg",
-                                    "active:bg-primary active:text-primary-foreground"
-                                )}
+                                className="w-full min-h-10 justify-between gap-4 py-1.5 text-base sm:text-lg"
                             >
                                 {/* Price on the left with clear hierarchy */}
                                 <span className="flex items-center gap-2">

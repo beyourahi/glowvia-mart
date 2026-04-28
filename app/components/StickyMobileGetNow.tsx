@@ -121,7 +121,6 @@
  * visibility detection without scroll event listeners.
  */
 import {useEffect, useState} from "react";
-import {ShoppingCart} from "lucide-react";
 import {cn} from "~/lib/utils";
 import {formatShopifyMoney} from "~/lib/currency-formatter";
 import {calculateVariantDiscountPercentage} from "~/lib/discounts";
@@ -210,11 +209,8 @@ export function StickyMobileGetNow({
                 className="w-full flex items-center min-h-[62px] rounded-[20px] bg-card text-foreground select-none shadow-xl ring-1 ring-border overflow-hidden outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.99] transition-transform duration-100"
                 aria-label="Scroll to product purchase section"
             >
-                {/* Light zone — soft arrow circle + CTA label + optional sale badge */}
+                {/* Light zone — CTA label + optional sale badge */}
                 <div className="flex-1 flex items-center gap-3 pl-4 pr-3">
-                    <div className="flex items-center justify-center size-8 rounded-full bg-foreground/[0.07] shrink-0" aria-hidden="true">
-                        <ShoppingCart className="size-[14px]" />
-                    </div>
                     <span className="text-[17px] font-semibold tracking-[-0.015em] leading-none text-foreground">
                         {buttonText}
                     </span>

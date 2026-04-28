@@ -67,6 +67,7 @@ import {
 import {ColorSwatch, hasSwatch} from "~/components/ui/color-swatch";
 import {hasSpecialTag} from "~/lib/product-tags";
 import {ShoppingSummary} from "~/components/product/ShoppingSummary";
+import {BuyNowButton} from "~/components/BuyNowButton";
 
 const FALLBACK_PRODUCT_CONTENT = {
     addToCartStandard: "Add to Bag",
@@ -412,6 +413,15 @@ export function ProductForm({
                     {wishlistButton && <div className="shrink-0">{wishlistButton}</div>}
                     {shareButton && <div className="shrink-0">{shareButton}</div>}
                 </div>
+
+                {/* Get it now — Buy Now, bypasses cart drawer and redirects to checkout */}
+                <BuyNowButton
+                    lines={cartLines}
+                    disabled={!selectedVariant || !selectedVariant.availableForSale || needsSellingPlan}
+                    price={displayPrice}
+                    compareAtPrice={isSubscriptionMode ? selectedVariant?.price : selectedVariant?.compareAtPrice}
+                    label={isPreorder ? "Pre-Order Now" : "Get it now"}
+                />
             </div>
         );
     }
@@ -538,6 +548,15 @@ export function ProductForm({
 
             {/* Add to Cart button - full width */}
             <div>{addToCartButton}</div>
+
+            {/* Get it now — Buy Now, bypasses cart drawer and redirects to checkout */}
+            <BuyNowButton
+                lines={cartLines}
+                disabled={!selectedVariant || !selectedVariant.availableForSale || needsSellingPlan}
+                price={displayPrice}
+                compareAtPrice={isSubscriptionMode ? selectedVariant?.price : selectedVariant?.compareAtPrice}
+                label={isPreorder ? "Pre-Order Now" : "Get it now"}
+            />
         </div>
     );
 }

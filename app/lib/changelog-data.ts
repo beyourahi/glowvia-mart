@@ -30,6 +30,24 @@ import type {ChangelogEntry} from "~/lib/types/changelog";
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
         date: "2026-04-28",
+        category: "New Feature",
+        headline: "\"Get it now\" — skip the bag and go straight to checkout",
+        summary: "Every product page, Quick Add dialog, and Quick Add sheet now has a \"Get it now\" button alongside the primary Add to Bag button. Tapping it adds the selected variant and quantity to your cart then takes you directly to checkout, with no extra steps."
+    },
+    {
+        date: "2026-04-28",
+        category: "New Feature",
+        headline: "AI shopping agents can now build carts for you",
+        summary: "AI shopping assistants can now create a ready-to-checkout cart on your behalf and send you a direct link. When you arrive via an agent link, a banner lets you review the items before proceeding — nothing goes to checkout without your confirmation."
+    },
+    {
+        date: "2026-04-28",
+        category: "Improvement",
+        headline: "Cart and checkout always load fresh, never cached",
+        summary: "Cart and checkout pages now bypass browser and CDN caches on every visit, so the item count, prices, and availability you see are always accurate and up to date."
+    },
+    {
+        date: "2026-04-28",
         category: "Improvement",
         headline: "Product cards no longer scale during scrolling",
         summary: "Tapping a product card used to show a scale-down effect even when you were just scrolling past it. That feedback now only appears when you deliberately tap or click a card — scrolling through the grid stays smooth and distraction-free."

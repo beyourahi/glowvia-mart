@@ -49,7 +49,6 @@
 import {useState, useEffect, useCallback} from "react";
 import {CartForm} from "@shopify/hydrogen";
 import type {FetcherWithComponents} from "react-router";
-import {Plus, Loader2} from "lucide-react";
 import {cn} from "~/lib/utils";
 import {useAside} from "~/components/Aside";
 import {QuickAddSheet} from "~/components/QuickAddSheet";
@@ -225,11 +224,11 @@ export function QuickAddButton({
     // largeScreenOnly adds hidden lg:flex to only show on large screens
     const baseStyles = fullWidth
         ? cn(
-              "flex items-center justify-between w-full h-10 sm:h-11 md:h-12 px-3 sm:px-4 rounded-full font-medium",
+              "flex items-center justify-center w-full h-10 sm:h-11 md:h-12 px-3 sm:px-4 rounded-full font-medium",
               largeScreenOnly ? "hidden lg:flex text-sm sm:text-base" : "text-base sm:text-lg"
           )
         : cn(
-              "flex items-center justify-center gap-2 h-11 sm:h-12 px-3 sm:px-4 rounded-full font-medium",
+              "flex items-center justify-center h-11 sm:h-12 px-3 sm:px-4 rounded-full font-medium",
               largeScreenOnly ? "hidden lg:flex text-xs sm:text-sm" : "text-sm sm:text-base"
           );
 
@@ -274,9 +273,6 @@ export function QuickAddButton({
         [isSoldOut, isSingleVariant]
     );
 
-    // Icon size based on fullWidth
-    const iconSize = fullWidth ? "size-6" : "size-5";
-
     // For sold out products
     if (isSoldOut) {
         return (
@@ -287,17 +283,7 @@ export function QuickAddButton({
                 className={cn(baseStyles, "opacity-50", className)}
                 aria-label={`${product.title} is sold out`}
             >
-                {fullWidth ? (
-                    <>
-                        <span>{buttonLabel}</span>
-                        <Plus className={iconSize} />
-                    </>
-                ) : (
-                    <>
-                        <span className={iconOnlyMobile ? "hidden md:inline" : undefined}>{buttonLabel}</span>
-                        <Plus className={iconSize} />
-                    </>
-                )}
+                <span className={iconOnlyMobile && !fullWidth ? "hidden md:inline" : undefined}>{buttonLabel}</span>
             </Button>
         );
     }
@@ -342,27 +328,9 @@ export function QuickAddButton({
                             aria-label={`Add ${product.title} to cart`}
                             aria-busy={isLoading}
                         >
-                            {fullWidth ? (
-                                <>
-                                    <span>{buttonLabel}</span>
-                                    {isLoading ? (
-                                        <Loader2 className={cn(iconSize, "animate-spin")} />
-                                    ) : (
-                                        <Plus className={iconSize} />
-                                    )}
-                                </>
-                            ) : (
-                                <>
-                                    <span className={iconOnlyMobile ? "hidden md:inline" : undefined}>
-                                        {buttonLabel}
-                                    </span>
-                                    {isLoading ? (
-                                        <Loader2 className={cn(iconSize, "animate-spin")} />
-                                    ) : (
-                                        <Plus className={iconSize} />
-                                    )}
-                                </>
-                            )}
+                            <span className={iconOnlyMobile && !fullWidth ? "hidden md:inline" : undefined}>
+                                {buttonLabel}
+                            </span>
                         </Button>
                     );
                 }}
@@ -389,17 +357,7 @@ export function QuickAddButton({
                 )}
                 aria-label={`Select options for ${product.title}`}
             >
-                {fullWidth ? (
-                    <>
-                        <span>{buttonLabel}</span>
-                        <Plus className={iconSize} />
-                    </>
-                ) : (
-                    <>
-                        <span className={iconOnlyMobile ? "hidden md:inline" : undefined}>{buttonLabel}</span>
-                        <Plus className={iconSize} />
-                    </>
-                )}
+                <span className={iconOnlyMobile && !fullWidth ? "hidden md:inline" : undefined}>{buttonLabel}</span>
             </Button>
 
             {/* Variant selector - Sheet for mobile, Dialog for desktop */}

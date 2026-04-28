@@ -690,7 +690,9 @@ function deriveBrandRoles(
 
     return {
         brandPrimary: primary,
-        brandPrimaryForeground: ensureReadableText(getContrastForeground(primary, {lightForeground: WHITE, darkForeground: BLACK}), primary),
+        // Brand buttons are always large text — WCAG AA large-text threshold (3:1) applies.
+        // Prefer white when it qualifies; only fall back to black for very light backgrounds where white fails even that bar.
+        brandPrimaryForeground: getContrastRatio(WHITE, primary) >= 3.0 ? WHITE : BLACK,
         brandPrimaryHover: withLightness(primary, clamp(primaryParsed.l + (seeds.isDark ? -0.05 : -0.04), 0, 1)),
         brandPrimaryActive: withLightness(primary, clamp(primaryParsed.l + (seeds.isDark ? -0.09 : -0.08), 0, 1)),
         brandPrimarySubtle,

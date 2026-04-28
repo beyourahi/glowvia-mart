@@ -136,7 +136,7 @@ export function DiscountBadge({discountInfo, percentage, position = "absolute", 
                 // Background + border ring (matches storefront_001 spec)
                 "bg-discount-bg border-discount-icon-bg border",
                 // Padding
-                "px-0.5 pr-1 py-0",
+                "px-0.5 pr-1 py-0.5",
                 // Shadow for depth
                 "shadow-md",
                 className

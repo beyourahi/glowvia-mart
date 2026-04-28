@@ -136,7 +136,7 @@ export function ProductDiscountBadge({selectedVariant, product, className}: Prod
                 // Background
                 "bg-discount-bg",
                 // Padding - slightly larger for product page prominence
-                "px-2 pr-3 py-1.5",
+                "px-0.5 pr-1 py-0.5",
                 // Shadow for depth
                 "shadow-md",
                 className

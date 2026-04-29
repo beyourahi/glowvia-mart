@@ -30,7 +30,7 @@ import type {ChangelogEntry} from "~/lib/types/changelog";
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
         date: "2026-04-29",
-        category: "Maintenance",
+        category: "Improvement",
         headline: "Size guide removed from product pages",
         summary: "The size guide button and dialog have been removed from product pages. Sizing information is still available through product descriptions and any size-related content set up by the store."
     },

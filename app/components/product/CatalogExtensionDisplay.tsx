@@ -1,5 +1,5 @@
 import {Link} from "react-router";
-import {Layers} from "lucide-react";
+import {Layers, ArrowRight} from "lucide-react";
 import {Badge} from "~/components/ui/badge";
 import {cn} from "~/lib/utils";
 
@@ -73,25 +73,27 @@ export const CatalogExtensionDisplay = ({
                 </li>
             )}
             {collections && collections.length > 0 && (
-                <li
-                    className="flex flex-wrap items-center gap-x-2 gap-y-1.5"
-                    aria-label={`Also in: ${collections.map(c => c.title).join(", ")}`}
-                >
-                    <span className="flex items-center gap-2 shrink-0">
-                        <span className="inline-block h-1 w-1 rounded-full bg-foreground/40 shrink-0" aria-hidden="true" />
-                        <span className="flex items-center gap-1 text-xs text-foreground/60">
+                <li aria-label={`Also found in: ${collections.map(c => c.title).join(", ")}`}>
+                    <div className="rounded-lg border border-primary/20 bg-primary/6 px-3.5 py-2.5">
+                        <p className="mb-2 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-primary/70 select-none">
                             <Layers className="h-3 w-3" aria-hidden="true" />
-                            <span className="font-medium text-foreground/80">Also in</span>
-                        </span>
-                    </span>
-                    <div className="flex flex-wrap gap-1.5">
-                        {collections.map(c => (
-                            <Badge key={c.handle} asChild variant="outline" className="text-xs font-normal cursor-pointer">
-                                <Link to={`/collections/${c.handle}`} prefetch="intent" viewTransition>
-                                    {c.title}
-                                </Link>
-                            </Badge>
-                        ))}
+                            Also found in
+                        </p>
+                        <div className="flex flex-wrap gap-1.5">
+                            {collections.map(c => (
+                                <Badge
+                                    key={c.handle}
+                                    asChild
+                                    variant="outline"
+                                    className="border-primary/30 bg-primary/10 text-primary text-xs font-medium transition-all duration-150 can-hover:scale-[1.03] can-hover:bg-primary/15 can-hover:border-primary/50 can-hover:shadow-sm"
+                                >
+                                    <Link to={`/collections/${c.handle}`} prefetch="intent" viewTransition>
+                                        {c.title}
+                                        <ArrowRight className="opacity-50" />
+                                    </Link>
+                                </Badge>
+                            ))}
+                        </div>
                     </div>
                 </li>
             )}

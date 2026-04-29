@@ -76,7 +76,7 @@ Backend behavior, data flow, and Hydrogen conventions **must remain consistent**
 ```
 storefront_002/
 ├── app/
-│   ├── routes/              # 60 routes
+│   ├── routes/              # 56 routes
 │   ├── components/          # 147 components
 │   │   ├── ui/              # 27 shadcn
 │   │   ├── blog/            # 7 blog
@@ -84,7 +84,7 @@ storefront_002/
 │   │   ├── pwa/             # 5 PWA
 │   │   ├── cart/            # AgentArrivalBanner, AgentCartView, AgentFallbackBanner, CartMain
 │   │   ├── checkout/        # CheckoutKitEmbed
-│   │   ├── product/         # AgentProductBrief, ShoppingSummary, ProductBadge, ProductTagList, ComplementaryProducts, SimilarItems, CatalogExtensionDisplay
+│   │   ├── product/         # AgentProductBrief, ShoppingSummary, ProductBadge, ProductTagList, CatalogExtensionDisplay
 │   │   ├── motion/          # Parallax
 │   │   ├── gallery/         # Gallery grid
 │   │   ├── icons/           # Custom icons
@@ -397,7 +397,7 @@ Read all comments before editing. Update when changing code. Add for complex log
 
 **Newsletter**: `api.newsletter.tsx` — POST endpoint that creates a Shopify customer with `acceptsMarketing: true`. Components: `NewsletterForm.tsx` (email input + submission) + `NewsletterSection.tsx` (section wrapper that also renders `PromotionalBanner.tsx` above the form). `PromotionalBanner.tsx` renders full-width media (image or video, 90dvh) for hero/campaign banners on the homepage and newsletter section.
 
-**Product Recommendations (PDP)**: Two deferred recommendation sections on the PDP, both loaded via `routes/products.$handle.tsx`. `ComplementaryProducts.tsx` — "Pairs well with" horizontal-scroll strip using Shopify's COMPLEMENTARY recommendation intent. `SimilarItems.tsx` — "You may also like" responsive grid (2→3→4 columns) using RELATED intent. Both accept a resolved products array (already awaited) and render skeleton loading states; return null when empty. `components/product/AgentProductBrief.tsx` — agent-native PDP panel (monospace, structured field rows for title, pricing, options, description, tags, collections); rendered in `products.$handle.tsx` in place of the hero section when `useAgentSurface().isAgent` is true.
+**Product Recommendations (PDP)**: `RelatedProducts` section on the PDP loaded via `routes/products.$handle.tsx`. `components/product/AgentProductBrief.tsx` — agent-native PDP panel (monospace, structured field rows for title, pricing, options, description, tags, collections); rendered in `products.$handle.tsx` in place of the hero section when `useAgentSurface().isAgent` is true.
 
 **Buy Now CTA**: `BuyNowButton.tsx` — secondary PDP CTA ("Get it now") that adds to cart and immediately redirects to Shopify checkout via `POST /cart` with `redirectTo=__checkout_url__`. The token is validated server-side in `cart.tsx` — only `__checkout_url__` and relative paths are accepted; external URLs are rejected to prevent open-redirect attacks. Uses a separate `"buy-now"` fetcherKey so it can be in-flight independently from Add to Bag's `"cart-mutation"`. Includes a `pageshow` bfcache handler to reset frozen fetcher state on back-navigation from checkout. Used by `ProductForm.tsx`, `QuickAddDialog.tsx`, and `QuickAddSheet.tsx`.
 
@@ -407,19 +407,11 @@ Read all comments before editing. Update when changing code. Add for complex log
 
 **Brand Animation**: `BrandAnimation.tsx` — scroll-driven brand text transformation; animates the brand name from a large full-width hero block down to a smaller centered header position on scroll. Uses damped (frame-independent) interpolation and binary-search font sizing. Wraps `BrandAnimationProvider` (`lib/brand-animation-layout.ts`, `lib/brand-name-sizes.ts`); SSR-safe.
 
-**Compare**: `/compare?ids=GID1&ids=GID2` — side-by-side comparison of up to 4 products. Attribute rows: price, brand, type, availability. Remove product via ×, add to cart (first variant), link to PDP. `components/CompareTable.tsx` renders the matrix. `lib/agentic/compare.ts` builds the comparison matrix for the MCP tool layer.
-
-**Gift Finder**: `/gift-finder` — 4-step guided quiz (recipient → budget → occasion → interest) that builds a Storefront search query and navigates to `/search?q=<query>`. `components/GiftFinderQuiz.tsx`. Quiz logic in `lib/agentic/quizzes/gift-finder.ts` (shared between the UI and the agentic tool layer).
-
-**Style Quiz**: `/style-quiz` — 3-step quiz (fit → style → color) that maps personal style into a Storefront search query. Saves `profileKey` to `localStorage("style_profile")` and shows a welcome-back banner on return. Navigates to `/search?q=<query>` on completion. `components/StyleQuizForm.tsx`. Quiz logic in `lib/agentic/quizzes/style-fit.ts`.
-
-**Stories**: `/stories` — editorial split-screen product showcase. Newest 8 products displayed as full-viewport panels (image left, info right; stacked on mobile). Auto-advances every 6 seconds, pauses on hover/focus, supports ArrowLeft/ArrowRight keyboard navigation and thumbnail strip. `components/StoryViewer.tsx`.
-
 **Policies Index**: `/policies` — listing page linking to all store policies (privacy, shipping, refund, terms). `routes/policies._index.tsx`. Individual policy pages remain at `/policies/:handle` via the existing `routes/policies.$handle.tsx`.
 
 **Agentic Layer**: AI-native commerce infrastructure for autonomous agent access to the storefront.
 - **Public MCP** (`POST /api/mcp`): Policy & FAQs search, no auth required. `routes/api.mcp.tsx` + `lib/agentic/mcp-tools/policies/`
-- **Authenticated MCP** (`POST /api/ucp/mcp`): Catalog, cart, checkout — Bearer JWT required. `routes/api.ucp.mcp.tsx` + `lib/agentic/mcp-tools/storefront/` (tools: `search_catalog`, `get_product`, `lookup_catalog`, `recommend_similar`, `recommend_complementary`, `compare_products`, `get_story_feed`, `list_sort_options`, `search_suggest`)
+- **Authenticated MCP** (`POST /api/ucp/mcp`): Catalog, cart, checkout — Bearer JWT required. `routes/api.ucp.mcp.tsx` + `lib/agentic/mcp-tools/storefront/` (tools: `search_catalog`, `get_product`, `lookup_catalog`, `list_sort_options`, `search_suggest`)
 - **UCP Discovery** (`GET /.well-known/ucp`): Machine-readable capability manifest. `routes/[.]well-known.ucp.tsx`
 - **AI Transparency** (`GET /llms.txt`): Human/AI-readable storefront manifest per llmstxt.org convention. `routes/[llms.txt].tsx`
 - **Routing**: `lib/agentic/mcp-router.ts` — JSON-RPC 2.0 dispatch
@@ -428,7 +420,7 @@ Read all comments before editing. Update when changing code. Add for complex log
 - **Catalog Shapes**: `lib/agentic/catalog-shapes.ts` + `lib/agentic/ucp-catalog-types.ts` — transforms Storefront API products into the UCP wire format; shared by `agent-server.ts` and MCP tool handlers
 - **Affinity Scoring**: `lib/agentic/affinity.ts` — re-ranks collection products by customer order history server-side; degrades gracefully to original order for anonymous users
 - **Agent Surface**: `lib/agentic/agent-surface.ts` — derives `AgentSurface` (`isAgent`, `source`, `profileShape`) from AI attribution + JWT session presence; `lib/agent-surface-context.tsx` propagates it via `AgentSurfaceProvider` / `useAgentSurface()` hook used by components that conditionally render agent UI
-- **Agent UI**: `components/AgentFallbackBanner.tsx` — full-page interstitial for interactive routes (gift-finder, style-quiz, stories) that can't be programmatically navigated; provides routing guidance to MCP endpoints; emits `fallback_shown` observability event. `components/cart/AgentFallbackBanner.tsx` — compact inline variant for the cart surface specifically (see **Cart**). `components/cart/AgentCartView.tsx` — agent-native cart view (see **Cart**). `components/product/AgentProductBrief.tsx` — agent-native PDP panel (see **Product Recommendations**)
+- **Agent UI**: `components/AgentFallbackBanner.tsx` — full-page interstitial for interactive routes that can't be programmatically navigated; provides routing guidance to MCP endpoints; emits `fallback_shown` observability event. `components/cart/AgentFallbackBanner.tsx` — compact inline variant for the cart surface specifically (see **Cart**). `components/cart/AgentCartView.tsx` — agent-native cart view (see **Cart**). `components/product/AgentProductBrief.tsx` — agent-native PDP panel (see **Product Recommendations**)
 - **AI Attribution**: `lib/ai-attribution.ts` — server-side detection of AI-originated traffic from referer headers (chatgpt.com, perplexity.ai, claude.ai, etc.) and `utm_medium=ai`; `appendAiAttribution()` tags outbound URLs
 - **Cart Handoff**: `lib/cart-permalink.ts` — builds/parses Shopify cart permalink URLs (`/cart/{variantId}:{qty},...`) for agent-to-checkout handoff
 - **Observability**: `lib/agentic/observability.ts` — structured event emitter; dual-target (Oxygen log viewer + Analytics Engine `AGENT_ANALYTICS` binding); privacy-safe allowlist; never logs PII, tokens, or free-text

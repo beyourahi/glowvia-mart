@@ -85,7 +85,7 @@ export const CatalogExtensionDisplay = ({
                                     key={c.handle}
                                     asChild
                                     variant="outline"
-                                    className="border-primary/30 bg-primary/10 text-primary text-xs font-medium transition-all duration-150 can-hover:scale-[1.03] can-hover:bg-primary/15 can-hover:border-primary/50 can-hover:shadow-sm"
+                                    className="border-primary/30 bg-primary/10 text-primary px-3 py-1 text-sm font-medium transition-all duration-150 can-hover:scale-[1.02] can-hover:bg-overlay-light can-hover:border-primary/60 can-hover:shadow-sm"
                                 >
                                     <Link to={`/collections/${c.handle}`} prefetch="intent" viewTransition>
                                         {c.title}

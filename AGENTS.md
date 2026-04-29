@@ -78,7 +78,7 @@ Backend behavior, data flow, and Hydrogen conventions **must remain consistent**
 storefront_002/
 ├── app/
 │   ├── routes/              # 56 routes
-│   ├── components/          # 147 components
+│   ├── components/          # 141 components
 │   │   ├── ui/              # 27 shadcn
 │   │   ├── blog/            # 7 blog
 │   │   ├── changelog/       # 2 changelog

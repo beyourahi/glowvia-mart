@@ -30,6 +30,42 @@ import type {ChangelogEntry} from "~/lib/types/changelog";
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
         date: "2026-04-29",
+        category: "Design",
+        headline: "Cart suggestions are now smaller and easier to scroll past",
+        summary: "Product recommendation cards in the cart drawer are now more compact — smaller images, tighter spacing — so they clearly sit below your actual cart items without competing for your attention."
+    },
+    {
+        date: "2026-04-29",
+        category: "New Feature",
+        headline: "Find the perfect gift with a guided quiz at /gift-finder",
+        summary: "A new Gift Finder walks you through four quick questions — who you're shopping for, your budget, the occasion, and their interests — then takes you straight to a curated list of matching products. Available at /gift-finder from any device."
+    },
+    {
+        date: "2026-04-29",
+        category: "New Feature",
+        headline: "Discover products that match your style with the Style Quiz",
+        summary: "A three-step quiz at /style-quiz asks about your preferred fit, aesthetic, and colour palette, then takes you to products that match your choices. Your style profile is saved so when you return, the quiz greets you with personalised picks instead of starting from scratch."
+    },
+    {
+        date: "2026-04-29",
+        category: "New Feature",
+        headline: "AI agents can now search the full catalog, get recommendations, and manage the cart",
+        summary: "An authenticated API layer gives AI shopping agents complete access to the store: they can search the catalog, look up individual products, surface similar and complementary items, compare products side by side, browse the editorial Stories feed, and add items to the cart — all programmatically. The same logic powering the Gift Finder and Style Quiz quizzes is available to agents so they can match products to a shopper's preferences through conversation."
+    },
+    {
+        date: "2026-04-29",
+        category: "New Feature",
+        headline: "The store now publishes an AI-readable capability profile at /llms.txt",
+        summary: "Following the llmstxt.org convention, the store publishes a plain-text file at /llms.txt that summarises what the store sells, how to interact with it, and what capabilities are available to AI systems. AI assistants can read this file to understand the store before making requests, leading to more accurate and relevant responses."
+    },
+    {
+        date: "2026-04-29",
+        category: "Improvement",
+        headline: "AI agents see a structured layout on product and cart pages",
+        summary: "When an AI agent visits a product or cart page, it sees a purpose-built text layout — title, pricing, options, availability, and line items presented in clean structured rows rather than the visual storefront design. Interactive pages that agents can't navigate programmatically (Gift Finder, Style Quiz, Stories) now show a clear banner directing the agent to the appropriate API endpoint instead, so no agent ever gets stuck."
+    },
+    {
+        date: "2026-04-29",
         category: "Improvement",
         headline: "Size guide removed from product pages",
         summary: "The size guide button and dialog have been removed from product pages. Sizing information is still available through product descriptions and any size-related content set up by the store."

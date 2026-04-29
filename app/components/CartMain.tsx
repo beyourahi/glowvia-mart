@@ -348,15 +348,15 @@ interface CartSuggestionsProps {
  * CartSuggestions - Product recommendations carousel for empty cart state
  *
  * Carousel configuration optimized for cart aside drawer context:
- * - **Responsive Breakpoints**: Optimized for aside width (narrower than full-page)
- *   - Mobile (< 640px): basis-[48%] - Shows 2 full items + peek of 3rd (~2.1 items visible)
- *   - Tablet (640px+): basis-[38%] - Shows 2.6 items + peek (~2.6 items visible)
- *   - Desktop (1024px+): basis-[33%] - Shows ~3 items in aside width
- *   - Large (1280px+): basis-[30%] - Shows ~3.3 items (aside width doesn't grow)
+ * - **Responsive Breakpoints**: Compact sizing to signal secondary content below primary line items
+ *   - Mobile (< 640px): basis-[48%] - Shows ~2.1 cards (~20% narrower than before)
+ *   - Tablet (640px+): basis-[40%] - Shows ~2.5 cards
+ *   - Desktop (1024px+): basis-[35%] - Shows ~2.86 cards in aside width
+ *   - Large (1280px+): basis-[31%] - Shows ~3.2 cards (aside width doesn't grow)
  *
  * Note: Unlike full-page carousels that use basis-[80%] → [45%] → [32%] → [27%] → [22%],
- * this carousel is constrained by the fixed aside width (~400-450px), so breakpoints
- * are adjusted to show appropriate item counts within that narrower container.
+ * this carousel is constrained by the fixed aside width (~400-450px). Cards are intentionally
+ * compact to reinforce hierarchy: primary line items > suggestions.
  *
  * Features:
  * - Drag-free scrolling with momentum (dragFree: true)
@@ -443,7 +443,7 @@ function CartSuggestions({products, layout, cartLines}: CartSuggestionsProps) {
 
     return (
         <section
-            className={cn("pt-2 pb-2 sm:pb-4", layout === "aside" ? "px-3 sm:px-4" : "px-0")}
+            className={cn("pt-1.5 pb-1.5 sm:pb-3", layout === "aside" ? "px-3 sm:px-4" : "px-0")}
             onClickCapture={e => {
                 // Close aside when clicking any link within the carousel
                 // But NOT when clicking buttons (like Quick Add) inside the link
@@ -454,8 +454,8 @@ function CartSuggestions({products, layout, cartLines}: CartSuggestionsProps) {
             }}
             aria-label="Product suggestions"
         >
-            <div className="flex items-center gap-2 py-3 px-0">
-                <Sparkles className="size-3.5 shrink-0 text-primary-foreground/50" />
+            <div className="flex items-center gap-2 py-2 px-0">
+                <Sparkles className="size-3 shrink-0 text-primary-foreground/50" />
                 <p className="text-sm font-semibold tracking-wide text-primary-foreground">
                     {suggestionsHeading}
                 </p>
@@ -480,7 +480,7 @@ function CartSuggestions({products, layout, cartLines}: CartSuggestionsProps) {
                         {shuffledProducts.map(product => (
                             <CarouselItem
                                 key={product.id}
-                                className="pl-2 md:pl-3 basis-[60%] sm:basis-[50%] lg:basis-[44%] xl:basis-[40%]"
+                                className="pl-2 md:pl-3 basis-[48%] sm:basis-[40%] lg:basis-[35%] xl:basis-[31%]"
                             >
                                 <ProductItem
                                     product={product}
@@ -529,14 +529,14 @@ const SKELETON_IDS = ["skeleton-1", "skeleton-2", "skeleton-3"] as const;
  */
 function CartSuggestionsSkeleton() {
     return (
-        <section className="pt-4 pb-6 sm:pb-8 px-3 sm:px-4">
+        <section className="pt-3 pb-4 sm:pb-5 px-3 sm:px-4">
             {/* Section title skeleton */}
-            <Skeleton className="h-4 sm:h-5 w-28 sm:w-32 mb-3 sm:mb-4 bg-overlay-light-hover" />
+            <Skeleton className="h-3.5 sm:h-4 w-28 sm:w-32 mb-2 sm:mb-3 bg-overlay-light-hover" />
 
             {/* Product cards skeleton - matches carousel breakpoints */}
             <div className="flex gap-2 md:gap-3 overflow-hidden">
                 {SKELETON_IDS.map(id => (
-                    <div key={id} className="shrink-0 basis-[85%] sm:basis-[48%] lg:basis-1/2 space-y-1.5 sm:space-y-2">
+                    <div key={id} className="shrink-0 basis-[48%] sm:basis-[40%] lg:basis-[35%] space-y-1.5 sm:space-y-2">
                         <Skeleton className="aspect-4/5 w-full rounded-sm bg-overlay-light-hover" />
                         <Skeleton className="h-2.5 sm:h-3 w-3/4 bg-overlay-light-hover" />
                         <Skeleton className="h-2.5 sm:h-3 w-1/2 bg-overlay-light-hover" />

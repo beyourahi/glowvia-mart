@@ -56,6 +56,7 @@ Backend behavior, data flow, and Hydrogen conventions **must remain consistent**
 |               | shadcn/ui        | -          | 27 Radix UI components              |
 |               | Lucide React     | -          | Icons                               |
 |               | OKLCH colors     | -          | WCAG 2.1 AA compliant               |
+|               | schema-dts       | ^1.1       | JSON-LD structured data types       |
 | **Features**  | Lenis            | 1.3.16     | GPU-accelerated smooth scroll       |
 |               | Workbox          | 7.0.0      | Service worker, offline support     |
 |               | Embla Carousel   | 8.6.x      | Auto-scroll, wheel gestures         |

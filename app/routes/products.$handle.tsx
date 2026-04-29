@@ -68,8 +68,6 @@ import {redirectIfHandleIsLocalized} from "~/lib/redirect";
 import {useRecentlyViewed} from "~/lib/recently-viewed";
 import {CollectionSidebar, type CollectionWithCount} from "~/components/CollectionSidebar";
 import {RelatedProducts} from "~/components/RelatedProducts";
-import {ComplementaryProducts} from "~/components/product/ComplementaryProducts";
-import {SimilarItems} from "~/components/product/SimilarItems";
 import {
     getBrandNameFromMatches,
     generateProductSchema,
@@ -278,30 +276,10 @@ function loadDeferredData({context}: Route.LoaderArgs, productId: string) {
         TIMEOUT_DEFAULTS.API
     );
 
-    // Products with COMPLEMENTARY intent — items that pair well with this product
-    const complementary = dataAdapter
-        .query(COMPLEMENTARY_PRODUCTS_QUERY, {
-            variables: {productId},
-            cache: dataAdapter.CacheShort()
-        })
-        .then((data: any) => data.productRecommendations ?? [])
-        .catch(() => null);
-
-    // Products with RELATED intent — similar items shoppers might prefer instead
-    const similar = dataAdapter
-        .query(SIMILAR_PRODUCTS_QUERY, {
-            variables: {productId},
-            cache: dataAdapter.CacheShort()
-        })
-        .then((data: any) => data.productRecommendations ?? [])
-        .catch(() => null);
-
     return {
         recommendations,
         reviews,
-        sidebarData,
-        complementary,
-        similar
+        sidebarData
     };
 }
 
@@ -322,9 +300,7 @@ export default function Product() {
         reviews,
         sidebarData,
         activeCollectionHandle,
-        selectedSellingPlan,
-        complementary,
-        similar
+        selectedSellingPlan
     } = useLoaderData<typeof loader>();
     const {addProduct} = useRecentlyViewed();
 
@@ -582,26 +558,6 @@ export default function Product() {
             </Suspense>
 
             <RelatedProducts products={recommendations} />
-
-            <Suspense fallback={null}>
-                <Await resolve={complementary}>
-                    {resolvedComplementary => (
-                        <ComplementaryProducts
-                            products={resolvedComplementary ?? []}
-                        />
-                    )}
-                </Await>
-            </Suspense>
-
-            <Suspense fallback={null}>
-                <Await resolve={similar}>
-                    {resolvedSimilar => (
-                        <SimilarItems
-                            products={resolvedSimilar ?? []}
-                        />
-                    )}
-                </Await>
-            </Suspense>
 
             <Analytics.ProductView
                 data={{
@@ -997,34 +953,6 @@ const RECOMMENDATIONS_QUERY = `#graphql
     $language: LanguageCode
   ) @inContext(country: $country, language: $language) {
     productRecommendations(productId: $productId) {
-      ...RecommendedProduct
-    }
-  }
-  ${RECOMMENDED_PRODUCT_FRAGMENT}
-` as const;
-
-// Query to fetch COMPLEMENTARY products — items that pair well with this product
-const COMPLEMENTARY_PRODUCTS_QUERY = `#graphql
-  query ProductPageComplementary(
-    $productId: ID!
-    $country: CountryCode
-    $language: LanguageCode
-  ) @inContext(country: $country, language: $language) {
-    productRecommendations(productId: $productId, intent: COMPLEMENTARY) {
-      ...RecommendedProduct
-    }
-  }
-  ${RECOMMENDED_PRODUCT_FRAGMENT}
-` as const;
-
-// Query to fetch RELATED products — similar items shoppers might consider instead
-const SIMILAR_PRODUCTS_QUERY = `#graphql
-  query ProductPageSimilar(
-    $productId: ID!
-    $country: CountryCode
-    $language: LanguageCode
-  ) @inContext(country: $country, language: $language) {
-    productRecommendations(productId: $productId, intent: RELATED) {
       ...RecommendedProduct
     }
   }

@@ -84,7 +84,7 @@ storefront_002/
 │   │   ├── pwa/             # 5 PWA
 │   │   ├── cart/            # AgentArrivalBanner, AgentCartView, AgentFallbackBanner, CartMain
 │   │   ├── checkout/        # CheckoutKitEmbed
-│   │   ├── product/         # AgentProductBrief, ShoppingSummary, ProductBadge, ProductTagList, ComplementaryProducts, SimilarItems, CatalogExtensionDisplay
+│   │   ├── product/         # AgentProductBrief, ShoppingSummary, ProductBadge, ProductTagList, CatalogExtensionDisplay
 │   │   ├── motion/          # Parallax
 │   │   ├── gallery/         # Gallery grid
 │   │   ├── icons/           # Custom icons
@@ -397,7 +397,7 @@ Read all comments before editing. Update when changing code. Add for complex log
 
 **Newsletter**: `api.newsletter.tsx` — POST endpoint that creates a Shopify customer with `acceptsMarketing: true`. Components: `NewsletterForm.tsx` (email input + submission) + `NewsletterSection.tsx` (section wrapper that also renders `PromotionalBanner.tsx` above the form). `PromotionalBanner.tsx` renders full-width media (image or video, 90dvh) for hero/campaign banners on the homepage and newsletter section.
 
-**Product Recommendations (PDP)**: Two deferred recommendation sections on the PDP, both loaded via `routes/products.$handle.tsx`. `ComplementaryProducts.tsx` — "Pairs well with" horizontal-scroll strip using Shopify's COMPLEMENTARY recommendation intent. `SimilarItems.tsx` — "You may also like" responsive grid (2→3→4 columns) using RELATED intent. Both accept a resolved products array (already awaited) and render skeleton loading states; return null when empty. `components/product/AgentProductBrief.tsx` — agent-native PDP panel (monospace, structured field rows for title, pricing, options, description, tags, collections); rendered in `products.$handle.tsx` in place of the hero section when `useAgentSurface().isAgent` is true.
+**Product Recommendations (PDP)**: `RelatedProducts` section on the PDP loaded via `routes/products.$handle.tsx`. `components/product/AgentProductBrief.tsx` — agent-native PDP panel (monospace, structured field rows for title, pricing, options, description, tags, collections); rendered in `products.$handle.tsx` in place of the hero section when `useAgentSurface().isAgent` is true.
 
 **Buy Now CTA**: `BuyNowButton.tsx` — secondary PDP CTA ("Get it now") that adds to cart and immediately redirects to Shopify checkout via `POST /cart` with `redirectTo=__checkout_url__`. The token is validated server-side in `cart.tsx` — only `__checkout_url__` and relative paths are accepted; external URLs are rejected to prevent open-redirect attacks. Uses a separate `"buy-now"` fetcherKey so it can be in-flight independently from Add to Bag's `"cart-mutation"`. Includes a `pageshow` bfcache handler to reset frozen fetcher state on back-navigation from checkout. Used by `ProductForm.tsx`, `QuickAddDialog.tsx`, and `QuickAddSheet.tsx`.
 

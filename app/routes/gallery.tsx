@@ -51,7 +51,7 @@ import {AnimatedSection} from "~/components/AnimatedSection";
 import {GalleryGrid} from "~/components/gallery/GalleryGrid";
 import {transformToGalleryImages} from "~/lib/gallery";
 import type {GalleryImageData, GalleryPageInfo} from "~/lib/gallery";
-import {buildCanonicalUrl, getBrandNameFromMatches, getSiteUrlFromMatches} from "~/lib/seo";
+import {buildCanonicalUrl, getBrandNameFromMatches, getSiteUrlFromMatches, generateBreadcrumbListSchema} from "~/lib/seo";
 import {useSiteSettings} from "~/lib/site-content-context";
 import {PageHeading} from "~/components/PageHeading";
 
@@ -68,14 +68,20 @@ export const meta: Route.MetaFunction = ({matches}) => {
         rootData?.siteContent?.siteSettings?.galleryPageDescription ||
         "A curated visual journey through our handcrafted pieces.";
 
-    return (
-        getSeoMeta({
+    const breadcrumbSchema = generateBreadcrumbListSchema([
+        {name: "Home", url: "/"},
+        {name: "Gallery", url: "/gallery"}
+    ], siteUrl);
+
+    return [
+        ...(getSeoMeta({
             title: pageTitle,
             titleTemplate: `%s | ${brandName}`,
             description: pageDescription,
             url: buildCanonicalUrl("/gallery", siteUrl)
-        }) ?? []
-    );
+        }) ?? []),
+        {"script:ld+json": breadcrumbSchema as any}
+    ];
 };
 
 export async function loader(args: Route.LoaderArgs) {

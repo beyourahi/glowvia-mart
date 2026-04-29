@@ -9,6 +9,7 @@
     },
     "vars": {
         "SESSION_SECRET": "04e746faa7db3ef4fc35fbcec16d80e02a528e88",
+        "IS_PORTFOLIO_DEMO": "true",
         "PUBLIC_STOREFRONT_API_TOKEN": "586d8fd7c598fea7e1b97a8eff48ed49",
         "PUBLIC_STORE_DOMAIN": "horcrux-demo-store.myshopify.com",
         "PUBLIC_CHECKOUT_DOMAIN": "horcrux-demo-store.myshopify.com",
@@ -21,6 +22,11 @@
     "observability": {
         "enabled": true
     },
+    "analytics_engine_datasets": [
+        // AGENT_ANALYTICS binding — Workers-only. Absent on Oxygen. Safe to declare here
+        // because the observability emitter checks env.AGENT_ANALYTICS before calling writeDataPoint.
+        {"binding": "AGENT_ANALYTICS", "dataset": "agent_requests"}
+    ],
     "limits": {
         "cpu_ms": 300000
     }

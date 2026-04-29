@@ -18,7 +18,7 @@
  * - Product: Product detail pages
  * - ItemList: Collection pages
  * - BlogPosting: Blog article pages
- * - FAQPage: FAQ pages
+ * - FAQPage: FAQ page
  *
  * @seo-impact
  * Rich snippets improve:
@@ -28,10 +28,9 @@
  *
  * @dependencies
  * - schema-dts - TypeScript types for schema.org
- * - metaobject-parsers.ts - Default SEO values
  *
  * @related
- * - root.tsx - Uses getSeoMeta for base meta tags
+ * - root.tsx - Uses getSeoDefaults for base meta tags
  * - products.$handle.tsx - Product schema generation
  * - blogs.$blogHandle.$articleHandle.tsx - Article schema
  * - collections.$handle.tsx - Collection schema
@@ -55,13 +54,13 @@
  * checking. We import them only for JSDoc documentation; runtime return objects
  * conform to Schema.org spec without formal type annotations on the return
  * position. If TypeScript is upgraded or the issue is resolved upstream, the
- * return types can be restored.
+ * return types can be restored (see storefront_002/app/lib/seo.ts for reference).
  */
 import type {WithContext, Organization, WebSite, Product, ItemList, BlogPosting, FAQPage} from "schema-dts";
 import type {SiteSettings, ThemeConfig} from "types";
 import {STORE_LOCALE} from "~/lib/store-locale";
-import {toHex} from "./color";
-import {extractImagesFromMedia} from "./media-utils";
+import {toHex} from "~/lib/color";
+import {extractImagesFromMedia} from "~/lib/media-utils";
 
 /** Lightweight stand-in for schema-dts WithContext — avoids TS stack overflow on deep union resolution */
 type JsonLdSchema = Record<string, unknown>;
@@ -190,6 +189,12 @@ export function formatSchemaDate(date: string | Date): string {
 
 /**
  * Generate Organization schema for the homepage
+ *
+ * NOTE: This emits a thin Organization @graph entry. To also emit a fully-enriched
+ * Organization schema (with sameAs social links, logo, description), the homepage
+ * route should add a SECOND script:ld+json block manually alongside this one.
+ * getSeoMeta() cannot include both — the route meta() must do it explicitly.
+ *
  * @param socialLinks - Array of social media URLs from site settings
  */
 export function generateOrganizationSchema(
@@ -233,7 +238,8 @@ export function generateWebsiteSchema(
 
 /**
  * Generate Product schema for product pages
- * Enhanced for Shopify Agentic Commerce: GTIN, aggregateRating, LimitedAvailability, compareAtPrice spec
+ * Enhanced for Shopify Agentic Commerce: GTIN, aggregateRating, LimitedAvailability, compareAtPrice spec,
+ * SCE extension fields (isGiftCard, requiresShipping, sellingPlans, collections), and normalized attributes
  */
 export function generateProductSchema(
     product: {
@@ -258,7 +264,19 @@ export function generateProductSchema(
         image?: {url: string; altText?: string | null; width?: number | null; height?: number | null} | null;
     } | null,
     reviews?: Array<{rating?: {value: string | null} | null}> | null,
-    siteUrl?: string
+    siteUrl?: string,
+    extensionFields?: {
+        isGiftCard?: boolean;
+        requiresShipping?: boolean;
+        sellingPlans?: Array<{name: string; recurringDeliveries?: boolean}>;
+        collections?: Array<{handle: string; title: string}>;
+    } | null,
+    normalizedAttributes?: Array<{
+        propertyID: string;
+        name: string;
+        value: string;
+        normalizedValue?: string | null;
+    }> | null
 ): JsonLdSchema {
     const mediaImages = extractImagesFromMedia(product.media?.nodes).map(img => img.url);
     const productImages = product.images?.nodes?.map(img => img.url) ?? [];
@@ -311,6 +329,45 @@ export function generateProductSchema(
         })
     };
 
+    const additionalProperty: Array<Record<string, unknown>> = [];
+
+    // SCE extension fields → additionalProperty
+    if (extensionFields?.isGiftCard) {
+        additionalProperty.push({"@type": "PropertyValue", propertyID: "isGiftCard", name: "Gift Card", value: true});
+    }
+    if (extensionFields?.requiresShipping === false) {
+        additionalProperty.push({"@type": "PropertyValue", propertyID: "requiresShipping", name: "Requires Shipping", value: false});
+    }
+    if (extensionFields?.sellingPlans?.length) {
+        additionalProperty.push({"@type": "PropertyValue", propertyID: "sellingPlans", name: "Subscription Plans", value: extensionFields.sellingPlans.map(p => p.name).join(", ")});
+    }
+    if (extensionFields?.collections?.length) {
+        additionalProperty.push({"@type": "PropertyValue", propertyID: "collections", name: "Collections", value: extensionFields.collections.map(c => c.title).join(", ")});
+    }
+
+    // Tag-based price explanation
+    if (product.tags && (product.tags.includes("sale") || product.tags.includes("bundle") || product.tags.includes("member-only"))) {
+        const priceTag = product.tags.find(t => ["sale", "bundle", "member-only"].includes(t));
+        additionalProperty.push({"@type": "PropertyValue", propertyID: "priceExplanation", name: "Price Explanation", value: priceTag === "sale" ? "On sale — reduced from original price" : priceTag === "bundle" ? "Bundle pricing — multiple items included" : "Member exclusive pricing"});
+    }
+
+    // Staff pick tag
+    if (product.tags && product.tags.includes("staff-pick")) {
+        additionalProperty.push({"@type": "PropertyValue", propertyID: "isStaffPick", name: "Staff Pick", value: true});
+    }
+
+    // Normalized attributes (color/size/material/fit/pattern etc.)
+    if (normalizedAttributes?.length) {
+        for (const attr of normalizedAttributes) {
+            additionalProperty.push({
+                "@type": "PropertyValue",
+                propertyID: attr.propertyID,
+                name: attr.name,
+                value: attr.normalizedValue ?? attr.value
+            });
+        }
+    }
+
     return {
         "@context": "https://schema.org",
         "@type": "Product",
@@ -332,7 +389,8 @@ export function generateProductSchema(
                 propertyID: "SKU",
                 value: variant.sku
             }]
-        })
+        }),
+        ...(additionalProperty.length > 0 && {additionalProperty})
     };
 }
 
@@ -394,13 +452,16 @@ export function generateBlogPostingSchema(
         handle: string;
     },
     blogHandle: string,
-    brandName?: string
+    brandName?: string,
+    siteUrl?: string
 ): JsonLdSchema {
     const siteName = brandName || SEO_CONFIG.siteName;
+    const articleUrl = buildCanonicalUrl(`/blogs/${blogHandle}/${article.handle}`, siteUrl);
     return {
         "@context": "https://schema.org",
         "@type": "BlogPosting",
         headline: article.title,
+        url: articleUrl,
         description: article.excerpt || undefined,
         image: article.image?.url || undefined,
         datePublished: article.publishedAt ? formatSchemaDate(article.publishedAt) : undefined,
@@ -418,11 +479,11 @@ export function generateBlogPostingSchema(
         publisher: {
             "@type": "Organization",
             name: siteName,
-            ...(SEO_CONFIG.siteUrl ? {url: SEO_CONFIG.siteUrl} : {})
+            url: siteUrl || SEO_CONFIG.siteUrl
         },
         mainEntityOfPage: {
             "@type": "WebPage",
-            "@id": buildCanonicalUrl(`/blogs/${blogHandle}/${article.handle}`)
+            "@id": articleUrl
         }
     };
 }
@@ -469,7 +530,7 @@ export function getSiteUrlFromMatches(matches: Array<{id: string; data?: unknown
 
 /**
  * Get default OG image from site_settings.
- * Priority: ogImage (dedicated social share image) → brandLogo → undefined.
+ * Priority: ogImage (dedicated social share image) → brandLogo → /og-default.jpg (1200×630 static fallback).
  * ogImage should be a landscape 1200×630 crop; brandLogo is a UI asset and may be the wrong aspect ratio.
  */
 export function getDefaultOgImage(
@@ -485,11 +546,38 @@ export function getDefaultOgImage(
         return {url: logo.url, width: logo.width ?? undefined, height: logo.height ?? undefined, type: "image"};
     }
 
-    return undefined;
+    return {url: "/og-default.jpg", width: 1200, height: 630, type: "image"};
 }
 
 /**
- * Build meta array for private account pages (should not be indexed)
+ * Get required social meta tags for a page.
+ * Spread the result alongside getSeoMeta() in every route's meta() to ensure
+ * og:type, og:site_name, and twitter:card are always present.
+ *
+ * @example
+ * export const meta: Route.MetaFunction = ({matches, data}) => {
+ *   const brandName = getBrandNameFromMatches(matches);
+ *   return [
+ *     ...(getSeoMeta({title: "My Page"}) ?? []),
+ *     ...getRequiredSocialMeta("website", brandName),
+ *   ];
+ * };
+ */
+export function getRequiredSocialMeta(
+    type: "website" | "product" | "article",
+    brandName: string,
+    imageUrl?: string
+): Array<Record<string, string>> {
+    return [
+        {property: "og:type", content: type},
+        {property: "og:site_name", content: brandName},
+        {name: "twitter:card", content: imageUrl ? "summary_large_image" : "summary"},
+        ...(imageUrl ? [{name: "twitter:image", content: imageUrl}] : [])
+    ];
+}
+
+/**
+ * Get meta tags for account/auth pages.
  * Returns title + robots:noindex,nofollow
  */
 export function getAccountMeta(label: string): Array<Record<string, string>> {
@@ -497,4 +585,66 @@ export function getAccountMeta(label: string): Array<Record<string, string>> {
         {title: label},
         {name: "robots", content: "noindex, nofollow"}
     ];
+}
+
+// ============================================
+// Phase 3: Agentic Commerce Schema Generators
+// ============================================
+
+/**
+ * Generate BreadcrumbList schema for structured navigation data
+ * Phase 3: Emitted on every route that has visual breadcrumbs
+ */
+export function generateBreadcrumbListSchema(
+    items: Array<{name: string; url: string}>,
+    siteUrl?: string
+): JsonLdSchema {
+    return {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        itemListElement: items.map((item, index) => ({
+            "@type": "ListItem",
+            position: index + 1,
+            name: item.name,
+            item: buildCanonicalUrl(item.url, siteUrl)
+        }))
+    };
+}
+
+/**
+ * Generate standalone Brand schema (referenced by Product schema on PDP)
+ * Phase 3: Emitted as a separate @graph entry on PDP alongside Product schema
+ */
+export function generateBrandSchema(
+    siteSettings?: SeoSiteSettings | null,
+    vendor?: string | null
+): JsonLdSchema {
+    const defaults = getSeoDefaults(siteSettings);
+    const brandName = vendor || defaults.brandName;
+    const slugified = brandName.toLowerCase().replace(/\s+/g, "-");
+    return {
+        "@context": "https://schema.org",
+        "@type": "Brand",
+        "@id": `${defaults.siteUrl}#brand-${slugified}`,
+        name: brandName,
+        ...(siteSettings?.brandLogo?.url && {logo: siteSettings.brandLogo.url})
+    };
+}
+
+/**
+ * Generate WebPage schema for standalone pages (e.g. policy pages)
+ * Phase 3: Emitted on policy routes to provide page-level structured data
+ */
+export function generateWebPageSchema(
+    title: string,
+    url: string,
+    dateModified?: string | null
+): JsonLdSchema {
+    return {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        name: title,
+        url,
+        ...(dateModified && {dateModified: formatSchemaDate(dateModified)})
+    };
 }

@@ -47,7 +47,7 @@ Backend behavior, data flow, and Hydrogen conventions **must remain consistent**
 | Category      | Tech             | Version    | Notes                               |
 | ------------- | ---------------- | ---------- | ----------------------------------- |
 | **Framework** | React            | 18.3.1     |                                     |
-|               | React Router     | 7.12       | Hydrogen preset, file-based routing |
+|               | React Router     | 7.12.0     | Hydrogen preset, file-based routing |
 |               | Shopify Hydrogen | 2026.4.1   | Storefront + Customer Account APIs  |
 |               | Storefront API   | 2026-04    | GraphQL API version                 |
 |               | TypeScript       | 5.9        | Strict mode, ES2022 target          |
@@ -76,18 +76,22 @@ Backend behavior, data flow, and Hydrogen conventions **must remain consistent**
 ```
 storefront_002/
 ├── app/
-│   ├── routes/              # 51 routes
-│   ├── components/          # 135 components
+│   ├── routes/              # 60 routes
+│   ├── components/          # 148 components
 │   │   ├── ui/              # 27 shadcn
 │   │   ├── blog/            # 7 blog
 │   │   ├── changelog/       # 2 changelog
 │   │   ├── pwa/             # 5 PWA
-│   │   ├── product/         # ShoppingSummary, ProductBadge, ProductTagList
+│   │   ├── cart/            # AgentArrivalBanner, AgentCartView, AgentFallbackBanner, CartMain
+│   │   ├── checkout/        # CheckoutKitEmbed
+│   │   ├── product/         # AgentProductBrief, ShoppingSummary, ProductBadge, ProductTagList, ComplementaryProducts, SimilarItems, CatalogExtensionDisplay
 │   │   ├── motion/          # Parallax
 │   │   ├── gallery/         # Gallery grid
 │   │   ├── icons/           # Custom icons
 │   │   └── ProductLightbox/ # Lightbox system
-│   ├── lib/                 # 71 utilities
+│   ├── lib/                 # 70+ utilities
+│   │   ├── agentic/         # MCP/UCP agentic layer (mcp-router, agent-auth, agent-server, mcp-tools/, quizzes/, affinity, catalog-shapes, ucp-catalog-types, observability, structured-data, ucp-profile, jwks-cache, agent-id-hash, attribute-normalizer, + context/request/type utilities)
+│   │   ├── queries/         # Organized GraphQL query modules (policy, policy-corpus, product, search, predictive-search, lookup)
 │   │   ├── metaobject-*.ts  # CMS
 │   │   ├── pwa-*.ts         # PWA
 │   │   ├── changelog-data.ts # Static changelog entries
@@ -96,7 +100,7 @@ storefront_002/
 │   │   ├── product/         # Product data, variants, pricing
 │   │   ├── types/           # Shared type definitions
 │   │   └── fragments.ts     # GraphQL fragments
-│   ├── hooks/               # 13 hooks
+│   ├── hooks/               # 14 hooks
 │   ├── graphql/customer-account/  # 15 queries
 │   └── styles/tailwind.css  # v4 + animations
 ├── public/sw.js             # Workbox
@@ -110,14 +114,15 @@ storefront_002/
 
 ```bash
 npm run dev                  # Dev server + GraphQL codegen
-npm run build                # Production build
+npm run build                # Production build (runs prebuild to copy Workbox libs)
 npm run preview              # Preview build
 npm run lint                 # ESLint
 npm run typecheck            # TypeScript + route types
 npm run codegen              # Regenerate GraphQL types
-npm run dev:workers          # Build + run locally under Wrangler
-npm run deploy:workers       # Build + deploy to Cloudflare Workers
+npm run deploy               # Build + deploy to Cloudflare Workers (alias for deploy:workers)
+npm run deploy:workers       # Same as deploy (explicit alias)
 npm run deploy:workers:dry   # Build + Wrangler dry-run (no publish)
+npm run dev:workers          # Build + run locally under Wrangler
 npm run cf-typegen           # Regenerate Cloudflare Worker types
 ```
 
@@ -210,6 +215,17 @@ For portfolio Workers deploys, demo-store credentials live in `wrangler.jsonc`. 
 **Data Source Resolver**: `app/lib/data-source.ts` — validates store env and proxies Shopify queries used by the app context
 **Content Defaults**: `app/lib/metaobject-parsers.ts` — fallback UI and content constants used when metaobject fields are missing
 **Promise Utils**: `lib/promise-utils.ts` — timeout and fallback wrappers for deferred data; `withTimeoutAndFallback` prevents permanent loading states when promises hang (used in `root.tsx` for all deferred loaders — cart, footer, suggestions, auth)
+**Query Modules**: `lib/queries/` — organized GraphQL query files (policy, product, search, predictive-search, lookup, policy-corpus); prefer importing from here over inline query strings in route files
+**SEO Breadcrumbs**: `lib/seo-breadcrumbs.ts` — generates `BreadcrumbList` JSON-LD schema; used by routes that provide breadcrumb structured data
+**Cart Permalink**: `lib/cart-permalink.ts` — pure helpers for building and parsing Shopify cart permalink URLs; used by agentic tool responses and share/reorder features
+**Policy Utilities**: `lib/policy.ts` / `lib/agentic/mcp-tools/policies/` — policy corpus and FAQ lookup used by the public MCP endpoint
+**Agent Surface Context**: `lib/agent-surface-context.tsx` — `AgentSurfaceProvider` + `useAgentSurface()`; wires `AgentSurface` state from root loader into the component tree so routes can switch between shopper and agent UI without prop-drilling
+**AI Attribution**: `lib/ai-attribution.ts` — `detectAiAttribution(headers, searchParams)` maps referer domains and UTM params to `AiAttribution`; `appendAiAttribution(url, attr)` injects tracking onto outbound URLs
+**Recently Viewed Tools**: `lib/recently-viewed-tools.ts` — `getRecentlyViewedIds(request)` reads the `recently_viewed` cookie server-side; used by the agentic `lookup_catalog` tool to surface personalized browsing history
+**Agentic Observability**: `lib/agentic/observability.ts` — dual-target event emitter (Oxygen logs as JSON + Analytics Engine via `AGENT_ANALYTICS` binding); privacy-safe allowlist only; events: `mcp_request`, `mcp_tool_call`, `mcp_error`, `agent_arrival`, `jwt_reject`, `checkout_handoff`, `fallback_shown`
+**Social Share Utils**: `lib/social-share.tsx` — platform URL generators (Facebook, X, WhatsApp, Pinterest), Web Share API integration, clipboard fallback, and analytics tracking against `POST /api/share/track`
+**Discount Utilities**: `lib/discounts.ts` — `calculateVariantDiscountPercentage()` and `analyzeProductDiscounts()` for exact vs. range badge logic; shared by `DiscountBadge.tsx`, `ProductDiscountBadge.tsx`, and the sale page sort
+**Pricing Analysis**: `lib/pricing-analysis.ts` — determines optimal price display strategy across variant configurations (single variant, multi-variant uniform/variable prices, compare-at pricing, discount %)
 
 ## Critical Warnings
 
@@ -349,13 +365,13 @@ Read all comments before editing. Update when changing code. Add for complex log
 
 **Wishlist**: `lib/wishlist-context.tsx` - React Context + LocalStorage, SSR-safe, cross-tab sync, optimistic updates, 6 animations. Routes: `/wishlist`, `/wishlist/share`, `/account/wishlist`, API: `/api/wishlist-products`. Account view sort options: date newest/oldest, price asc/desc, A-Z/Z-A — persisted in localStorage via `useWishlistSort` in `account.wishlist.tsx`.
 
-**Cart**: `CartMain.tsx` — line items, promo codes, gift cards, order summary. Contains `CartSuggestions`: product recommendations carousel in the cart aside (fetched via `root.tsx` `cartSuggestions` deferred data). Multi-variant products open `QuickAddDialog` (desktop) or `QuickAddSheet` (mobile) for variant selection without leaving the cart.
+**Cart**: `CartMain.tsx` — line items, promo codes, gift cards, order summary. Contains `CartSuggestions`: product recommendations carousel in the cart aside (fetched via `root.tsx` `cartSuggestions` deferred data). Multi-variant products open `QuickAddDialog` (desktop) or `QuickAddSheet` (mobile) for variant selection without leaving the cart. `components/cart/AgentArrivalBanner.tsx` — dismissible inline notice above the first line item when the cart URL carries `?_agent=1` (buyer arrived via AI agent). `components/cart/AgentCartView.tsx` — agent-native cart rendering (monospace layout, JSON-LD structured data for line items injected via `useCartJsonLd`); shown in `cart.tsx` and `cart.$lines.tsx` instead of the normal cart UI when `useAgentSurface().isAgent` is true. `components/cart/AgentFallbackBanner.tsx` — compact non-dismissible inline banner shown when an agent encounters a cart state it cannot proceed through (empty cart, unsupported checkout flow); directs agent to an alternate path (defaults to `/search`); emits `fallback_shown` observability event on mount. Distinct from `components/AgentFallbackBanner.tsx` which is a full-page interstitial for non-cart interactive routes. `components/checkout/CheckoutKitEmbed.tsx` — styled checkout button (currently an anchor fallback; upgrade path to `@shopify/checkout-kit` when publicly available — see component JSDoc).
 
 **Quick Add**: `QuickAddButton.tsx` / `QuickAddDialog.tsx` (desktop modal) / `QuickAddSheet.tsx` (mobile bottom sheet) — add-to-cart with variant selection from product cards, no PDP navigation required. Auto-selects first available variant, integrates quantity selector, auto-closes on success.
 
 **Color System**: `lib/color/` - OKLCH parsing, sRGB conversion, dual contrast (WCAG 2.1 + APCA), swatch borders, 500+ color names, `ensureContrastCompliance()`
 
-**Hooks** (13 in `hooks/`): useChangelogFilter, useFooterClearance, useInView, useNetworkStatus, usePointerCapabilities, usePwaAnalytics, usePwaInstall, useReadingProgress, useRecentSearches, useScreenSize, useScrollLock, useSearchKeyboard, useServiceWorkerUpdate. Additional scroll hooks in `lib/`: useScrolled, useScrollProgress
+**Hooks** (14 in `hooks/`): useChangelogFilter, useFooterClearance, useInView, useIntentPress, useNetworkStatus, usePointerCapabilities, usePwaAnalytics, usePwaInstall, useReadingProgress, useRecentSearches, useScreenSize, useScrollLock, useSearchKeyboard, useServiceWorkerUpdate. Additional scroll hooks in `lib/`: useScrolled, useScrollProgress. `useIntentPress` — intent-aware press detection for product cards (replaces CSS `:active` to prevent phantom presses on drag/scroll gestures)
 
 **Animations**: 26 `@keyframes` in `tailwind.css` - product (fade-in, image-hover), cart (cart-item-enter, success-pulse, price-dot), wishlist (heart-beat, heart-glow, burst-ring), hero (shimmer), GPU-accelerated, respects `prefers-reduced-motion`
 
@@ -380,6 +396,50 @@ Read all comments before editing. Update when changing code. Add for complex log
 **Sale Page**: `/sale` route — auto-filters all products to those with compare-at pricing (on-sale items), sorted by highest discount percentage. Shows max discount in page title/meta. Uses `InfiniteScrollSection` + collection sidebar layout.
 
 **Newsletter**: `api.newsletter.tsx` — POST endpoint that creates a Shopify customer with `acceptsMarketing: true`. Components: `NewsletterForm.tsx` (email input + submission) + `NewsletterSection.tsx` (section wrapper that also renders `PromotionalBanner.tsx` above the form). `PromotionalBanner.tsx` renders full-width media (image or video, 90dvh) for hero/campaign banners on the homepage and newsletter section.
+
+**Product Recommendations (PDP)**: Two deferred recommendation sections on the PDP, both loaded via `routes/products.$handle.tsx`. `ComplementaryProducts.tsx` — "Pairs well with" horizontal-scroll strip using Shopify's COMPLEMENTARY recommendation intent. `SimilarItems.tsx` — "You may also like" responsive grid (2→3→4 columns) using RELATED intent. Both accept a resolved products array (already awaited) and render skeleton loading states; return null when empty. `components/product/AgentProductBrief.tsx` — agent-native PDP panel (monospace, structured field rows for title, pricing, options, description, tags, collections); rendered in `products.$handle.tsx` in place of the hero section when `useAgentSurface().isAgent` is true.
+
+**Buy Now CTA**: `BuyNowButton.tsx` — secondary PDP CTA ("Get it now") that adds to cart and immediately redirects to Shopify checkout via `POST /cart` with `redirectTo=__checkout_url__`. The token is validated server-side in `cart.tsx` — only `__checkout_url__` and relative paths are accepted; external URLs are rejected to prevent open-redirect attacks. Uses a separate `"buy-now"` fetcherKey so it can be in-flight independently from Add to Bag's `"cart-mutation"`. Includes a `pageshow` bfcache handler to reset frozen fetcher state on back-navigation from checkout. Used by `ProductForm.tsx`, `QuickAddDialog.tsx`, and `QuickAddSheet.tsx`.
+
+**Sticky Mobile CTA**: `StickyMobileGetNow.tsx` — mobile-only (`md:hidden`) fixed bottom bar (z-[103], above OpenInAppButton's z-[102]) that slides up when the `ProductHeroMobile` section scrolls out of viewport via Intersection Observer. Shows current price and sale discount %; smooth-scrolls back to the purchase section on tap accounting for fixed header height (80px). Used on the PDP.
+
+**Discount Badges**: `DiscountBadge.tsx` (product cards) and `ProductDiscountBadge.tsx` (PDP, variant-aware). Both render an emerald shimmer pill badge showing an exact discount (`"25% off"`) when all variants share the same %, or a range badge (`"up to X% off"`) when variants differ. Discount math lives in `lib/discounts.ts`. `ProductDiscountBadge` updates in real time as the user switches variants.
+
+**Brand Animation**: `BrandAnimation.tsx` — scroll-driven brand text transformation; animates the brand name from a large full-width hero block down to a smaller centered header position on scroll. Uses damped (frame-independent) interpolation and binary-search font sizing. Wraps `BrandAnimationProvider` (`lib/brand-animation-layout.ts`, `lib/brand-name-sizes.ts`); SSR-safe.
+
+**Compare**: `/compare?ids=GID1&ids=GID2` — side-by-side comparison of up to 4 products. Attribute rows: price, brand, type, availability. Remove product via ×, add to cart (first variant), link to PDP. `components/CompareTable.tsx` renders the matrix. `lib/agentic/compare.ts` builds the comparison matrix for the MCP tool layer.
+
+**Gift Finder**: `/gift-finder` — 4-step guided quiz (recipient → budget → occasion → interest) that builds a Storefront search query and navigates to `/search?q=<query>`. `components/GiftFinderQuiz.tsx`. Quiz logic in `lib/agentic/quizzes/gift-finder.ts` (shared between the UI and the agentic tool layer).
+
+**Style Quiz**: `/style-quiz` — 3-step quiz (fit → style → color) that maps personal style into a Storefront search query. Saves `profileKey` to `localStorage("style_profile")` and shows a welcome-back banner on return. Navigates to `/search?q=<query>` on completion. `components/StyleQuizForm.tsx`. Quiz logic in `lib/agentic/quizzes/style-fit.ts`.
+
+**Stories**: `/stories` — editorial split-screen product showcase. Newest 8 products displayed as full-viewport panels (image left, info right; stacked on mobile). Auto-advances every 6 seconds, pauses on hover/focus, supports ArrowLeft/ArrowRight keyboard navigation and thumbnail strip. `components/StoryViewer.tsx`.
+
+**Policies Index**: `/policies` — listing page linking to all store policies (privacy, shipping, refund, terms). `routes/policies._index.tsx`. Individual policy pages remain at `/policies/:handle` via the existing `routes/policies.$handle.tsx`.
+
+**Agentic Layer**: AI-native commerce infrastructure for autonomous agent access to the storefront.
+- **Public MCP** (`POST /api/mcp`): Policy & FAQs search, no auth required. `routes/api.mcp.tsx` + `lib/agentic/mcp-tools/policies/`
+- **Authenticated MCP** (`POST /api/ucp/mcp`): Catalog, cart, checkout — Bearer JWT required. `routes/api.ucp.mcp.tsx` + `lib/agentic/mcp-tools/storefront/` (tools: `search_catalog`, `get_product`, `lookup_catalog`, `recommend_similar`, `recommend_complementary`, `compare_products`, `get_story_feed`, `list_sort_options`, `search_suggest`)
+- **UCP Discovery** (`GET /.well-known/ucp`): Machine-readable capability manifest. `routes/[.]well-known.ucp.tsx`
+- **AI Transparency** (`GET /llms.txt`): Human/AI-readable storefront manifest per llmstxt.org convention. `routes/[llms.txt].tsx`
+- **Routing**: `lib/agentic/mcp-router.ts` — JSON-RPC 2.0 dispatch
+- **Server Bypass**: `lib/agentic/agent-server.ts` — server-level UCP handler invoked from `server.ts` before React Router rendering; returns raw UCP JSON for agent product-page requests without triggering the full React tree
+- **Auth**: `lib/agentic/agent-auth.ts` — Bearer token verification (Phase 1: JWT structure/expiry; Phase 5: JWKS signature via `jwks-cache.ts`)
+- **Catalog Shapes**: `lib/agentic/catalog-shapes.ts` + `lib/agentic/ucp-catalog-types.ts` — transforms Storefront API products into the UCP wire format; shared by `agent-server.ts` and MCP tool handlers
+- **Affinity Scoring**: `lib/agentic/affinity.ts` — re-ranks collection products by customer order history server-side; degrades gracefully to original order for anonymous users
+- **Agent Surface**: `lib/agentic/agent-surface.ts` — derives `AgentSurface` (`isAgent`, `source`, `profileShape`) from AI attribution + JWT session presence; `lib/agent-surface-context.tsx` propagates it via `AgentSurfaceProvider` / `useAgentSurface()` hook used by components that conditionally render agent UI
+- **Agent UI**: `components/AgentFallbackBanner.tsx` — full-page interstitial for interactive routes (gift-finder, style-quiz, stories) that can't be programmatically navigated; provides routing guidance to MCP endpoints; emits `fallback_shown` observability event. `components/cart/AgentFallbackBanner.tsx` — compact inline variant for the cart surface specifically (see **Cart**). `components/cart/AgentCartView.tsx` — agent-native cart view (see **Cart**). `components/product/AgentProductBrief.tsx` — agent-native PDP panel (see **Product Recommendations**)
+- **AI Attribution**: `lib/ai-attribution.ts` — server-side detection of AI-originated traffic from referer headers (chatgpt.com, perplexity.ai, claude.ai, etc.) and `utm_medium=ai`; `appendAiAttribution()` tags outbound URLs
+- **Cart Handoff**: `lib/cart-permalink.ts` — builds/parses Shopify cart permalink URLs (`/cart/{variantId}:{qty},...`) for agent-to-checkout handoff
+- **Observability**: `lib/agentic/observability.ts` — structured event emitter; dual-target (Oxygen log viewer + Analytics Engine `AGENT_ANALYTICS` binding); privacy-safe allowlist; never logs PII, tokens, or free-text
+- **Structured Data (Phase 3)**: `lib/agentic/structured-data.ts` — emits `<meta>` tags for catalog extension fields (gift card, shipping requirements, selling plans, stock); surface for agents that prefer head-meta over JSON-LD
+- `robots.txt` explicitly allows AI crawlers to access `/llms.txt`
+
+**Social Share**: `lib/social-share.tsx` — platform-specific share URL generation (Facebook, X, WhatsApp, Pinterest), Web Share API integration, clipboard fallback, and analytics tracking. `components/ProductShareButton.tsx` renders the share trigger. Share events recorded at `POST /api/share/track` with rate limiting (30 req/IP/min).
+
+**Collection Sort**: `components/CollectionSort.tsx` — standalone sort pill selector for collection pages (newest, best-selling, A-Z, Z-A, price asc/desc). Sort state managed externally via `useSortOption()` from `CollectionPageLayout`.
+
+**Search Empty State**: `components/SearchEmptyState.tsx` — no-results UI shown when a search returns nothing. Fetches up to 3 alternative query suggestions via `useFetcher` (non-blocking) and renders them as pill links once loaded.
 
 ---
 

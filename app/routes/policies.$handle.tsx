@@ -49,7 +49,7 @@ import type {Route} from "./+types/policies.$handle";
 import {getSeoMeta} from "@shopify/hydrogen";
 import {type Shop} from "@shopify/hydrogen/storefront-api-types";
 import {AnimatedSection} from "~/components/AnimatedSection";
-import {buildCanonicalUrl, getBrandNameFromMatches, getSiteUrlFromMatches} from "~/lib/seo";
+import {buildCanonicalUrl, getBrandNameFromMatches, getSiteUrlFromMatches, generateBreadcrumbListSchema, generateWebPageSchema, generateFAQPageSchema} from "~/lib/seo";
 import {useSiteSettings} from "~/lib/site-content-context";
 import {PageHeading} from "~/components/PageHeading";
 
@@ -90,15 +90,39 @@ export const meta: Route.MetaFunction = ({data, matches}) => {
     if (!policy) return [{title: `Policy | ${brandName}`}];
 
     const description = getPolicyDescription(policy.handle, brandName);
+    const policyUrl = buildCanonicalUrl(`/policies/${policy.handle}`, siteUrl);
 
-    return (
-        getSeoMeta({
+    const breadcrumbSchema = generateBreadcrumbListSchema([
+        {name: "Home", url: "/"},
+        {name: "Policies", url: "/policies"},
+        {name: policy.title, url: `/policies/${policy.handle}`}
+    ], siteUrl);
+
+    const webPageSchema = generateWebPageSchema(policy.title, policyUrl);
+
+    // FAQPage schema from policyExtension entries in site_settings
+    const rootData = (
+        matches.find(m => m?.id === "root") as
+            | {data?: {siteContent?: {siteSettings?: {policyExtension?: Array<{key: string; value: string; context?: string}>}}}}
+            | undefined
+    )?.data;
+    const policyExtensions = rootData?.siteContent?.siteSettings?.policyExtension ?? [];
+    const matchingExtensions = policyExtensions.filter(ext => !ext.context || ext.context === policy.handle);
+    const faqSchema = matchingExtensions.length > 0
+        ? generateFAQPageSchema(matchingExtensions.map(ext => ({question: ext.key, answer: ext.value})))
+        : undefined;
+
+    return [
+        ...(getSeoMeta({
             title: policy.title,
             titleTemplate: `%s | ${brandName}`,
             description,
-            url: buildCanonicalUrl(`/policies/${policy.handle}`, siteUrl)
-        }) ?? []
-    );
+            url: policyUrl
+        }) ?? []),
+        {"script:ld+json": breadcrumbSchema as any},
+        {"script:ld+json": webPageSchema as any},
+        ...(faqSchema ? [{"script:ld+json": faqSchema as any}] : [])
+    ];
 };
 
 export async function loader({params, context}: Route.LoaderArgs) {
@@ -132,7 +156,8 @@ export async function loader({params, context}: Route.LoaderArgs) {
 
 export default function Policy() {
     const {policy} = useLoaderData<typeof loader>();
-    const {brandName} = useSiteSettings();
+    const {brandName, policyExtension: allPolicyExtensions} = useSiteSettings();
+    const quickAnswers = (allPolicyExtensions ?? []).filter(ext => !ext.context || ext.context === policy.handle);
 
     return (
         <div className="min-h-dvh bg-primary  ">
@@ -175,6 +200,27 @@ export default function Policy() {
 
                                 {/* Policy Content */}
                                 <div>
+                                    {/* Quick Answers: policyExtension Q&A entries for this policy */}
+                                    {quickAnswers.length > 0 && (
+                                        <div className="mb-8 sm:mb-10">
+                                            <p className="text-xs uppercase tracking-widest text-primary-foreground/40 mb-3">Quick Answers</p>
+                                            <div className="border-t border-primary-foreground/20">
+                                                {quickAnswers.map(qa => (
+                                                    <details
+                                                        key={qa.key}
+                                                        className="group border-b border-primary-foreground/10"
+                                                    >
+                                                        <summary className="flex cursor-pointer items-start gap-3 py-3 text-sm text-primary-foreground/80 hover:text-primary-foreground [&::-webkit-details-marker]:hidden list-none">
+                                                            <span className="text-primary-foreground/40 group-open:hidden shrink-0 mt-0.5 select-none">+</span>
+                                                            <span className="text-primary-foreground/40 hidden group-open:inline shrink-0 mt-0.5 select-none">−</span>
+                                                            <span>{qa.key}</span>
+                                                        </summary>
+                                                        <p className="pb-3 pl-6 text-sm text-primary-foreground/60 leading-relaxed">{qa.value}</p>
+                                                    </details>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
                                     <article
                                         className="policy-content policy-content-dark"
                                         dangerouslySetInnerHTML={{__html: policy.body}}

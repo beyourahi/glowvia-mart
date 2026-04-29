@@ -68,18 +68,28 @@ import {redirectIfHandleIsLocalized} from "~/lib/redirect";
 import {useRecentlyViewed} from "~/lib/recently-viewed";
 import {CollectionSidebar, type CollectionWithCount} from "~/components/CollectionSidebar";
 import {RelatedProducts} from "~/components/RelatedProducts";
+import {ComplementaryProducts} from "~/components/product/ComplementaryProducts";
+import {SimilarItems} from "~/components/product/SimilarItems";
 import {
     getBrandNameFromMatches,
     generateProductSchema,
+    generateBreadcrumbListSchema,
+    generateBrandSchema,
     truncateDescription,
     stripHtml,
     buildCanonicalUrl,
-    getSiteUrlFromMatches
+    getSiteUrlFromMatches,
+    getRequiredSocialMeta
 } from "~/lib/seo";
+import {deriveProductBreadcrumbs} from "~/lib/seo-breadcrumbs";
+import {getCatalogExtensionMeta} from "~/lib/agentic/structured-data";
+import {normalizeProductAttributes} from "~/lib/agentic/attribute-normalizer";
 import {Badge} from "~/components/ui/badge";
 import {OfflineAwareErrorPage} from "~/components/OfflineAwareErrorPage";
 import {trackErrorBoundary} from "~/hooks/usePwaAnalytics";
 import {hasSpecialTag, getSpecialTags} from "~/lib/product-tags";
+import {AgentProductBrief} from "~/components/product/AgentProductBrief";
+import {useAgentSurface} from "~/lib/agent-surface-context";
 import {ProductBadgeStack} from "~/components/product/ProductBadge";
 import {ProductTagList} from "~/components/product/ProductTagList";
 import {countDiscountedProducts, type LightweightProduct} from "~/lib/discounts";
@@ -89,6 +99,7 @@ import {formatShopifyMoney} from "~/lib/currency-formatter";
 import {parseProductTitle} from "~/lib/product";
 import {ProductReviews, type ReviewNode} from "~/components/ProductReviews";
 import {extractImagesFromMedia} from "~/lib/media-utils";
+import {CatalogExtensionDisplay} from "~/components/product/CatalogExtensionDisplay";
 
 // =============================================================================
 // META FUNCTION
@@ -106,6 +117,36 @@ export const meta: Route.MetaFunction = ({data, matches}) => {
     const description = truncateDescription(product.seo?.description || stripHtml(product.description));
     const image = variant?.image || extractImagesFromMedia(product.media?.nodes)?.[0];
 
+    const rootMatch = matches.find((m): m is (typeof matches)[number] & {id: "root"} => m?.id === "root");
+    const siteSettings = (rootMatch?.data as any)?.siteContent?.siteSettings;
+
+    // SCE fields for 5th arg
+    const extensionFields = {
+        isGiftCard: product.isGiftCard,
+        collections: product.collections?.nodes?.map((c: any) => ({handle: c.handle, title: c.title})),
+        requiresShipping: variant?.requiresShipping,
+        sellingPlans: variant?.sellingPlanAllocations?.nodes?.map((a: any) => ({name: a.sellingPlan?.name ?? "Subscription", recurringDeliveries: a.sellingPlan?.recurringDeliveries ?? false}))
+    };
+
+    // Normalized attributes for 6th arg
+    const normalizedAttributes = normalizeProductAttributes(
+        variant?.selectedOptions ?? [],
+        product.metafields?.filter(Boolean) ?? undefined
+    );
+
+    const productSchema = generateProductSchema(product, variant, null, siteUrl, extensionFields, normalizedAttributes);
+    const breadcrumbs = deriveProductBreadcrumbs(product);
+    const breadcrumbSchema = generateBreadcrumbListSchema(breadcrumbs, siteUrl);
+    const brandSchema = generateBrandSchema(siteSettings, product.vendor);
+    const sceMeta = getCatalogExtensionMeta({
+        isGiftCard: product.isGiftCard,
+        requiresShipping: variant?.requiresShipping,
+        sellingPlans: variant?.sellingPlanAllocations?.nodes?.map((a: any) => ({name: a.sellingPlan?.name ?? "Subscription"})),
+        collections: product.collections?.nodes?.map((c: any) => ({handle: c.handle, title: c.title})),
+        quantityAvailable: variant?.quantityAvailable,
+        currentlyNotInStock: variant?.currentlyNotInStock
+    });
+
     const seoMeta =
         getSeoMeta({
             title,
@@ -120,13 +161,21 @@ export const meta: Route.MetaFunction = ({data, matches}) => {
                       type: "image" as const
                   }
                 : undefined,
-            jsonLd: generateProductSchema(product, variant, null, siteUrl) as any
+            jsonLd: productSchema as any
         }) ?? [];
 
     const preloadHref = data?.product?.images?.nodes?.[0]?.url;
-    return preloadHref
+    const withPreload = preloadHref
         ? [...seoMeta, {tagName: "link" as const, rel: "preload", as: "image", href: preloadHref}]
         : seoMeta;
+
+    return [
+        ...withPreload,
+        {"script:ld+json": breadcrumbSchema as any},
+        {"script:ld+json": brandSchema as any},
+        ...sceMeta,
+        ...getRequiredSocialMeta("product", brandName, image?.url ?? undefined)
+    ];
 };
 
 export async function loader(args: Route.LoaderArgs) {
@@ -229,10 +278,30 @@ function loadDeferredData({context}: Route.LoaderArgs, productId: string) {
         TIMEOUT_DEFAULTS.API
     );
 
+    // Products with COMPLEMENTARY intent — items that pair well with this product
+    const complementary = dataAdapter
+        .query(COMPLEMENTARY_PRODUCTS_QUERY, {
+            variables: {productId},
+            cache: dataAdapter.CacheShort()
+        })
+        .then((data: any) => data.productRecommendations ?? [])
+        .catch(() => null);
+
+    // Products with RELATED intent — similar items shoppers might prefer instead
+    const similar = dataAdapter
+        .query(SIMILAR_PRODUCTS_QUERY, {
+            variables: {productId},
+            cache: dataAdapter.CacheShort()
+        })
+        .then((data: any) => data.productRecommendations ?? [])
+        .catch(() => null);
+
     return {
         recommendations,
         reviews,
-        sidebarData
+        sidebarData,
+        complementary,
+        similar
     };
 }
 
@@ -253,7 +322,9 @@ export default function Product() {
         reviews,
         sidebarData,
         activeCollectionHandle,
-        selectedSellingPlan
+        selectedSellingPlan,
+        complementary,
+        similar
     } = useLoaderData<typeof loader>();
     const {addProduct} = useRecentlyViewed();
 
@@ -307,8 +378,21 @@ export default function Product() {
         }
     }, [product?.id, product?.handle, product?.title, product.media?.nodes, selectedVariant, addProduct]);
 
+    const agentSurface = useAgentSurface();
+
     const {title, descriptionHtml} = product;
     const {badgeTypes} = getSpecialTags(product.tags);
+
+    // Agent path: spec-first dense view — no image gallery, no carousels.
+    if (agentSurface.isAgent) {
+        return (
+            <AgentProductBrief
+                product={product}
+                selectedVariant={selectedVariant}
+                productOptions={productOptions}
+            />
+        );
+    }
 
     return (
         <>
@@ -338,6 +422,13 @@ export default function Product() {
                 {/* 3. Description - Comprehensive prose typography */}
                 <div className="px-3 sm:px-4 py-3 sm:py-4 pb-4 sm:pb-6">
                     <ProductDescription html={descriptionHtml} size="sm" />
+                    <CatalogExtensionDisplay
+                        isGiftCard={product.isGiftCard}
+                        requiresShipping={selectedVariant?.requiresShipping}
+                        sellingPlans={selectedVariant?.sellingPlanAllocations?.nodes?.map((a: any) => ({name: a.sellingPlan?.name ?? "Subscription", recurringDeliveries: a.sellingPlan?.recurringDeliveries ?? false}))}
+                        collections={product.collections?.nodes?.map((c: any) => ({handle: c.handle, title: c.title}))}
+                        className="pt-3"
+                    />
                 </div>
 
                 {/* 5. Product Hero Mobile (variants, quantity, add to cart) */}
@@ -470,6 +561,13 @@ export default function Product() {
                                 />
                                 {/* Product Description - Comprehensive prose typography for desktop */}
                                 <ProductDescription html={descriptionHtml} size="base" className="pt-12" />
+                                <CatalogExtensionDisplay
+                                    isGiftCard={product.isGiftCard}
+                                    requiresShipping={selectedVariant?.requiresShipping}
+                                    sellingPlans={selectedVariant?.sellingPlanAllocations?.nodes?.map((a: any) => ({name: a.sellingPlan?.name ?? "Subscription", recurringDeliveries: a.sellingPlan?.recurringDeliveries ?? false}))}
+                                    collections={product.collections?.nodes?.map((c: any) => ({handle: c.handle, title: c.title}))}
+                                    className="pt-4"
+                                />
                                 </div>
                             </div>
                         </div>
@@ -484,6 +582,26 @@ export default function Product() {
             </Suspense>
 
             <RelatedProducts products={recommendations} />
+
+            <Suspense fallback={null}>
+                <Await resolve={complementary}>
+                    {resolvedComplementary => (
+                        <ComplementaryProducts
+                            products={resolvedComplementary ?? []}
+                        />
+                    )}
+                </Await>
+            </Suspense>
+
+            <Suspense fallback={null}>
+                <Await resolve={similar}>
+                    {resolvedSimilar => (
+                        <SimilarItems
+                            products={resolvedSimilar ?? []}
+                        />
+                    )}
+                </Await>
+            </Suspense>
 
             <Analytics.ProductView
                 data={{
@@ -543,6 +661,7 @@ const PRODUCT_VARIANT_FRAGMENT = `#graphql
     sku
     barcode
     currentlyNotInStock
+    requiresShipping
     title
     unitPrice {
       amount
@@ -607,10 +726,12 @@ const PRODUCT_FRAGMENT = `#graphql
     description
     tags
     publishedAt
+    isGiftCard
     encodedVariantExistence
     encodedVariantAvailability
-    collections(first: 1) {
+    collections(first: 5) {
       nodes {
+        id
         handle
         title
       }
@@ -876,6 +997,34 @@ const RECOMMENDATIONS_QUERY = `#graphql
     $language: LanguageCode
   ) @inContext(country: $country, language: $language) {
     productRecommendations(productId: $productId) {
+      ...RecommendedProduct
+    }
+  }
+  ${RECOMMENDED_PRODUCT_FRAGMENT}
+` as const;
+
+// Query to fetch COMPLEMENTARY products — items that pair well with this product
+const COMPLEMENTARY_PRODUCTS_QUERY = `#graphql
+  query ProductPageComplementary(
+    $productId: ID!
+    $country: CountryCode
+    $language: LanguageCode
+  ) @inContext(country: $country, language: $language) {
+    productRecommendations(productId: $productId, intent: COMPLEMENTARY) {
+      ...RecommendedProduct
+    }
+  }
+  ${RECOMMENDED_PRODUCT_FRAGMENT}
+` as const;
+
+// Query to fetch RELATED products — similar items shoppers might consider instead
+const SIMILAR_PRODUCTS_QUERY = `#graphql
+  query ProductPageSimilar(
+    $productId: ID!
+    $country: CountryCode
+    $language: LanguageCode
+  ) @inContext(country: $country, language: $language) {
+    productRecommendations(productId: $productId, intent: RELATED) {
       ...RecommendedProduct
     }
   }

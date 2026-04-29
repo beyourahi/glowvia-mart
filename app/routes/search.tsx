@@ -41,7 +41,7 @@
  */
 
 import * as React from "react";
-import {Link, useLoaderData, useNavigate, useRouteLoaderData, useRouteError, isRouteErrorResponse} from "react-router";
+import {Link, useLoaderData, useNavigate, useRouteLoaderData, useRouteError, isRouteErrorResponse, useFetcher} from "react-router";
 import type {Route} from "./+types/search";
 import {Analytics, Image, getSeoMeta} from "@shopify/hydrogen";
 import {SearchForm} from "~/components/SearchForm";
@@ -77,6 +77,10 @@ import {sortWithPinnedFirst} from "~/lib/product-tags";
 import {AnimatedSection} from "~/components/AnimatedSection";
 import {PageHeading} from "~/components/PageHeading";
 import {getSearchSortOption} from "~/lib/sort-filter-helpers";
+import {isAgentRequest} from "~/lib/agentic/agent-request";
+import {toUcpProductPage, toUcpProduct} from "~/lib/agentic/catalog-shapes";
+import {SearchEmptyState} from "~/components/SearchEmptyState";
+import {useAgentSurface} from "~/lib/agent-surface-context";
 
 const FALLBACK_POPULAR_SEARCHES = ["new arrivals", "best sellers", "gift ideas", "on sale", "trending now"];
 
@@ -86,7 +90,7 @@ const FALLBACK_POPULAR_SEARCHES = ["new arrivals", "best sellers", "gift ideas",
 
 export const meta: Route.MetaFunction = ({data, matches}) => {
     const siteUrl = getSiteUrlFromMatches(matches);
-    const term = data && "term" in data ? data.term : "";
+    const term = data && typeof data === "object" && "term" in data ? (data as {term: string}).term : "";
     const title = term ? `Search results for "${term}"` : "Search";
 
     return (
@@ -104,6 +108,7 @@ export async function loader({request, context}: Route.LoaderArgs) {
     const isPredictive = url.searchParams.has("predictive");
     const isFetcherRequest = url.searchParams.has("index");
     const fetchType = url.searchParams.get("fetchType");
+    const isAgent = isAgentRequest(request);
 
     // Handle fetcher requests for infinite scroll
     if (isFetcherRequest && !isPredictive) {
@@ -115,14 +120,29 @@ export async function loader({request, context}: Route.LoaderArgs) {
 
     // Handle predictive search (for FullScreenSearch)
     if (isPredictive) {
-        return await predictiveSearch({request, context}).catch((error: Error) => {
+        const predictiveData = await predictiveSearch({request, context}).catch((error: Error) => {
             console.error(error);
             return {type: "predictive" as const, term: "", result: getEmptyPredictiveSearchResult()};
         });
+
+        // Agent path: return UCP-shaped products without styledText/UI noise
+        if (isAgent) {
+            const products = predictiveData.result?.items?.products ?? [];
+            const storeUrl = getStoreUrl(context.env);
+            const ucpProducts = products.map((p: any) => toUcpProduct(p, storeUrl));
+            return new Response(JSON.stringify({products: ucpProducts}), {
+                headers: {
+                    "Content-Type": "application/x-ucp+json",
+                    "Cache-Control": "no-store"
+                }
+            });
+        }
+
+        return predictiveData;
     }
 
-    // Handle regular categorized search
-    return await regularSearch({request, context}).catch((error: Error) => {
+    // Regular search — run first so we can branch on agent before returning UI data
+    const searchData = await regularSearch({request, context}).catch((error: Error) => {
         console.error(error);
         return {
             type: "categorized" as const,
@@ -133,6 +153,28 @@ export async function loader({request, context}: Route.LoaderArgs) {
             articles: {nodes: [], pageInfo: {hasNextPage: false, endCursor: null}, totalCount: 0}
         } satisfies CategorizedSearchResult;
     });
+
+    // Agent path: return UCP-shaped product page, skipping UI rendering overhead
+    if (isAgent) {
+        const term = String(url.searchParams.get("q") ?? "").trim();
+        if (!term) {
+            return new Response(
+                JSON.stringify({products: [], pageInfo: {hasNextPage: false, endCursor: null}}),
+                {headers: {"Content-Type": "application/x-ucp+json", "Cache-Control": "no-store"}}
+            );
+        }
+        const productsConnection = searchData.products;
+        const storeUrl = getStoreUrl(context.env);
+        const ucpPage = toUcpProductPage(productsConnection, storeUrl);
+        return new Response(JSON.stringify(ucpPage), {
+            headers: {
+                "Content-Type": "application/x-ucp+json",
+                "Cache-Control": "no-store"
+            }
+        });
+    }
+
+    return searchData;
 }
 
 /**
@@ -145,6 +187,7 @@ export default function SearchPage() {
     const [activeTab, setActiveTab] = React.useState("products");
     const searchInputRef = React.useRef<HTMLInputElement | null>(null);
     const formRef = React.useRef<HTMLFormElement>(null!);
+    const agentSurface = useAgentSurface();
     const {recentSearches, addSearch, clearSearches} = useRecentSearches();
 
     // Per-tab view state - each tab remembers its own view preferences
@@ -268,6 +311,11 @@ export default function SearchPage() {
     // Now we know it's a CategorizedSearchResult
     const {term, error, products, collections, articles} = data;
     const totalResults = products.totalCount + collections.totalCount + articles.totalCount;
+
+    // Agent path: machine-readable list with JSON-LD, no tabs/carousels.
+    if (agentSurface.isAgent) {
+        return <AgentSearchResults term={term} products={products.nodes} />;
+    }
 
     // Handle input change - navigate to /search when input is cleared
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -650,26 +698,6 @@ function SearchPageInitialState({
                     Type above to search for products, collections, or articles
                 </p>
             </div>
-        </div>
-    );
-}
-
-/**
- * Empty state when no results found
- */
-function SearchEmptyState({term}: {term: string}) {
-    return (
-        <div className="py-10 sm:py-16 text-center px-4">
-            <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-muted/50 mb-4 sm:mb-6">
-                <SearchX className="size-6 sm:size-8 text-muted-foreground" />
-            </div>
-            <h2 className="font-serif text-xl sm:text-2xl md:text-3xl text-primary mb-2 sm:mb-3">No results found</h2>
-            <p className="text-sm sm:text-base text-muted-foreground max-w-sm sm:max-w-md mx-auto leading-relaxed">
-                We couldn&rsquo;t find anything for &ldquo;{term}&rdquo;.
-            </p>
-            <p className="text-sm text-muted-foreground/80 mt-2">
-                Try a different search term or browse our collections.
-            </p>
         </div>
     );
 }
@@ -1766,6 +1794,15 @@ async function fetchMoreArticles({request, context}: Pick<Route.LoaderArgs, "req
 }
 
 /**
+ * Derives the store's public origin URL from environment variables.
+ * Used to build absolute product URLs in UCP responses for agent consumers.
+ */
+function getStoreUrl(env: { PUBLIC_STORE_DOMAIN?: string }): string {
+    const domain = env.PUBLIC_STORE_DOMAIN;
+    return domain ? `https://${domain}` : "";
+}
+
+/**
  * Predictive search query and fragments
  * (adjust as needed)
  */
@@ -1939,4 +1976,105 @@ async function predictiveSearch({
     const total = Object.values(items).reduce((acc: number, item: Array<unknown>) => acc + item.length, 0);
 
     return {type, term, result: {items, total}};
+}
+
+function AgentSearchResults({term, products}: {term: string; products: SearchProduct[]}) {
+    const scriptRef = React.useRef<HTMLScriptElement | null>(null);
+
+    React.useEffect(() => {
+        const jsonLd = {
+            "@context": "https://schema.org",
+            "@type": "ItemList",
+            "name": term ? `Search results for "${term}"` : "Search Results",
+            "numberOfItems": products.length,
+            "itemListElement": products.map((p, i) => ({
+                "@type": "ListItem",
+                "position": i + 1,
+                "item": {
+                    "@type": "Product",
+                    "name": p.title,
+                    "url": `/products/${p.handle}`,
+                    ...(p.featuredImage?.url ? {image: p.featuredImage.url} : {}),
+                    "offers": {
+                        "@type": "Offer",
+                        "price": p.priceRange.minVariantPrice.amount,
+                        "priceCurrency": p.priceRange.minVariantPrice.currencyCode,
+                        "availability": p.availableForSale
+                            ? "https://schema.org/InStock"
+                            : "https://schema.org/OutOfStock"
+                    }
+                }
+            }))
+        };
+
+        const existing = document.getElementById("agent-search-ld");
+        if (existing) existing.remove();
+
+        const el = document.createElement("script");
+        el.id = "agent-search-ld";
+        el.type = "application/ld+json";
+        el.textContent = JSON.stringify(jsonLd);
+        document.head.appendChild(el);
+        scriptRef.current = el;
+
+        return () => {
+            scriptRef.current?.remove();
+        };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [products.length, term]);
+
+    return (
+        <div className="min-h-screen bg-background text-foreground">
+            <div className="mx-auto max-w-2xl px-6 py-12 font-mono">
+                {/* Header */}
+                <div className="mb-10">
+                    <div className="mb-1 flex items-center gap-2">
+                        <Search className="h-3.5 w-3.5 text-muted-foreground" />
+                        <span className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
+                            Agent Search Results
+                        </span>
+                    </div>
+                    {term && (
+                        <div className="mt-3 border-t border-border pt-3 flex items-baseline justify-between">
+                            <span className="text-xs text-muted-foreground">&ldquo;{term}&rdquo;</span>
+                            <span className="text-[10px] text-muted-foreground">{products.length} products</span>
+                        </div>
+                    )}
+                </div>
+
+                {products.length === 0 ? (
+                    <p className="border-y border-border py-4 text-xs text-muted-foreground">No products found.</p>
+                ) : (
+                    <section>
+                        <h3 className="mb-3 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                            Products
+                        </h3>
+                        <div className="divide-y divide-border/50 border-y border-border">
+                            {products.map(p => (
+                                <div key={p.id} className="flex items-start justify-between gap-4 py-3">
+                                    <div className="min-w-0 flex-1">
+                                        <div className="text-xs font-medium">{p.title}</div>
+                                        <div className="mt-0.5 text-[10px] text-muted-foreground">{p.handle}</div>
+                                    </div>
+                                    <div className="shrink-0 text-right">
+                                        <div className="text-xs tabular-nums">
+                                            {p.priceRange.minVariantPrice.amount !== p.priceRange.maxVariantPrice.amount
+                                                ? `${p.priceRange.minVariantPrice.amount}–${p.priceRange.maxVariantPrice.amount}`
+                                                : p.priceRange.minVariantPrice.amount}{" "}
+                                            <span className="text-[9px] text-muted-foreground">
+                                                {p.priceRange.minVariantPrice.currencyCode}
+                                            </span>
+                                        </div>
+                                        <div className="mt-0.5 text-[10px] text-muted-foreground">
+                                            {p.availableForSale ? "in stock" : "unavailable"}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+                )}
+            </div>
+        </div>
+    );
 }

@@ -198,6 +198,9 @@ ${sitemapUrl ? `Sitemap: ${sitemapUrl}` : ""}`;
  * collections, blogs, pages, policies) while private paths remain blocked.
  * Explicit rules override the general User-agent: * block for these agents,
  * signalling clear opt-in intent to AI search and retrieval systems.
+ *
+ * Agent infrastructure endpoints (UCP discovery, MCP servers, llms.txt) are
+ * explicitly allowed so AI agents can discover and invoke storefront capabilities.
  */
 function aiCrawlerRules({shopId}: {shopId?: string}) {
     return `# AI crawlers — explicitly permitted to index all public storefront content
@@ -219,6 +222,11 @@ Allow: /collections
 Allow: /blogs
 Allow: /pages
 Allow: /policies
+Allow: /.well-known/ucp
+Allow: /llms.txt
+Allow: /api/mcp
+Allow: /api/ucp/mcp
+Allow: /cart/
 Disallow: /admin
 Disallow: /cart
 Disallow: /checkout
@@ -249,4 +257,3 @@ const ROBOTS_QUERY = `#graphql
     }
   }
 ` as const;
-

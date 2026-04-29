@@ -37,6 +37,8 @@
 
 import {createRequestHandler, storefrontRedirect} from "@shopify/hydrogen";
 import {createHydrogenRouterContext} from "~/lib/context";
+import {handleAgentSearchRequest, handleAgentProductRequest} from "~/lib/agentic/agent-server";
+import {isAgentRequest} from "~/lib/agentic/agent-request";
 // eslint-disable-next-line import/no-unresolved
 import * as serverBuild from "virtual:react-router/server-build";
 
@@ -73,6 +75,20 @@ export default {
             // -----------------------------------------------------------------
             // Create the React Router request handler with Hydrogen context
             // This routes the request to the appropriate route file
+            // Agent bypass: intercept before React Router renders HTML.
+            // Routes with a default export trigger SSR rendering even when the loader
+            // returns a Response — this bypass sends UCP JSON directly to the client.
+            const requestUrl = new URL(request.url);
+            if (
+                requestUrl.pathname === "/search" &&
+                requestUrl.searchParams.get("agent") === "true"
+            ) {
+                return await handleAgentSearchRequest(request, hydrogenContext);
+            }
+            if (requestUrl.pathname.startsWith("/products/") && isAgentRequest(request)) {
+                return await handleAgentProductRequest(request, hydrogenContext);
+            }
+
             const handleRequest = createRequestHandler({
                 build: serverBuild,
                 mode: process.env.NODE_ENV,
@@ -84,7 +100,8 @@ export default {
             // -----------------------------------------------------------------
             // SESSION COMMIT
             // -----------------------------------------------------------------
-            // If session data changed, commit it to the cookie
+            // If session data changed, commit it to the cookie.
+            // Use append (not set) to avoid clobbering other Set-Cookie headers.
             if (hydrogenContext.session.isPending) {
                 response.headers.append("Set-Cookie", await hydrogenContext.session.commit());
             }
@@ -100,6 +117,16 @@ export default {
                     response,
                     storefront: hydrogenContext.storefront
                 });
+            }
+
+            // -----------------------------------------------------------------
+            // AGENT-READABLE HTTP HEADERS
+            // -----------------------------------------------------------------
+            // Headless agents that skip robots.txt still need a way to discover
+            // the UCP discovery endpoint. Set on HTML responses only.
+            const contentType = response.headers.get("Content-Type") ?? "";
+            if (contentType.includes("text/html")) {
+                response.headers.set("X-Agent-Discovery", "/.well-known/ucp");
             }
 
             return response;

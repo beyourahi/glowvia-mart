@@ -62,11 +62,14 @@ import {useOptimisticCart, Image, type OptimisticCartLine} from "@shopify/hydrog
 import {ShoppingCart, Sparkles} from "lucide-react";
 import {Button} from "~/components/ui/button";
 import {Await, Link, useRouteLoaderData} from "react-router";
+import {useAgentSurface} from "~/lib/agent-surface-context";
 import type {CartLayout, CartMainProps} from "types";
 import type {RootLoader} from "~/root";
 import {useAside} from "~/components/Aside";
 import {CartLineItem} from "~/components/CartLineItem";
 import {CartSummary} from "./CartSummary";
+import {AgentArrivalBanner} from "~/components/cart/AgentArrivalBanner";
+import {AgentCartView, type AgentCart} from "~/components/cart/AgentCartView";
 import {Empty, EmptyHeader, EmptyMedia, EmptyTitle} from "~/components/ui/empty";
 import {type CarouselApi, Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext} from "~/components/ui/carousel";
 import {Skeleton} from "~/components/ui/skeleton";
@@ -100,12 +103,47 @@ export function CartMain({layout, cart: originalCart, isLoggedIn, hasStoreCredit
     const isPage = layout === "page";
     const rootData = useRouteLoaderData<RootLoader>("root");
 
+    // Show the agent arrival banner when the buyer arrived via an AI agent's cart permalink.
+    // Session-based detection via AgentSurfaceContext — no URL flag needed.
+    const agentSurface = useAgentSurface();
+    const isAgent = agentSurface.isAgent;
+    const isAgentCart = agentSurface.source === "permalink";
+
+    // Resolve auth from props (aside context, passed by PageLayout) or rootData promises
+    // (page context, cart.tsx passes no auth props — resolves from deferred root loader).
+    const [resolvedAuth, setResolvedAuth] = useState({isLoggedIn: false, hasStoreCredit: false});
+    useEffect(() => {
+        if (isLoggedIn !== undefined || hasStoreCredit !== undefined) {
+            setResolvedAuth({isLoggedIn: !!isLoggedIn, hasStoreCredit: !!hasStoreCredit});
+            return;
+        }
+        if (!rootData) return;
+        let cancelled = false;
+        Promise.all([rootData.isLoggedIn ?? false, rootData.hasStoreCredit ?? false])
+            .then(([loggedIn, credit]) => {
+                if (!cancelled) setResolvedAuth({isLoggedIn: !!loggedIn, hasStoreCredit: !!credit});
+            })
+            .catch(() => {});
+        return () => { cancelled = true; };
+    }, [isLoggedIn, hasStoreCredit, rootData]);
+
+    const resolvedShippingConfig = shippingConfig ?? rootData?.shippingConfig;
+
+    // Agent path: structured view with subheadings, no carousels.
+    // Cast via unknown: codegen marks MoneyV2 fields optional (GraphQL nullable
+    // convention) but the Storefront API always returns them on cart responses.
+    if (isAgent && cart && (cart?.lines?.nodes?.length ?? 0) > 0) {
+        return <AgentCartView cart={cart as unknown as AgentCart} />;
+    }
+
     // Page layout: two-column grid on desktop, stacked on mobile/tablet
     // Grid scales for ultrawide: summary column grows from 380px to 480px
     if (isPage) {
         return (
             <div className="w-full">
                 <CartEmpty hidden={linesCount} layout={layout} />
+                {/* Agent-arrival banner — spans full width above the two-column grid */}
+                {isAgentCart && linesCount && <AgentArrivalBanner />}
                 {linesCount && (
                     <div className="grid gap-4 sm:gap-6 md:gap-8 lg:gap-10 xl:gap-12 2xl:gap-16 lg:grid-cols-[1fr_380px] xl:grid-cols-[1fr_420px] 2xl:grid-cols-[1fr_460px] 3xl:grid-cols-[1fr_480px] lg:items-start">
                         {/* Cart items list - responsive spacing */}
@@ -124,9 +162,9 @@ export function CartMain({layout, cart: originalCart, isLoggedIn, hasStoreCredit
                                 <CartSummary
                                     cart={cart}
                                     layout={layout}
-                                    isLoggedIn={isLoggedIn}
-                                    hasStoreCredit={hasStoreCredit}
-                                    shippingConfig={shippingConfig}
+                                    isLoggedIn={resolvedAuth.isLoggedIn}
+                                    hasStoreCredit={resolvedAuth.hasStoreCredit}
+                                    shippingConfig={resolvedShippingConfig}
                                 />
                             </div>
                         )}
@@ -183,9 +221,9 @@ export function CartMain({layout, cart: originalCart, isLoggedIn, hasStoreCredit
                 <CartSummary
                     cart={cart}
                     layout={layout}
-                    isLoggedIn={isLoggedIn}
-                    hasStoreCredit={hasStoreCredit}
-                    shippingConfig={shippingConfig}
+                    isLoggedIn={resolvedAuth.isLoggedIn}
+                    hasStoreCredit={resolvedAuth.hasStoreCredit}
+                    shippingConfig={resolvedShippingConfig}
                 />
             )}
         </div>

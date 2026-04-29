@@ -1,67 +1,23 @@
-/**
- * @fileoverview Cart Resource Route (/cart)
- *
- * @description
- * Resource route that handles all cart mutations via form submissions.
- * No UI component - cart is accessed via the cart drawer (aside) only.
- * Handles all cart operations:
- * - Add/update/remove line items
- * - Apply discount codes
- * - Apply/remove gift cards
- * - Update buyer identity
- * - Add order notes
- *
- * @url-pattern /cart (resource route - no UI)
- *
- * @architecture
- * Action-Based Mutations:
- * - Cart operations are handled via form submissions from CartForm components
- * - CartForm.getFormInput extracts action and inputs
- * - Results include cart data and any errors
- *
- * Data Loading:
- * - Loader provides cart data for resource requests
- * - Cart drawer gets data from root loader
- *
- * @actions
- * - LinesAdd: Add products to cart
- * - LinesUpdate: Change quantities
- * - LinesRemove: Remove items
- * - DiscountCodesUpdate: Apply discount codes
- * - GiftCardCodesUpdate: Replace applied gift card codes
- * - GiftCardCodesAdd: Append gift card codes (2026.1.0+)
- * - GiftCardCodesRemove: Remove gift cards
- * - BuyerIdentityUpdate: Set customer info
- * - NoteUpdate: Add order notes
- *
- * @related
- * - CartMain.tsx - Cart drawer UI
- * - CartSummary.tsx - Order totals and checkout
- * - CartLineItem.tsx - Individual cart item
- * - AddToCartButton.tsx - Triggers LinesAdd action
- * - Aside.tsx - Cart drawer container
- */
-
-import {data, type HeadersFunction, type MetaFunction} from "react-router";
+import {data, type HeadersFunction} from "react-router";
+import {Suspense} from "react";
+import {Await, useRouteLoaderData} from "react-router";
 import type {Route} from "./+types/cart";
-
 import type {CartQueryDataReturn} from "@shopify/hydrogen";
 import {CartForm} from "@shopify/hydrogen";
+import {isAgentRequest} from "~/lib/agentic/agent-request";
+import {RouteErrorBoundary} from "~/components/RouteErrorBoundary";
+import {CartMain, CartLoadingSkeleton} from "~/components/cart/CartMain";
+import type {RootLoader} from "~/root";
+import type {CartApiQueryFragment} from "storefrontapi.generated";
 
-export const meta: MetaFunction = () => {
-    return [
-        {title: "Cart"},
-        {name: "robots", content: "noindex"}
-    ];
-};
-
-// =============================================================================
-// HEADERS
-// =============================================================================
+export const meta: Route.MetaFunction = () => [
+    {title: "Cart"},
+    {name: "robots", content: "noindex"}
+];
 
 export const headers: HeadersFunction = ({actionHeaders}) => actionHeaders;
 
-export async function action({request, context}: Route.ActionArgs) {
+export const action = async ({request, context}: Route.ActionArgs) => {
     const {cart} = context;
 
     const formData = await request.formData();
@@ -108,27 +64,26 @@ export async function action({request, context}: Route.ActionArgs) {
         case CartForm.ACTIONS.DiscountCodesUpdate: {
             const formDiscountCode = inputs.discountCode;
 
-            // User inputted discount code
             const discountCodes = (formDiscountCode ? [formDiscountCode] : []) as string[];
 
-            // Combine discount codes already applied on cart
             discountCodes.push(...inputs.discountCodes);
 
             result = await cart.updateDiscountCodes(discountCodes);
             break;
         }
-        case CartForm.ACTIONS.GiftCardCodesAdd: {
-            const giftCardCodes = inputs.giftCardCodes as string[];
-            result = await cart.addGiftCardCodes(giftCardCodes);
-            break;
-        }
         case CartForm.ACTIONS.GiftCardCodesUpdate: {
             const formGiftCardCode = inputs.giftCardCode;
+
             const giftCardCodes = (formGiftCardCode ? [formGiftCardCode] : []) as string[];
 
             giftCardCodes.push(...inputs.giftCardCodes);
 
             result = await cart.updateGiftCardCodes(giftCardCodes);
+            break;
+        }
+        case CartForm.ACTIONS.GiftCardCodesAdd: {
+            const giftCardCodes = inputs.giftCardCodes as string[];
+            result = await cart.addGiftCardCodes(giftCardCodes);
             break;
         }
         case CartForm.ACTIONS.GiftCardCodesRemove: {
@@ -141,22 +96,39 @@ export async function action({request, context}: Route.ActionArgs) {
     }
 
     const cartId = result?.cart?.id;
-    const headers = cartId ? cart.setCartId(cartId) : new Headers();
+    const headers = cartId ? cart.setCartId(result.cart.id) : new Headers();
     const {cart: cartResult, errors, warnings} = result;
 
+    if (isAgentRequest(request)) {
+        const agentHeaders = new Headers(headers);
+        agentHeaders.set("Content-Type", "application/x-ucp+json");
+        agentHeaders.set("Cache-Control", "no-cache, no-store, must-revalidate");
+        return new Response(
+            JSON.stringify({cart: cartResult, errors, warnings}),
+            {status: errors?.length ? 422 : 200, headers: agentHeaders}
+        );
+    }
+
+    // Validate redirectTo to prevent open redirect attacks.
+    // Only allow: the special "__checkout_url__" token, or relative paths starting with "/"
+    // (but not "//" which is a protocol-relative URL). Reject external URLs, javascript:, data:, etc.
     const redirectTo = formData.get("redirectTo") ?? null;
     if (typeof redirectTo === "string") {
         let destination: string | null = null;
+
         if (redirectTo === "__checkout_url__") {
             destination = cartResult?.checkoutUrl ?? null;
         } else if (redirectTo.startsWith("/") && !redirectTo.startsWith("//")) {
             destination = redirectTo;
         }
+
         if (destination) {
             status = 303;
             headers.set("Location", destination);
         }
     }
+
+    headers.set("Cache-Control", "no-cache, no-store, must-revalidate");
 
     return data(
         {
@@ -169,34 +141,61 @@ export async function action({request, context}: Route.ActionArgs) {
         },
         {status, headers}
     );
-}
+};
 
 export async function loader({context, request}: Route.LoaderArgs) {
-    const {cart} = context;
+    const {cart, session} = context;
 
-    // Document requests (browser navigation): redirect to homepage.
-    // The cart UI is the drawer — there is no full-page cart view.
-    if (request.headers.get("Accept")?.includes("text/html")) {
-        return new Response(null, {
-            status: 302,
-            headers: {Location: "/"}
-        });
+    // Detect AI agent cart arrival via session key written by cart.$lines.tsx.
+    // When hasAgentSession=true, render the cart page so AgentArrivalBanner is shown.
+    const hasAgentSession = Boolean(session.get("agentSessionId"));
+
+    if (request.headers.get("Accept")?.includes("text/html") && !hasAgentSession) {
+        return new Response(null, {status: 302, headers: {Location: "/", "Cache-Control": "no-cache, no-store, must-revalidate"}});
     }
 
-    // Fetch/resource requests (from CartForm): return cart data
-    return await cart.get();
+    const cartData = await cart.get();
+
+    return data(
+        {...cartData},
+        {headers: {"Cache-Control": "no-cache, no-store, must-revalidate"}}
+    );
 }
 
 // =============================================================================
-// NO UI COMPONENT
+// CART PAGE — rendered only when ?_agent=1 is present
 // =============================================================================
 
 /**
- * Resource route — cart UI is the drawer.
- * This component should never render (loader redirects document requests).
+ * CartPage — full-page cart view rendered exclusively for agent-arrival sessions.
+ *
+ * Normal cart navigation redirects to "/" (the aside drawer handles cart display).
+ * When `cart.$lines.tsx` detects an AI agent arrival, it writes session keys and
+ * redirects to /cart (clean URL), which bypasses the redirect and renders this page
+ * so the buyer can review the cart with the AgentArrivalBanner before checkout.
+ *
+ * CartMain handles AgentArrivalBanner rendering via useAgentSurface() from the
+ * AgentSurfaceProvider — no URL flag or explicit banner placement is needed here.
  */
-export default function Cart() {
-    // Resource route — cart UI is the drawer.
-    // This component should never render (loader redirects document requests).
-    return null;
+export default function CartPage() {
+    const rootData = useRouteLoaderData<RootLoader>("root");
+
+    if (!rootData) return null;
+
+    return (
+        <main className="container mx-auto max-w-3xl px-4 py-8 sm:py-12">
+            <Suspense fallback={<CartLoadingSkeleton />}>
+                <Await resolve={rootData.cart}>
+                    {cart => (
+                        <CartMain
+                            cart={cart as CartApiQueryFragment | null}
+                            layout="page"
+                        />
+                    )}
+                </Await>
+            </Suspense>
+        </main>
+    );
 }
+
+export {RouteErrorBoundary as ErrorBoundary};

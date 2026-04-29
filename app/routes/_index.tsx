@@ -126,10 +126,10 @@ import type {CuratedProductFragment, CuratedCollectionsQuery, ExploreCollectionF
 import {
     generateFAQPageSchema,
     generateOrganizationSchema,
-    generateWebsiteSchema,
     getSeoDefaults
 } from "~/lib/seo";
-import {useTestimonials, useInstagramMedia, useFaqItems, usePromotionalBanners} from "~/lib/site-content-context";
+import {useTestimonials, useInstagramMedia, useFaqItems, usePromotionalBanners, useTrafficSourceBanners, useHomepageVariants} from "~/lib/site-content-context";
+import {useAgentSurface} from "~/lib/agent-surface-context";
 import {ShopLocation} from "~/components/ShopLocation";
 import {useWishlist} from "~/lib/wishlist-context";
 
@@ -285,7 +285,6 @@ export const meta: Route.MetaFunction = ({matches}) => {
     const socialLinks = rootData?.siteContent?.siteSettings?.socialLinks;
     const faqItems = (rootData?.siteContent?.siteSettings as {faqItems?: Array<{question: string; answer: string}>} | undefined)?.faqItems;
     const organizationSchema = generateOrganizationSchema(rootData?.siteContent?.siteSettings, socialLinks);
-    const websiteSchema = generateWebsiteSchema(rootData?.siteContent?.siteSettings);
 
     return [
         ...(getSeoMeta({
@@ -294,7 +293,7 @@ export const meta: Route.MetaFunction = ({matches}) => {
             description: seoDefaults.description,
             url: seoDefaults.siteUrl,
             media: seoDefaults.media,
-            jsonLd: [organizationSchema, websiteSchema] as any
+            jsonLd: organizationSchema as any
         }) ?? []),
         ...(faqItems && faqItems.length > 0 ? [{"script:ld+json": generateFAQPageSchema(faqItems) as any}] : [])
     ];
@@ -432,6 +431,11 @@ export default function Homepage() {
     const faqItems = useFaqItems();
     const {bannerOneMedia, bannerTwoMedia} = usePromotionalBanners();
     const {count: wishlistCount} = useWishlist();
+    const trafficSourceBanners = useTrafficSourceBanners();
+    const homepageVariants = useHomepageVariants();
+    const {isAgent} = useAgentSurface();
+    const agentVariant = homepageVariants?.find(v => v.segment === "agent") ?? null;
+    void trafficSourceBanners; // consumed by server-rendered banner components when configured
 
     return (
         <>
@@ -440,7 +444,19 @@ export default function Homepage() {
                 ═══════════════════════════════════════════════════════════════════ */}
 
             {/* 1. VideoHero - Brand introduction with dynamic collection showcase */}
-            <VideoHero randomCollection={data.randomHeroCollection} />
+            {isAgent ? (
+                <section className="px-6 py-16 max-w-3xl mx-auto">
+                    <h1 className="text-3xl font-bold mb-4">{agentVariant?.heroHeading ?? "Explore our catalog"}</h1>
+                    <p className="text-muted-foreground mb-8">{agentVariant?.heroDescription ?? "Browse products, collections, and policies below."}</p>
+                    {agentVariant?.ctaUrl ? (
+                        <a href={agentVariant.ctaUrl} className="text-primary underline underline-offset-4">
+                            {agentVariant.ctaLabel ?? "Browse catalog"}
+                        </a>
+                    ) : null}
+                </section>
+            ) : (
+                <VideoHero randomCollection={data.randomHeroCollection} />
+            )}
 
             {/* Edge-to-edge container with minimal padding (4px-12px)
                  Content spans full viewport width on all screen sizes

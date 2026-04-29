@@ -50,7 +50,7 @@ import {CollectionPageLayout, useGridColumns, useLayoutMode, getGridClassName} f
 import {AnimatedSection} from "~/components/AnimatedSection";
 import {CollectionSidebar, type CollectionWithCount} from "~/components/CollectionSidebar";
 import {filterAndSortDiscountedProducts, countDiscountedProducts, type DiscountedProduct, type RawDiscountProduct, type LightweightProduct} from "~/lib/discounts";
-import {buildCanonicalUrl, getBrandNameFromMatches, getSiteUrlFromMatches} from "~/lib/seo";
+import {buildCanonicalUrl, getBrandNameFromMatches, getSiteUrlFromMatches, generateBreadcrumbListSchema} from "~/lib/seo";
 import {withTimeoutAndFallback, TIMEOUT_DEFAULTS} from "~/lib/promise-utils";
 import {SIDEBAR_COLLECTIONS_QUERY} from "~/lib/fragments";
 
@@ -65,14 +65,20 @@ export const meta: Route.MetaFunction = ({data, matches}) => {
             ? `Discover discounted items with savings up to ${maxDiscount}% off.`
             : "Check back soon for sale items and amazing deals.";
 
-    return (
-        getSeoMeta({
+    const breadcrumbSchema = generateBreadcrumbListSchema([
+        {name: "Home", url: "/"},
+        {name: "Sale", url: "/sale"}
+    ], siteUrl);
+
+    return [
+        ...(getSeoMeta({
             title,
             titleTemplate: `%s | ${brandName}`,
             description,
             url: buildCanonicalUrl("/sale", siteUrl)
-        }) ?? []
-    );
+        }) ?? []),
+        {"script:ld+json": breadcrumbSchema as any}
+    ];
 };
 
 function loadDeferredData({context}: Route.LoaderArgs) {

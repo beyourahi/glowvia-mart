@@ -51,7 +51,7 @@ import {Button} from "~/components/ui/button";
 import {WheelGesturesPlugin} from "embla-carousel-wheel-gestures";
 import {Carousel, CarouselContent, CarouselItem} from "~/components/ui/carousel";
 import {cn} from "~/lib/utils";
-import {buildCanonicalUrl, getBrandNameFromMatches, getSiteUrlFromMatches} from "~/lib/seo";
+import {buildCanonicalUrl, getBrandNameFromMatches, getSiteUrlFromMatches, generateBreadcrumbListSchema} from "~/lib/seo";
 import {useSiteSettings} from "~/lib/site-content-context";
 import {PageHeading} from "~/components/PageHeading";
 
@@ -82,6 +82,11 @@ export const meta: Route.MetaFunction = ({data, matches}) => {
         rootData?.siteContent?.siteSettings?.blogPageDescription ||
         "Explore stories, inspiration, and ideas to help you discover joy in everyday moments.";
 
+    const breadcrumbSchema = generateBreadcrumbListSchema([
+        {name: "Home", url: "/"},
+        {name: "Blog", url: "/blogs"}
+    ], siteUrl);
+
     return [
         ...(getSeoMeta({
             title: pageTitle,
@@ -98,6 +103,7 @@ export const meta: Route.MetaFunction = ({data, matches}) => {
                   }
                 : undefined
         }) ?? []),
+        {"script:ld+json": breadcrumbSchema as any},
         {tagName: "link" as const, rel: "alternate", type: "application/rss+xml", title: `${pageTitle} RSS Feed`, href: "/blogs/feed.xml"}
     ];
 };

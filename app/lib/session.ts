@@ -196,3 +196,7 @@ export class AppSession implements HydrogenSession {
         return this.#sessionStorage.commitSession(this.#session);
     }
 }
+
+// Typed session keys for agent arrival state (Phase 5b)
+export const AGENT_SESSION_ID_KEY = "agentSessionId" as const;
+export const AGENT_ARRIVAL_AT_KEY = "agentArrivalAt" as const;

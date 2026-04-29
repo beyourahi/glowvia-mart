@@ -45,7 +45,7 @@ import type {Route} from "./+types/faq";
 import {getSeoMeta} from "@shopify/hydrogen";
 import {AnimatedSection} from "~/components/AnimatedSection";
 import {Accordion, AccordionContent, AccordionItem, AccordionTrigger} from "~/components/ui/accordion";
-import {buildCanonicalUrl, getBrandNameFromMatches, getSiteUrlFromMatches, generateFAQPageSchema} from "~/lib/seo";
+import {buildCanonicalUrl, getBrandNameFromMatches, getSiteUrlFromMatches, generateFAQPageSchema, generateBreadcrumbListSchema} from "~/lib/seo";
 import {useFaqItems} from "~/lib/site-content-context";
 import {PageHeading} from "~/components/PageHeading";
 
@@ -62,15 +62,21 @@ export const meta: Route.MetaFunction = ({matches}) => {
     const faqItems = rootData?.siteContent?.siteSettings?.faqItems;
     const faqSchema = faqItems?.length ? generateFAQPageSchema(faqItems) : undefined;
 
-    return (
-        getSeoMeta({
+    const breadcrumbSchema = generateBreadcrumbListSchema([
+        {name: "Home", url: "/"},
+        {name: "FAQ", url: "/faq"}
+    ], siteUrl);
+
+    return [
+        ...(getSeoMeta({
             title: "Frequently Asked Questions",
             titleTemplate: `%s | ${brandName}`,
             description: `Find answers to frequently asked questions about orders, shipping, returns, products, and more at ${brandName}.`,
             url: buildCanonicalUrl("/faq", siteUrl),
             jsonLd: faqSchema as any
-        }) ?? []
-    );
+        }) ?? []),
+        {"script:ld+json": breadcrumbSchema as any}
+    ];
 };
 
 export default function FAQ() {

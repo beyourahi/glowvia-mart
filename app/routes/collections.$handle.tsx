@@ -41,6 +41,7 @@ import {redirect, useLoaderData, useRouteError, isRouteErrorResponse, Await} fro
 import type {Route} from "./+types/collections.$handle";
 import {Analytics, getSeoMeta, getPaginationVariables} from "@shopify/hydrogen";
 import {Suspense} from "react";
+import {scoreProducts, extractAffinitySignals} from "~/lib/agentic/affinity";
 import {InfiniteScrollSection} from "~/components/InfiniteScrollSection";
 import {redirectIfHandleIsLocalized} from "~/lib/redirect";
 import {ProductItem} from "~/components/ProductItem";
@@ -61,11 +62,13 @@ import type {ProductItemFragment} from "storefrontapi.generated";
 import type {ProductCollectionSortKeys} from "@shopify/hydrogen/storefront-api-types";
 import {
     generateCollectionSchema,
+    generateBreadcrumbListSchema,
     truncateDescription,
     buildCanonicalUrl,
     getBrandNameFromMatches,
     getSiteUrlFromMatches
 } from "~/lib/seo";
+import {deriveCollectionBreadcrumbs} from "~/lib/seo-breadcrumbs";
 import {ProductCardSkeleton, ProductListSkeleton} from "~/components/skeletons";
 import {OfflineAwareErrorPage} from "~/components/OfflineAwareErrorPage";
 import {trackErrorBoundary} from "~/hooks/usePwaAnalytics";
@@ -106,10 +109,16 @@ export const meta: Route.MetaFunction = ({data, matches}) => {
             jsonLd: generateCollectionSchema(collection, products, siteUrl) as any
         }) ?? [];
 
+    const breadcrumbSchema = generateBreadcrumbListSchema(
+        deriveCollectionBreadcrumbs(collection),
+        siteUrl
+    );
+
+    const withBreadcrumb = [...seoMeta, {"script:ld+json": breadcrumbSchema as any}];
     const preloadHref = collection.products?.nodes?.[0]?.featuredImage?.url;
     return preloadHref
-        ? [...seoMeta, {tagName: "link" as const, rel: "preload", as: "image", href: preloadHref}]
-        : seoMeta;
+        ? [...withBreadcrumb, {tagName: "link" as const, rel: "preload", as: "image", href: preloadHref}]
+        : withBreadcrumb;
 };
 
 export async function loader(args: Route.LoaderArgs) {
@@ -173,8 +182,47 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
     // The main COLLECTION_QUERY paginates at 24, so its .nodes.length would be inaccurate
     const collectionProductCount = collectionCountData?.collection?.products?.nodes?.length ?? 0;
 
+    // SmartCollections: server-side affinity re-ranking for authenticated customers.
+    // Fetch the customer's recent order history and surface previously-purchased-brand
+    // products first, then fall back to the original GraphQL order for anonymous users.
+    let rankedProductNodes = collection.products.nodes;
+    try {
+        const {customerAccount} = context;
+        const isAuthenticated = await customerAccount.isLoggedIn();
+
+        if (isAuthenticated) {
+            const ordersResponse = await customerAccount.query(CUSTOMER_AFFINITY_ORDERS_QUERY, {
+                variables: {first: 10}
+            }) as any;
+
+            const orderNodes: any[] = ordersResponse?.data?.customer?.orders?.nodes ?? [];
+
+            // Flatten all order line items into AffinitySignal-compatible objects
+            const orderLines = orderNodes.flatMap((order: any) =>
+                (order.lineItems?.nodes ?? []).map((line: any) => ({
+                    productId: line.variant?.product?.id ?? "",
+                    quantity: line.quantity as number,
+                    processedAt: order.processedAt as string
+                }))
+            ).filter((line: any) => line.productId !== "");
+
+            if (orderLines.length > 0) {
+                const signals = extractAffinitySignals(orderLines);
+                rankedProductNodes = scoreProducts(rankedProductNodes, signals);
+            }
+        }
+    } catch {
+        // Graceful degradation: any auth or API failure leaves the original product order intact
+    }
+
     return {
-        collection,
+        collection: {
+            ...collection,
+            products: {
+                ...collection.products,
+                nodes: rankedProductNodes
+            }
+        },
         collectionProductCount
     };
 }
@@ -512,6 +560,31 @@ const COLLECTION_QUERY = `#graphql
 ` as const;
 
 
+
+// Minimal Customer Account API query for affinity signal extraction.
+// Fetches only the fields needed to build AffinitySignal[]: product IDs, quantities,
+// and order timestamps. Kept lightweight on purpose — 10 orders × 20 line items max.
+const CUSTOMER_AFFINITY_ORDERS_QUERY = `
+  query CustomerAffinityOrders($first: Int!) {
+    customer {
+      orders(first: $first, sortKey: PROCESSED_AT, reverse: true) {
+        nodes {
+          processedAt
+          lineItems(first: 20) {
+            nodes {
+              quantity
+              variant {
+                product {
+                  id
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+` as const;
 
 // Lightweight query to get accurate product count for a collection
 // The main COLLECTION_QUERY paginates at 24, so .nodes.length caps at page size

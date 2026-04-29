@@ -67,11 +67,13 @@ import {RelatedArticles} from "~/components/blog/RelatedArticles";
 import type {ArticleCardData} from "~/components/blog/ArticleCard";
 import {
     generateBlogPostingSchema,
+    generateBreadcrumbListSchema,
     truncateDescription,
     buildCanonicalUrl,
     getBrandNameFromMatches,
     getSiteUrlFromMatches
 } from "~/lib/seo";
+import {deriveArticleBreadcrumbs} from "~/lib/seo-breadcrumbs";
 import {useReadingProgress} from "~/hooks/useReadingProgress";
 
 export const meta: Route.MetaFunction = ({data, matches}) => {
@@ -108,7 +110,17 @@ export const meta: Route.MetaFunction = ({data, matches}) => {
         ...(article?.author?.name ? [{property: "og:article:author", content: article.author.name}] : [])
     ];
 
-    return [...baseMeta, ...articleMeta];
+    const breadcrumbSchema = generateBreadcrumbListSchema(
+        deriveArticleBreadcrumbs(
+            blogHandle || "news",
+            blogHandle ? blogHandle.split("-").map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ") : "Blog",
+            article.handle,
+            article.title
+        ),
+        siteUrl
+    );
+
+    return [...baseMeta, ...articleMeta, {"script:ld+json": breadcrumbSchema as any}];
 };
 
 export async function loader(args: Route.LoaderArgs) {

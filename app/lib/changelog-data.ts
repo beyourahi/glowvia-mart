@@ -29,6 +29,12 @@ import type {ChangelogEntry} from "~/lib/types/changelog";
 // Newest entries at the top. Add new entries here in the same commit that ships the change.
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
+        date: "2026-04-29",
+        category: "Maintenance",
+        headline: "Size guide removed from product pages",
+        summary: "The size guide button and dialog have been removed from product pages. Sizing information is still available through product descriptions and any size-related content set up by the store."
+    },
+    {
         date: "2026-04-28",
         category: "New Feature",
         headline: "\"Get it now\" — skip the bag and go straight to checkout",

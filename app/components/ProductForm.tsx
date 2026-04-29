@@ -84,7 +84,6 @@ const FALLBACK_PRODUCT_CONTENT = {
     oneTimeLabel: "One-time purchase",
     subscribeSaveLabel: "Subscribe & Save",
     savePercentageTemplate: "Save {percent}%",
-    sizeGuideCta: "Size Guide",
     quantityLabel: "Quantity",
     tabDescription: "Description",
     tabShipping: "Shipping",
@@ -114,7 +113,6 @@ export function ProductForm({
     selectedVariant,
     shareButton,
     wishlistButton,
-    sizeChartButton,
     sellingPlanGroups,
     selectedSellingPlan,
     tags
@@ -125,8 +123,6 @@ export function ProductForm({
     shareButton?: React.ReactNode;
     /** Optional wishlist button - pass WishlistButton component with product ID */
     wishlistButton?: React.ReactNode;
-    /** Optional size chart button - pass SizeChartButton component when product has size chart data */
-    sizeChartButton?: React.ReactNode;
     sellingPlanGroups?: ProductFragment["sellingPlanGroups"];
     selectedSellingPlan?: SellingPlanFragment | null;
     /** Product tags for special behaviors (e.g., preorder) */
@@ -376,9 +372,6 @@ export function ProductForm({
     if (!hasDisplayableVariants) {
         return (
             <div className="space-y-3 sm:space-y-4 w-full">
-                {/* Size Chart link - shown above variant options for easy discovery */}
-                {sizeChartButton && <div className="pb-1">{sizeChartButton}</div>}
-
                 {/* Purchase type toggle for subscription products */}
                 {purchaseTypeToggle}
 
@@ -430,9 +423,6 @@ export function ProductForm({
     // Variant options + quantity on top row, Add to Cart below
     return (
         <div className="space-y-3 sm:space-y-4 w-full">
-            {/* Size Chart link - shown above variant options for easy discovery */}
-            {sizeChartButton && <div className="pb-1">{sizeChartButton}</div>}
-
             {/* Purchase type toggle for subscription products */}
             {purchaseTypeToggle}
 

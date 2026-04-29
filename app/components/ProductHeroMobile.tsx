@@ -104,7 +104,6 @@ export function ProductHeroMobile({
     selectedSellingPlan,
     title,
     id = "product-hero-mobile",
-    sizeChartButton,
     tags
 }: {
     productOptions: MappedProductOptions[];
@@ -112,8 +111,6 @@ export function ProductHeroMobile({
     selectedSellingPlan?: SellingPlanFragment | null;
     title: string;
     id?: string;
-    /** Optional size chart button - shown above variant options on mobile */
-    sizeChartButton?: React.ReactNode;
     /** Product tags for special behaviors (e.g., preorder) */
     tags?: string[];
 }) {
@@ -188,9 +185,6 @@ export function ProductHeroMobile({
         >
             {/* Product Title - two-part split with serif font */}
             <ProductTitle title={title} variant="mobile-hero" className="mb-6" />
-
-            {/* Size Chart link - mobile styling (white on coral) */}
-            {sizeChartButton && <div className="mb-4">{sizeChartButton}</div>}
 
             {/* Variant Options - each option type on its own line */}
             {visibleOptions.length > 0 && (

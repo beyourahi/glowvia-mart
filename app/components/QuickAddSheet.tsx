@@ -65,8 +65,6 @@ import {Sheet, SheetContent, SheetHeader, SheetTitle, SheetBody, SheetFooter} fr
 import {ColorSwatch} from "~/components/ui/color-swatch";
 import {isColorOption, getSwatchFromColorName, hasColorMapping} from "~/lib/color-name-map";
 import {WishlistButton} from "~/components/WishlistButton";
-import {SizeChartButtonCompact} from "~/components/SizeChartButton";
-import type {SizeChartData} from "~/lib/size-chart";
 import {toast} from "sonner";
 import {getButtonLabel} from "~/lib/product-tags";
 import {BuyNowButton} from "~/components/BuyNowButton";
@@ -134,8 +132,6 @@ interface QuickAddSheetProps {
     product: QuickAddProduct;
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    /** Optional size chart data - if provided, shows size guide button */
-    sizeChart?: SizeChartData | null;
 }
 
 interface QuickAddCartButtonProps {
@@ -190,7 +186,7 @@ interface QuickAddCartButtonProps {
  * - data-lenis-prevent on SheetBody
  * - Drag handle for gesture-based closing
  */
-export function QuickAddSheet({product, open, onOpenChange, sizeChart}: QuickAddSheetProps) {
+export function QuickAddSheet({product, open, onOpenChange}: QuickAddSheetProps) {
     const [quantity, setQuantity] = useState(1);
     const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
 
@@ -330,7 +326,6 @@ export function QuickAddSheet({product, open, onOpenChange, sizeChart}: QuickAdd
                                         </>
                                     )}
                                 </span>
-                                {sizeChart && <SizeChartButtonCompact sizeChart={sizeChart} />}
                             </div>
                         </div>
                     </div>

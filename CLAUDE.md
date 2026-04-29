@@ -373,8 +373,6 @@ Read all comments before editing. Update when changing code. Add for complex log
 
 **Subscriptions**: Customer subscription contract management. Routes: `/account/subscriptions` (list), `/account/subscriptions/:id` (detail/management). `SellingPlanSelector.tsx` on the PDP renders delivery frequency options for products with selling plans; state is managed via the `?selling_plan=` URL query parameter (variant-aware filtering, price adjustment display).
 
-**Size Chart**: Metafield-driven size chart dialog for clothing products. `lib/size-chart.ts` parses the `custom.size_chart` JSON product metafield — supports multiple garment categories, international size conversions (US/UK/EU/Asia), metric/imperial units, fit notes. Components: `SizeChartButton.tsx` (trigger) + `SizeChartDialog.tsx` (modal).
-
 **Chat Widgets**: `FloatingChatWidget.tsx` — floating column of Messenger + WhatsApp buttons, driven entirely by `site_settings.messengerPageId` and `site_settings.whatsappNumber`. Returns null and leaves no DOM trace when both fields are empty.
 
 **Infinite Scroll**: `InfiniteScrollSection.tsx` — Hydrogen Pagination-based infinite scroll; navigates to next page URL when the "Load more" link enters viewport (replace mode, preserves history). `InfiniteScrollGrid.tsx` wraps the grid layout. Used by collections, search, and the sale page.

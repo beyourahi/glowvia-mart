@@ -295,7 +295,6 @@ const FALLBACK_PRODUCT_CONTENT: ProductContent = {
     oneTimeLabel: "One-time purchase",
     subscribeSaveLabel: "Subscribe & Save",
     savePercentageTemplate: "Save {percent}%",
-    sizeGuideCta: "Size Guide",
     quantityLabel: "Quantity",
     tabDescription: "Description",
     tabShipping: "Shipping",
@@ -1289,7 +1288,6 @@ export function parseProductContent(data: unknown): ProductContent {
         savePercentageTemplate: d.savePercentageTemplate?.value || FALLBACK_PRODUCT_CONTENT.savePercentageTemplate,
 
         // Product Page UI
-        sizeGuideCta: d.sizeGuideCta?.value || FALLBACK_PRODUCT_CONTENT.sizeGuideCta,
         quantityLabel: d.quantityLabel?.value || FALLBACK_PRODUCT_CONTENT.quantityLabel,
 
         // Product Tabs

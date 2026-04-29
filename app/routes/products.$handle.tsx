@@ -64,8 +64,6 @@ import {WishlistButton} from "~/components/WishlistButton";
 import {ProductDiscountBadge} from "~/components/ProductDiscountBadge";
 import {ProductTitle} from "~/components/ProductTitle";
 import {ProductDescription} from "~/components/ProductDescription";
-import {SizeChartButton} from "~/components/SizeChartButton";
-import {parseSizeChart} from "~/lib/size-chart";
 import {redirectIfHandleIsLocalized} from "~/lib/redirect";
 import {useRecentlyViewed} from "~/lib/recently-viewed";
 import {CollectionSidebar, type CollectionWithCount} from "~/components/CollectionSidebar";
@@ -279,9 +277,6 @@ export default function Product() {
         selectedOrFirstAvailableVariant: selectedVariant
     });
 
-    // Parse size chart data from metafield (if available)
-    const sizeChartResult = parseSizeChart(product.sizeChart?.value);
-
     // Track product view in recently viewed (with 1-second delay)
     // Stores full product data for offline display capability
     useEffect(() => {
@@ -352,11 +347,6 @@ export default function Product() {
                     selectedSellingPlan={selectedSellingPlan}
                     title={title}
                     tags={product.tags}
-                    sizeChartButton={
-                        sizeChartResult.isValid && sizeChartResult.data ? (
-                            <SizeChartButton sizeChart={sizeChartResult.data} variant="mobile" />
-                        ) : undefined
-                    }
                 />
             </div>
 
@@ -476,11 +466,6 @@ export default function Product() {
                                     }
                                     shareButton={
                                         <ProductShareButton product={product} selectedVariant={selectedVariant} />
-                                    }
-                                    sizeChartButton={
-                                        sizeChartResult.isValid && sizeChartResult.data ? (
-                                            <SizeChartButton sizeChart={sizeChartResult.data} variant="link" />
-                                        ) : undefined
                                     }
                                 />
                                 {/* Product Description - Comprehensive prose typography for desktop */}
@@ -624,9 +609,6 @@ const PRODUCT_FRAGMENT = `#graphql
     publishedAt
     encodedVariantExistence
     encodedVariantAvailability
-    sizeChart: metafield(namespace: "custom", key: "size_chart") {
-      value
-    }
     collections(first: 1) {
       nodes {
         handle

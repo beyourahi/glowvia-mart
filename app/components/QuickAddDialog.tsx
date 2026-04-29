@@ -62,8 +62,6 @@ import {Dialog, DialogContent, DialogHeader, DialogTitle} from "~/components/ui/
 import {ColorSwatch} from "~/components/ui/color-swatch";
 import {isColorOption, getSwatchFromColorName, hasColorMapping} from "~/lib/color-name-map";
 import {WishlistButton} from "~/components/WishlistButton";
-import {SizeChartButtonCompact} from "~/components/SizeChartButton";
-import type {SizeChartData} from "~/lib/size-chart";
 import {toast} from "sonner";
 import {getButtonLabel} from "~/lib/product-tags";
 import {BuyNowButton} from "~/components/BuyNowButton";
@@ -134,8 +132,6 @@ interface QuickAddDialogProps {
     product: QuickAddProduct;
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    /** Optional size chart data - if provided, shows size guide button */
-    sizeChart?: SizeChartData | null;
 }
 
 interface QuickAddCartButtonProps {
@@ -189,7 +185,7 @@ interface QuickAddCartButtonProps {
  * - data-lenis-prevent on scrollable areas
  * - Smooth vertical scroll for images
  */
-export function QuickAddDialog({product, open, onOpenChange, sizeChart}: QuickAddDialogProps) {
+export function QuickAddDialog({product, open, onOpenChange}: QuickAddDialogProps) {
     const [quantity, setQuantity] = useState(1);
     const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
 
@@ -361,7 +357,6 @@ export function QuickAddDialog({product, open, onOpenChange, sizeChart}: QuickAd
                                         </>
                                     )}
                                 </span>
-                                {sizeChart && <SizeChartButtonCompact sizeChart={sizeChart} />}
                             </div>
                         </DialogHeader>
 

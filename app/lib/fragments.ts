@@ -109,30 +109,14 @@ export const CART_QUERY_FRAGMENT = `#graphql
               __typename
               ... on MediaImage {
                 id
-                image {
-                  id
-                  url
-                  altText
-                  width
-                  height
-                }
+                alt
+                image { id url altText width height }
               }
               ... on Video {
                 id
                 alt
-                sources {
-                  url
-                  mimeType
-                  width
-                  height
-                }
-                previewImage {
-                  id
-                  url
-                  altText
-                  width
-                  height
-                }
+                sources { url mimeType width height }
+                previewImage { id url altText width height }
               }
             }
           }
@@ -236,30 +220,14 @@ export const CART_QUERY_FRAGMENT = `#graphql
               __typename
               ... on MediaImage {
                 id
-                image {
-                  id
-                  url
-                  altText
-                  width
-                  height
-                }
+                alt
+                image { id url altText width height }
               }
               ... on Video {
                 id
                 alt
-                sources {
-                  url
-                  mimeType
-                  width
-                  height
-                }
-                previewImage {
-                  id
-                  url
-                  altText
-                  width
-                  height
-                }
+                sources { url mimeType width height }
+                previewImage { id url altText width height }
               }
             }
           }
@@ -364,6 +332,120 @@ export const CART_QUERY_FRAGMENT = `#graphql
 ` as const;
 
 // =============================================================================
+// MENU FRAGMENTS
+// =============================================================================
+
+/**
+ * Menu fragment for navigation menus.
+ *
+ * Supports two-level menu hierarchy:
+ * - ParentMenuItem: Top-level menu items
+ * - ChildMenuItem: Nested items under a parent
+ *
+ * Used by header and footer navigation.
+ */
+const MENU_FRAGMENT = `#graphql
+  fragment MenuItem on MenuItem {
+    id
+    resourceId
+    tags
+    title
+    type
+    url
+  }
+  fragment ChildMenuItem on MenuItem {
+    ...MenuItem
+  }
+  fragment ParentMenuItem on MenuItem {
+    ...MenuItem
+    items {
+      ...ChildMenuItem
+    }
+  }
+  fragment Menu on Menu {
+    id
+    items {
+      ...ParentMenuItem
+    }
+  }
+` as const;
+
+// =============================================================================
+// LAYOUT QUERIES
+// =============================================================================
+
+/**
+ * Shop identity fragment for header/layout use.
+ * Provides brand identity data (name, logo, domain) for the navbar and SEO.
+ */
+const SHOP_FRAGMENT = `#graphql
+  fragment Shop on Shop {
+    id
+    name
+    description
+    primaryDomain {
+      url
+    }
+    brand {
+      logo {
+        image {
+          url
+        }
+      }
+    }
+    paymentSettings {
+      currencyCode
+    }
+  }
+` as const;
+
+/**
+ * Header data query - fetches shop identity and the main navigation menu.
+ *
+ * @param $headerMenuHandle - Handle of the header menu in Shopify admin
+ * @param $country - Country code for localized content
+ * @param $language - Language code for localized content
+ *
+ * Used in root.tsx loader to fetch layout data.
+ */
+export const HEADER_QUERY = `#graphql
+  query Header(
+    $country: CountryCode
+    $headerMenuHandle: String!
+    $language: LanguageCode
+  ) @inContext(language: $language, country: $country) {
+    shop {
+      ...Shop
+    }
+    menu(handle: $headerMenuHandle) {
+      ...Menu
+    }
+  }
+  ${SHOP_FRAGMENT}
+  ${MENU_FRAGMENT}
+` as const;
+
+/**
+ * Footer data query - fetches footer navigation menu.
+ *
+ * @param $footerMenuHandle - Handle of the footer menu in Shopify admin
+ * @param $country - Country code for localized content
+ * @param $language - Language code for localized content
+ */
+export const FOOTER_QUERY = `#graphql
+  query Footer(
+    $country: CountryCode
+    $footerMenuHandle: String!
+    $language: LanguageCode
+  ) @inContext(language: $language, country: $country) {
+    menu(handle: $footerMenuHandle) {
+      ...Menu
+    }
+  }
+  ${MENU_FRAGMENT}
+` as const;
+
+// =============================================================================
 // CART SUGGESTION QUERIES
 // =============================================================================
 
@@ -376,7 +458,7 @@ export const CART_QUERY_FRAGMENT = `#graphql
  * @param $country - Country code for localized pricing
  * @param $language - Language code for localized content
  *
- * @note Fetches first 16 products sorted by BEST_SELLING, filtered to available only.
+ * @note Fetches first 16 available products sorted by BEST_SELLING.
  */
 export const CART_SUGGESTIONS_QUERY = `#graphql
   fragment CartSuggestionProduct on Product {
@@ -474,110 +556,6 @@ export const CART_SUGGESTIONS_QUERY = `#graphql
 ` as const;
 
 // =============================================================================
-// MENU FRAGMENTS
-// =============================================================================
-
-/**
- * Menu fragment for navigation menus.
- *
- * Supports two-level menu hierarchy:
- * - ParentMenuItem: Top-level menu items
- * - ChildMenuItem: Nested items under a parent
- *
- * Used by header and footer navigation.
- */
-const MENU_FRAGMENT = `#graphql
-  fragment MenuItem on MenuItem {
-    id
-    resourceId
-    tags
-    title
-    type
-    url
-  }
-  fragment ChildMenuItem on MenuItem {
-    ...MenuItem
-  }
-  fragment ParentMenuItem on MenuItem {
-    ...MenuItem
-    items {
-      ...ChildMenuItem
-    }
-  }
-  fragment Menu on Menu {
-    id
-    items {
-      ...ParentMenuItem
-    }
-  }
-` as const;
-
-// =============================================================================
-// LAYOUT QUERIES
-// =============================================================================
-
-/**
- * Header data query - fetches the main navigation menu and shop info.
- *
- * @param $headerMenuHandle - Handle of the header menu in Shopify admin
- * @param $country - Country code for localized content
- * @param $language - Language code for localized content
- *
- * Used in root.tsx loader to fetch layout data.
- * Includes shop data for analytics (shop.id, shop.name) and fallback brand info.
- */
-export const HEADER_QUERY = `#graphql
-  fragment Shop on Shop {
-    id
-    name
-    description
-    primaryDomain {
-      url
-    }
-    brand {
-      logo {
-        image {
-          url
-        }
-      }
-    }
-  }
-  query Header(
-    $country: CountryCode
-    $headerMenuHandle: String!
-    $language: LanguageCode
-  ) @inContext(language: $language, country: $country) {
-    shop {
-      ...Shop
-    }
-    menu(handle: $headerMenuHandle) {
-      ...Menu
-    }
-  }
-  ${MENU_FRAGMENT}
-` as const;
-
-/**
- * Footer data query - fetches footer navigation menu.
- *
- * @param $footerMenuHandle - Handle of the footer menu in Shopify admin
- * @param $country - Country code for localized content
- * @param $language - Language code for localized content
- */
-export const FOOTER_QUERY = `#graphql
-  query Footer(
-    $country: CountryCode
-    $footerMenuHandle: String!
-    $language: LanguageCode
-  ) @inContext(language: $language, country: $country) {
-    menu(handle: $footerMenuHandle) {
-      ...Menu
-    }
-  }
-  ${MENU_FRAGMENT}
-` as const;
-
-// =============================================================================
 // COLLECTION QUERIES
 // =============================================================================
 
@@ -586,11 +564,11 @@ export const FOOTER_QUERY = `#graphql
  *
  * Used to populate:
  * - Collection dropdown in header menu
- * - Product type filters / popular search terms
- * - Discount count badge on the SALE link
+ * - Product type filters
+ * - Availability indicators
  *
- * allProducts includes featuredImage, handle, priceRange, and variant pricing
- * so popularProducts can be derived from this single query without a separate request.
+ * @note Fetches first 50 collections with 1 available product each (existence check only).
+ * allProducts fetches 50 products with 3 variants for search terms, discount count, and popular products.
  */
 export const MENU_COLLECTIONS_QUERY = `#graphql
   query MenuCollections(
@@ -660,16 +638,19 @@ export const MENU_COLLECTIONS_QUERY = `#graphql
   }
 ` as const;
 
+// =============================================================================
+// SIDEBAR COLLECTIONS QUERY
+// =============================================================================
+
 /**
  * Sidebar collections query - fetches collections and all available products
  * for the sidebar navigation on collection/product/sale pages.
  *
- * Single canonical definition shared across all routes that render a sidebar
- * (products.$handle, collections.$handle, sale, collections.all-products).
+ * Single canonical definition shared across all routes that render a sidebar.
  * Returned as a deferred Promise so it does not block above-fold rendering.
  *
- * - collections.products(first:100): enough for accurate per-collection counts
- * - allProducts variants(first:3): enough for discount counting without over-fetching
+ * - collections.products(first:100): accurate per-collection counts for filter sidebar
+ * - allProducts(first:250): full catalog slice for discount counting without over-fetching
  */
 export const SIDEBAR_COLLECTIONS_QUERY = `#graphql
   query SidebarCollections(

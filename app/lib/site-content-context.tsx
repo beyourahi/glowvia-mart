@@ -61,9 +61,14 @@ import type {
     ThemeCoreColors,
     ThemeConfig,
     GeneratedTheme,
-    ContactInfo
+    ContactInfo,
+    PolicyExtension,
+    TrafficSourceBanner,
+    HomepageVariant,
+    VipPerk,
+    LimitedOffer
 } from "types";
-import {DEFAULT_SITE_SETTINGS, DEFAULT_THEME_CONFIG} from "~/lib/metaobject-parsers";
+import {DEFAULT_SITE_SETTINGS, DEFAULT_THEME_CONFIG, FALLBACK_AGENT_ARRIVAL_COPY, FALLBACK_AGENT_FALLBACK_COPY} from "~/lib/metaobject-parsers";
 import {generateTheme} from "~/lib/theme-utils";
 import {getSwatchBorderColor, getSmartSwatchBorderColor} from "~/lib/color";
 
@@ -414,6 +419,82 @@ export function useSmartSwatchBorderColor(
 }
 
 // =============================================================================
+// HOOKS FOR AGENTIC COMMERCE FIELDS (Phase 1 — foundation)
+// =============================================================================
+
+/**
+ * Hook to access the brand persona string for AI agents.
+ * Returns null when not configured in Shopify Admin.
+ */
+export function useAgentPersona(): string | null {
+    return useSiteSettings().agentPersona;
+}
+
+/**
+ * Hook to access extended machine-readable policy key/value pairs.
+ * Surfaced via the Policies MCP tool in Phase 3.
+ */
+export function usePolicyExtension(): PolicyExtension[] | null {
+    return useSiteSettings().policyExtension;
+}
+
+/**
+ * Hook to access additional FAQ entries injected into the MCP FAQ tool.
+ * Returns [] when not configured (Policies MCP falls back to faqItems).
+ */
+export function useFaqExtension(): FAQItem[] {
+    return useSiteSettings().faqExtension;
+}
+
+/**
+ * Hook to access the agent-only promotional message.
+ * Returns null when not configured — components should render nothing.
+ */
+export function useAgentOnlyPromo(): string | null {
+    return useSiteSettings().agentOnlyPromo;
+}
+
+/**
+ * Hook to access the free shipping minimum order amount.
+ * Returns null when not configured — cart progress bar component hides itself.
+ */
+export function useFreeShippingMinimumOrder(): number | null {
+    return useSiteSettings().freeShippingMinimumOrder;
+}
+
+/**
+ * Hook to access traffic-source banner overrides keyed by utm_source.
+ * Returns null when not configured (Phase 5).
+ */
+export function useTrafficSourceBanners(): TrafficSourceBanner[] | null {
+    return useSiteSettings().trafficSourceBanners;
+}
+
+/**
+ * Hook to access segment-based homepage hero variants.
+ * Returns null when not configured (Phase 5).
+ */
+export function useHomepageVariants(): HomepageVariant[] | null {
+    return useSiteSettings().homepageVariants;
+}
+
+/**
+ * Hook to access VIP tier benefits / perks.
+ * Returns null when not configured (Phase 5).
+ */
+export function useVipPerks(): VipPerk[] | null {
+    return useSiteSettings().vipPerks;
+}
+
+/**
+ * Hook to access time-limited promotional offers with countdown data.
+ * Returns null when not configured (Phase 3).
+ */
+export function useLimitedOffers(): LimitedOffer[] | null {
+    return useSiteSettings().limitedOffers;
+}
+
+// =============================================================================
 // UI CONTENT MIGRATION NOTE
 // =============================================================================
 // The following hooks were removed as part of the 80/20 simplification:
@@ -426,4 +507,25 @@ export function useSmartSwatchBorderColor(
 // - useWishlistContent() - import FALLBACK_WISHLIST_CONTENT from metaobject-parsers.ts
 //
 // Components should now import these constants directly from '~/lib/metaobject-parsers'
-// This simplifies the architecture while maintaining the same functionality.
+
+// =============================================================================
+// AGENT ARRIVAL
+// =============================================================================
+
+/**
+ * Hook to access agent-arrival banner copy.
+ * Returns the fallback constant. When Shopify metaobject support is added for
+ * agentArrivalCopy, this hook can read from SiteSettings without changing callers.
+ */
+export function useAgentArrivalCopy(): typeof FALLBACK_AGENT_ARRIVAL_COPY {
+    return FALLBACK_AGENT_ARRIVAL_COPY;
+}
+
+/**
+ * Hook to access agent-fallback surface copy.
+ * Returns the fallback constant. When Shopify metaobject support is added for
+ * agentFallbackCopy, this hook can read from SiteSettings without changing callers.
+ */
+export function useAgentFallbackCopy(): typeof FALLBACK_AGENT_FALLBACK_COPY {
+    return FALLBACK_AGENT_FALLBACK_COPY;
+}

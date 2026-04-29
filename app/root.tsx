@@ -82,6 +82,10 @@ import {GoogleTagManager} from "~/components/GoogleTagManager";
 import type {CartSuggestionProductFragment} from "storefrontapi.generated";
 import {generateWebsiteSchema, getSeoDefaults} from "~/lib/seo";
 import {detectAiAttribution} from "~/lib/ai-attribution";
+import {AgentSurfaceProvider} from "~/lib/agent-surface-context";
+import {deriveAgentSurface, type AgentSurface} from "~/lib/agentic/agent-surface";
+import {emitAgentEvent, routeFromRequest} from "~/lib/agentic/observability";
+import {AGENT_SESSION_ID_KEY} from "~/lib/session";
 import {SITE_CONTENT_QUERY, THEME_SETTINGS_QUERY} from "~/lib/metaobject-queries";
 import {parseSiteContent} from "~/lib/metaobject-parsers";
 import {SiteContentProvider} from "~/lib/site-content-context";
@@ -220,9 +224,20 @@ export async function loader(args: Route.LoaderArgs) {
  */
 async function loadCriticalData({context, request}: Route.LoaderArgs) {
     const aiAttribution = detectAiAttribution(request.headers, new URL(request.url).searchParams);
+    const hasAgentSession = Boolean(context.session.get(AGENT_SESSION_ID_KEY));
+    const agentSurface = deriveAgentSurface({aiAttribution, hasAgentSession});
+
+    if (agentSurface.isAgent && (agentSurface.source === "referer" || agentSurface.source === "permalink")) {
+        emitAgentEvent(context.env as Env, {
+            evt: "agent_arrival",
+            route: routeFromRequest(request),
+            requestType: "agent",
+            responseCategory: "ok"
+        });
+    }
     const {dataAdapter} = context;
 
-    const [header, menuCollectionsData, shopData, blogData, siteContentData, themeSettingsData] = await Promise.all([
+    const [header, menuCollectionsData, blogData, siteContentData, themeSettingsData] = await Promise.all([
         // Header - navigation menu and shop brand info (cached: layout data)
         dataAdapter.query(HEADER_QUERY, {
             cache: dataAdapter.CacheLong(),
@@ -238,13 +253,6 @@ async function loadCriticalData({context, request}: Route.LoaderArgs) {
             cache: dataAdapter.CacheLong()
         }).catch((error: unknown) => {
             console.error("Failed to load menu collections:", error);
-            return null;
-        }),
-        // Shipping config (cached: metafield, changes rarely)
-        dataAdapter.query(SHOP_SHIPPING_CONFIG_QUERY, {
-            cache: dataAdapter.CacheLong()
-        }).catch((error: unknown) => {
-            console.error("Failed to load shipping config:", error);
             return null;
         }),
         // Blog existence check (cached: blog existence barely changes)
@@ -269,13 +277,6 @@ async function loadCriticalData({context, request}: Route.LoaderArgs) {
             return null;
         })
     ]);
-
-    // Parse shipping config from shop metafields
-    // Currency derived from shop payment settings with USD fallback
-    const shippingConfig = parseShippingConfig(
-        shopData?.shop?.freeShippingThreshold?.value,
-        shopData?.shop?.paymentSettings?.currencyCode ?? "USD"
-    );
 
     // Capture raw total before filtering — used for "All Collections" count in FullScreenMenu
     const totalCollections = menuCollectionsData?.collections?.nodes?.length ?? 0;
@@ -353,6 +354,12 @@ async function loadCriticalData({context, request}: Route.LoaderArgs) {
     // UI content uses FALLBACK_* constants directly from metaobject-parsers.ts (80/20 simplification)
     const siteContent = parseSiteContent(siteContentData, themeSettingsData);
 
+    // Free shipping minimum order from site_settings; currency from shop paymentSettings (in SHOP_FRAGMENT)
+    const shippingConfig = parseShippingConfig(
+        siteContent.siteSettings.freeShippingMinimumOrder,
+        header?.shop?.paymentSettings?.currencyCode ?? "USD"
+    );
+
     // Generate dynamic theme from theme_settings metaobject (fonts + colors)
     const generatedTheme: GeneratedTheme | null = generateTheme(
         siteContent.themeConfig.colors,
@@ -376,7 +383,8 @@ async function loadCriticalData({context, request}: Route.LoaderArgs) {
         siteContent,
         generatedTheme,
         websiteSchema,
-        aiAttribution
+        aiAttribution,
+        agentSurface
     };
 }
 
@@ -689,6 +697,7 @@ export default function App() {
     const announcementTexts = data.siteContent?.siteSettings?.announcementBanner || [];
 
     return (
+        <AgentSurfaceProvider value={data.agentSurface ?? {isAgent: false, source: "none"}}>
         <SiteContentProvider siteContent={data.siteContent}>
             <WishlistProvider>
                 {/* Shopify analytics (monorail-edge.shopifysvc.com) may abort in dev or
@@ -707,6 +716,7 @@ export default function App() {
                 </Analytics.Provider>
             </WishlistProvider>
         </SiteContentProvider>
+        </AgentSurfaceProvider>
     );
 }
 
@@ -858,24 +868,6 @@ export function ErrorBoundary() {
         </>
     );
 }
-
-// GraphQL query to fetch shop metafields for shipping configuration
-const SHOP_SHIPPING_CONFIG_QUERY = `#graphql
-  query ShopShippingConfig(
-    $country: CountryCode
-    $language: LanguageCode
-  ) @inContext(country: $country, language: $language) {
-    shop {
-      freeShippingThreshold: metafield(namespace: "custom", key: "free_shipping_threshold") {
-        value
-        type
-      }
-      paymentSettings {
-        currencyCode
-      }
-    }
-  }
-` as const;
 
 // GraphQL query to check if there are any blog articles
 const HAS_BLOG_QUERY = `#graphql

@@ -5,72 +5,48 @@ import {formatPrice} from "~/lib/currency-formatter";
  *
  * @description
  * Provides utilities for managing free shipping thresholds and calculations.
- * The free shipping threshold is configured via Shopify shop metafields,
+ * The minimum order amount is configured via the site_settings metaobject,
  * allowing merchants to change the value without code deployment.
  *
  * @architecture
  * Data Source:
- * - Shopify shop metafield: custom.free_shipping_threshold
- * - Fetched in root.tsx loader via SHOP_SHIPPING_CONFIG_QUERY
- * - Parsed and passed to components via context
+ * - site_settings metaobject field: free_shipping_minimum_order (Decimal)
+ * - Parsed by metaobject-parsers.ts into siteContent.siteSettings.freeShippingMinimumOrder
+ * - Passed to components via shippingConfig returned from the root loader
  *
  * Configuration in Shopify Admin:
- * 1. Go to Settings → Custom data → Shop
- * 2. Add metafield: custom.free_shipping_threshold (Decimal type)
- * 3. Set value (e.g., 5000 for $5,000 free shipping)
+ * 1. Go to Content → Metaobjects → site_settings
+ * 2. Set the free_shipping_minimum_order field (Decimal, e.g. "50.00")
  *
  * @business-logic
- * - Threshold is in the store's default currency
- * - Cart must reach or exceed threshold for free shipping
+ * - Minimum order is in the store's configured currency
+ * - Cart must reach or exceed the amount for free shipping
  * - UI shows progress toward free shipping goal
  *
  * @related
- * - root.tsx - Fetches shipping config in loader
+ * - root.tsx - Builds shippingConfig from siteContent + shop currency
  * - CartSummary.tsx - Displays free shipping progress
  * - AnnouncementBanner.tsx - May show free shipping promotion
  */
 
 export interface ShippingConfig {
-    freeShippingThreshold: number | null;
+    freeShippingMinimumOrder: number | null;
     currencyCode: string;
 }
 
-const FALLBACK_FREE_SHIPPING_THRESHOLD = 0;
 const FALLBACK_CURRENCY_CODE = "USD";
 
-export const DEFAULT_FREE_SHIPPING_THRESHOLD = FALLBACK_FREE_SHIPPING_THRESHOLD;
 export const DEFAULT_CURRENCY_CODE = FALLBACK_CURRENCY_CODE;
 
 /**
- * GraphQL fragment for fetching shop shipping metafields
- */
-export const SHOP_SHIPPING_METAFIELD_FRAGMENT = `#graphql
-  fragment ShopShippingMetafield on Shop {
-    freeShippingThreshold: metafield(namespace: "custom", key: "free_shipping_threshold") {
-      value
-      type
-    }
-  }
-` as const;
-
-/**
- * Parse shipping config from shop metafields
+ * Build shipping config from parsed site_settings value and shop currency.
  */
 export function parseShippingConfig(
-    metafieldValue: string | null | undefined,
+    minimumOrder: number | null,
     currencyCode: string = DEFAULT_CURRENCY_CODE
 ): ShippingConfig {
-    let threshold: number | null = null;
-
-    if (metafieldValue) {
-        const parsed = parseFloat(metafieldValue);
-        if (!isNaN(parsed) && parsed > 0) {
-            threshold = parsed;
-        }
-    }
-
     return {
-        freeShippingThreshold: threshold,
+        freeShippingMinimumOrder: minimumOrder,
         currencyCode
     };
 }

@@ -424,6 +424,39 @@ export const SITE_SETTINGS_FRAGMENT = `#graphql
         }
       }
     }
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # AGENTIC COMMERCE FIELDS (Phase 1 — agent-discoverability foundation)
+    # All optional — storefronts without these fields return null/empty values.
+    # Fields are surfaced via MCP tools starting in Phase 2+
+    # ─────────────────────────────────────────────────────────────────────────
+
+    # Brand voice / tone description for AI agents (single_line_text_field)
+    agentPersona: field(key: "agent_persona") { value }
+
+    # JSON array: [{key, value, context?}, ...] — extended machine-readable policies
+    policyExtension: field(key: "policy_extension") { value }
+
+    # JSON array: [{id, question, answer}, ...] — additional FAQ entries for MCP
+    faqExtension: field(key: "faq_extension") { value }
+
+    # Multi-line text: agent-only promotional message (not shown to human visitors)
+    agentOnlyPromo: field(key: "agent_only_promo") { value }
+
+    # Decimal: minimum order amount in store currency to qualify for free shipping (e.g. "50.00")
+    freeShippingMinimumOrder: field(key: "free_shipping_minimum_order") { value }
+
+    # JSON array: [{source, heading?, text?, ctaLabel?, ctaUrl?}, ...] — utm_source banners
+    trafficSourceBanners: field(key: "traffic_source_banners") { value }
+
+    # JSON array: [{id, segment?, heroHeading?, heroDescription?, ctaLabel?, ctaUrl?}, ...]
+    homepageVariants: field(key: "homepage_variants") { value }
+
+    # JSON array: [{id, tier?, title, description, iconUrl?}, ...] — VIP perks
+    vipPerks: field(key: "vip_perks") { value }
+
+    # JSON array: [{id, title, description?, discountCode?, expiresAt?, badgeText?}, ...]
+    limitedOffers: field(key: "limited_offers") { value }
   }
 ` as const;
 

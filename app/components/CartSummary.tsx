@@ -91,6 +91,7 @@ import {cn} from "~/lib/utils";
 import {qualifiesForFreeShipping, remainingForFreeShipping} from "~/lib/shipping";
 import {formatPrice} from "~/lib/currency-formatter";
 import {useNetworkStatus} from "~/hooks/useNetworkStatus";
+import {CheckoutKitEmbed} from "~/components/checkout/CheckoutKitEmbed";
 
 const FALLBACK_CART_CONTENT = {
     cartDrawerTitle: "Your Bag",
@@ -141,7 +142,7 @@ export function CartSummary({cart, layout, isLoggedIn, hasStoreCredit, shippingC
         return (
             <div className="shrink-0 px-3 sm:px-5 py-2.5 sm:py-3 space-y-2 border-t border-primary-foreground/10">
                 {/* Free Shipping Progress - compact version */}
-                {shippingConfig?.freeShippingThreshold && <FreeShippingProgress cart={cart} shippingConfig={shippingConfig} isPage={isPage} />}
+                {shippingConfig?.freeShippingMinimumOrder && <FreeShippingProgress cart={cart} shippingConfig={shippingConfig} isPage={isPage} />}
 
                 {/* Order Note Section - compact */}
                 <CartOrderNote note={cart?.note} isPage={false} />
@@ -168,7 +169,7 @@ export function CartSummary({cart, layout, isLoggedIn, hasStoreCredit, shippingC
     return (
         <div className="space-y-2.5 sm:space-y-3 rounded-xl border bg-card p-3 sm:p-4 shadow-sm">
             {/* Free Shipping Progress */}
-            {shippingConfig?.freeShippingThreshold && <FreeShippingProgress cart={cart} shippingConfig={shippingConfig} isPage={isPage} />}
+            {shippingConfig?.freeShippingMinimumOrder && <FreeShippingProgress cart={cart} shippingConfig={shippingConfig} isPage={isPage} />}
 
             {/* Order Note Section */}
             <CartOrderNote note={cart?.note} isPage={true} />
@@ -211,7 +212,7 @@ function FreeShippingProgress({cart, shippingConfig, isPage = true}: FreeShippin
     const cartContent = FALLBACK_CART_CONTENT;
     const isMutating = useCartMutationPending();
     const subtotal = parseFloat(cart?.cost?.subtotalAmount?.amount || "0");
-    const threshold = shippingConfig.freeShippingThreshold ?? 0;
+    const threshold = shippingConfig.freeShippingMinimumOrder ?? 0;
     const progress = Math.min((subtotal / threshold) * 100, 100);
     const remaining = remainingForFreeShipping(subtotal, threshold);
     const qualified = qualifiesForFreeShipping(subtotal, threshold);
@@ -493,16 +494,18 @@ function CartCheckoutActions({
     );
 
     return (
-        <a
-            href={taggedCheckoutUrl}
-            target="_self"
-            aria-disabled={isMutating || undefined}
-            onClick={isMutating ? e => e.preventDefault() : undefined}
+        <CheckoutKitEmbed
+            checkoutUrl={taggedCheckoutUrl}
+            mode="inline"
+            disabled={isMutating}
             className={cn(
                 baseStyles,
                 isPage ? "hover:bg-primary/90" : "hover:bg-accent/80",
                 isMutating && "pointer-events-none opacity-50 cursor-not-allowed"
             )}
+            onComplete={() => {
+                // Checkout complete — future: clear local state (wishlist, order notes, etc.)
+            }}
         >
             {/* Price slot — swaps to shimmer during mutations, restores immediately on resolution */}
             <span className="flex items-center font-mono tabular-nums">{priceDisplay}</span>
@@ -511,7 +514,7 @@ function CartCheckoutActions({
                 {cartContent.checkoutButton}
                 <ArrowRight className="size-4" aria-hidden="true" />
             </span>
-        </a>
+        </CheckoutKitEmbed>
     );
 }
 

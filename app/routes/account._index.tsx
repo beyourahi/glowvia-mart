@@ -1178,9 +1178,9 @@ function RecommendedSection({products}: {products: CuratedProductFragment[]}) {
 function SpecialOffersBanner({
     shippingConfig
 }: {
-    shippingConfig?: {freeShippingThreshold: number | null; currencyCode: string};
+    shippingConfig?: {freeShippingMinimumOrder: number | null; currencyCode: string};
 }) {
-    const threshold = shippingConfig?.freeShippingThreshold ?? 0;
+    const threshold = shippingConfig?.freeShippingMinimumOrder ?? 0;
     const currencyCode = shippingConfig?.currencyCode ?? "USD";
     const formattedThreshold = formatShippingThreshold(threshold, currencyCode);
 

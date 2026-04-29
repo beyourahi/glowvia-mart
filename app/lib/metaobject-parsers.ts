@@ -59,7 +59,12 @@ import type {
     SearchContent,
     UIMessages,
     ErrorContent,
-    WishlistContent
+    WishlistContent,
+    PolicyExtension,
+    TrafficSourceBanner,
+    HomepageVariant,
+    VipPerk,
+    LimitedOffer
 } from "types";
 
 // =============================================================================
@@ -174,6 +179,30 @@ const FALLBACK_SECTION_HEADINGS = {
     instagramTitle: "Follow Us"
 };
 
+// Agentic field defaults — all null/empty until configured in Shopify Admin
+const FALLBACK_AGENT_PERSONA: string | null = null;
+const FALLBACK_POLICY_EXTENSION: PolicyExtension[] | null = null;
+const FALLBACK_FAQ_EXTENSION: FAQItem[] = [];
+const FALLBACK_AGENT_ONLY_PROMO: string | null = null;
+const FALLBACK_FREE_SHIPPING_MINIMUM_ORDER: number | null = null;
+const FALLBACK_TRAFFIC_SOURCE_BANNERS: TrafficSourceBanner[] | null = null;
+const FALLBACK_HOMEPAGE_VARIANTS: HomepageVariant[] | null = null;
+const FALLBACK_VIP_PERKS: VipPerk[] | null = null;
+const FALLBACK_LIMITED_OFFERS: LimitedOffer[] | null = null;
+
+/** Copy shown in the AgentArrivalBanner when a buyer arrives via an AI agent's cart link. */
+export const FALLBACK_AGENT_ARRIVAL_COPY = {
+    title: "Cart prepared by your shopping assistant",
+    subtitle: "Review the items below before checking out."
+} as const;
+
+/** Copy shown in the AgentFallbackBanner on interactive pages an agent cannot navigate well. */
+export const FALLBACK_AGENT_FALLBACK_COPY = {
+    title: "This experience is designed for human shoppers",
+    subtitle: "Interactive quizzes and guided experiences require a browser. Use the search or catalog endpoints below to find products programmatically.",
+    alternatePathLabel: "Search the catalog"
+} as const;
+
 const FALLBACK_SITE_SETTINGS: SiteSettings = {
     brandName: "",
     brandLogo: null,
@@ -238,7 +267,17 @@ const FALLBACK_SITE_SETTINGS: SiteSettings = {
     faviconUrl: null,
     icon192Url: null,
     icon512Url: null,
-    icon180AppleUrl: null
+    icon180AppleUrl: null,
+    // Agentic fields
+    agentPersona: FALLBACK_AGENT_PERSONA,
+    policyExtension: FALLBACK_POLICY_EXTENSION,
+    faqExtension: FALLBACK_FAQ_EXTENSION,
+    agentOnlyPromo: FALLBACK_AGENT_ONLY_PROMO,
+    freeShippingMinimumOrder: FALLBACK_FREE_SHIPPING_MINIMUM_ORDER,
+    trafficSourceBanners: FALLBACK_TRAFFIC_SOURCE_BANNERS,
+    homepageVariants: FALLBACK_HOMEPAGE_VARIANTS,
+    vipPerks: FALLBACK_VIP_PERKS,
+    limitedOffers: FALLBACK_LIMITED_OFFERS
 };
 
 const FALLBACK_PRODUCT_CONTENT: ProductContent = {
@@ -653,6 +692,22 @@ function parseEmbedUrlList(field: MetaobjectField | undefined): string[] {
     }
 }
 
+/**
+ * Generic JSON array parser for agentic fields stored as JSON in Shopify metaobjects.
+ * Returns null when the field is absent, empty, or fails to parse — callers fall back
+ * to FALLBACK_* constants as appropriate.
+ */
+function parseJsonArray<T>(field: MetaobjectField | undefined): T[] | null {
+    if (!field?.value) return null;
+    try {
+        const parsed = JSON.parse(field.value) as unknown;
+        if (Array.isArray(parsed)) return parsed as T[];
+        return null;
+    } catch {
+        return null;
+    }
+}
+
 function warnFeaturedProductSection(reason: string) {
     if (process.env.NODE_ENV === "development") {
         console.warn(`[SiteSettings] featured_product_section omitted: ${reason}`);
@@ -769,10 +824,10 @@ function parseFeaturedProductSection(featuredProductField: MetaobjectField | und
 }
 
 /**
- * Parse free shipping threshold from Decimal field
+ * Parse free shipping minimum order from Decimal field
  * Shopify Decimal fields return numeric strings (e.g., "50.00")
  */
-function parseFreeShippingThreshold(value: MetaobjectField | undefined): number | null {
+function parseFreeShippingMinimumOrder(value: MetaobjectField | undefined): number | null {
     if (!value?.value) return null;
 
     const parsed = parseFloat(value.value);
@@ -1182,7 +1237,18 @@ export function parseSiteSettings(rawData: unknown): SiteSettings {
         // PWA Icons - extracted from file references
         icon192Url: extractImageUrl(data.icon192),
         icon512Url: extractImageUrl(data.icon512),
-        icon180AppleUrl: extractImageUrl(data.icon180Apple)
+        icon180AppleUrl: extractImageUrl(data.icon180Apple),
+
+        // Agentic Commerce Fields
+        agentPersona: data.agentPersona?.value ?? FALLBACK_AGENT_PERSONA,
+        policyExtension: parseJsonArray<PolicyExtension>(data.policyExtension),
+        faqExtension: parseJsonArray<FAQItem>(data.faqExtension) ?? FALLBACK_FAQ_EXTENSION,
+        agentOnlyPromo: data.agentOnlyPromo?.value ?? FALLBACK_AGENT_ONLY_PROMO,
+        freeShippingMinimumOrder: parseFreeShippingMinimumOrder(data.freeShippingMinimumOrder),
+        trafficSourceBanners: parseJsonArray<TrafficSourceBanner>(data.trafficSourceBanners),
+        homepageVariants: parseJsonArray<HomepageVariant>(data.homepageVariants),
+        vipPerks: parseJsonArray<VipPerk>(data.vipPerks),
+        limitedOffers: parseJsonArray<LimitedOffer>(data.limitedOffers)
     };
 }
 

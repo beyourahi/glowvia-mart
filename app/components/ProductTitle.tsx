@@ -203,32 +203,34 @@ function getFontSizes(
     }
 
     // Card variant with grid-based sizing
+    // Mobile (<640px) primary sizes are intentionally one Tailwind scale step smaller than
+    // tablet/desktop to keep titles compact on small screens; sm:/lg: preserve original sizing.
     switch (gridColumns) {
         case 2:
-            // 2-col: 18px → 20px → 24px
+            // 2-col: 16px (mobile) → 20px → 24px
             return {
-                primary: "text-lg sm:text-xl lg:text-2xl",
+                primary: "text-base sm:text-xl lg:text-2xl",
                 secondary: "text-sm sm:text-base lg:text-lg"
             };
         case 3:
-            // 3-col: 16px → 16px
+            // 3-col: 14px (mobile) → 16px
             return {
-                primary: "text-base lg:text-base",
+                primary: "text-sm sm:text-base lg:text-base",
                 secondary: "text-xs lg:text-sm"
             };
         case 4:
-            // 4-col: 14px → 16px → 16px
+            // 4-col: 12px (mobile) → 16px → 16px
             return {
-                primary: "text-sm sm:text-base lg:text-base",
+                primary: "text-xs sm:text-base lg:text-base",
                 secondary: "text-xs lg:text-xs"
             };
         case 1:
         case undefined:
         default:
             // Default sizing for carousels, related products (matches 3-col collection default)
-            // 16px — cohesive with collection page
+            // 14px (mobile) → 16px — cohesive with collection page
             return {
-                primary: "text-base lg:text-base",
+                primary: "text-sm sm:text-base lg:text-base",
                 secondary: "text-xs lg:text-sm"
             };
     }

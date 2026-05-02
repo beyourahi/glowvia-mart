@@ -417,15 +417,15 @@ function loadDeferredData({context}: Route.LoaderArgs) {
             return null;
         });
 
-    // Cart suggestion products - deferred (cached: catalog shifts slowly)
+    // Cart suggestion products - deferred.
+    // Intentionally no `cache` override: Hydrogen's default (CacheLong) caches
+    // aggressively at the edge so the deferred promise resolves near-instantly
+    // on hot workers. CacheShort's 1s fresh window caused cold cache misses to
+    // race past the 8s deferred timeout, leaving the skeleton stuck until the
+    // user manually refreshed. See storefront_001 for the reference behavior.
     const cartSuggestions: Promise<CartSuggestionProductFragment[] | null> = dataAdapter
-        .query(CART_SUGGESTIONS_QUERY, {
-            cache: dataAdapter.CacheShort()
-        })
-        .then((response: any) => {
-            if (!response?.products?.nodes) return null;
-            return response.products.nodes.filter((p: any) => p.availableForSale);
-        })
+        .query(CART_SUGGESTIONS_QUERY)
+        .then((response: any) => response?.products?.nodes?.filter((p: any) => p.availableForSale) ?? null)
         .catch((error: Error) => {
             console.error("Failed to load cart suggestions:", error);
             return null;
@@ -501,7 +501,7 @@ function loadDeferredData({context}: Route.LoaderArgs) {
     const cartSuggestionsWithTimeout = withTimeoutAndFallback(
         cartSuggestions,
         null, // Fallback: no suggestions
-        TIMEOUT_DEFAULTS.SUGGESTIONS
+        TIMEOUT_DEFAULTS.API
     );
 
     return {

@@ -57,7 +57,6 @@ import {useScrolled} from "~/lib/useScrolled";
 import {cn} from "~/lib/utils";
 import {ProductImageGallery} from "~/components/ProductImageGallery";
 import {ProductForm} from "~/components/ProductForm";
-import {ProductHeroMobile} from "~/components/ProductHeroMobile";
 import {StickyMobileGetNow} from "~/components/StickyMobileGetNow";
 import {ProductShareButton} from "~/components/ProductShareButton";
 import {WishlistButton} from "~/components/WishlistButton";
@@ -407,14 +406,27 @@ export default function Product() {
                     />
                 </div>
 
-                {/* 5. Product Hero Mobile (variants, quantity, add to cart) */}
-                <ProductHeroMobile
-                    productOptions={productOptions}
-                    selectedVariant={selectedVariant}
-                    selectedSellingPlan={selectedSellingPlan}
-                    title={title}
-                    tags={product.tags}
-                />
+                {/* 5. Product Form — single implementation shared across all screen sizes */}
+                <div id="product-hero-mobile" className="px-3 sm:px-4 py-6 sm:py-8">
+                    <ProductForm
+                        product={product}
+                        productOptions={productOptions}
+                        selectedVariant={selectedVariant}
+                        sellingPlanGroups={product.sellingPlanGroups}
+                        selectedSellingPlan={selectedSellingPlan}
+                        tags={product.tags}
+                        wishlistButton={
+                            <WishlistButton
+                                productId={product.id}
+                                productTitle={product.title}
+                                variant="primary-outline"
+                            />
+                        }
+                        shareButton={
+                            <ProductShareButton product={product} selectedVariant={selectedVariant} />
+                        }
+                    />
+                </div>
             </div>
 
             {/* Desktop Layout (hidden on mobile)

@@ -29,6 +29,12 @@ import type {ChangelogEntry} from "~/lib/types/changelog";
 // Newest entries at the top. Add new entries here in the same commit that ships the change.
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
+        date: "2026-05-05",
+        category: "Fix",
+        headline: "Add to Bag button is now visible on mobile and tablet",
+        summary: "The purchase button was previously hidden on smaller screens, replaced by a separate mobile-only section with different button text. It now appears consistently across all screen sizes using the same form, so you can add items to your bag from any device without confusion."
+    },
+    {
         date: "2026-04-29",
         category: "Design",
         headline: "Cart suggestions are now smaller and easier to scroll past",

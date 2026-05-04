@@ -402,7 +402,7 @@ export function ProductImageCarousel({
                     loop: true,
                     skipSnaps: false,
                     containScroll: "trimSnaps",
-                    dragFree: true,
+                    dragFree: false,
                 }}
                 className="w-full rounded-lg"
             >

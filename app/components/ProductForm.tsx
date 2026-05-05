@@ -375,8 +375,8 @@ export function ProductForm({
                 {/* Purchase type toggle for subscription products */}
                 {purchaseTypeToggle}
 
-                {/* Single variant row - stacked on mobile, side-by-side on desktop */}
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+                {/* Single variant row - always side-by-side */}
+                <div className="flex flex-row items-center justify-between gap-3">
                     <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                         {singleVariantLabel && (
                             <div className="inline-flex min-h-11 min-w-11 items-center rounded-full border-2 border-primary bg-primary px-2.5 sm:px-4 py-1.5 text-sm sm:text-base lg:text-lg font-medium text-primary-foreground">

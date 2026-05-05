@@ -30,6 +30,13 @@ import type {ChangelogEntry} from "~/lib/types/changelog";
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
         date: "2026-05-05",
+        category: "Improvement",
+        headline: "Variant buttons are larger and easier to tap on all screens",
+        summary:
+            "Size and color option buttons on product pages now have a wider minimum size, making them easier to read and select — especially on smaller screens where options like 'S' or 'XS' could feel cramped."
+    },
+    {
+        date: "2026-05-05",
         category: "Fix",
         headline: "Product page image gallery snaps cleanly between photos",
         summary:

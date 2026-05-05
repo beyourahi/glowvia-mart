@@ -1,3 +1,29 @@
+/**
+ * @fileoverview Policies Index Page
+ *
+ * @description
+ * Lists all store policies with links to their individual pages.
+ * Queries each policy individually to confirm existence before rendering its
+ * card — some stores may not have all four standard policies configured.
+ * Always includes a link to the FAQ page regardless of policy availability.
+ *
+ * @route GET /policies
+ *
+ * @data-loading
+ * Fetches each of the four policy types (privacy, shipping, refund, terms) in
+ * sequence. Each is queried independently to handle partial policy configurations.
+ * Uses long-cache since policy content rarely changes.
+ *
+ * @seo
+ * Emits BreadcrumbList JSON-LD and, when `policyExtension` CMS fields are
+ * populated, a FAQPage JSON-LD schema built from those key/value pairs.
+ *
+ * @related
+ * - policies.$handle.tsx - Individual policy detail page
+ * - lib/queries/policy.ts - POLICY_CONTENT_QUERY
+ * - lib/agentic/structured-data.ts - generateFAQPageSchema
+ */
+
 import {Link, useLoaderData} from "react-router";
 import type {Route} from "./+types/policies._index";
 import {getSeoMeta} from "@shopify/hydrogen";
@@ -41,6 +67,11 @@ export const meta: Route.MetaFunction = ({matches}) => {
     ];
 };
 
+/**
+ * Probes each policy type and returns a list indicating which are configured.
+ * Policies that throw (e.g. network error) are treated as non-existent rather
+ * than surfacing an error to the user.
+ */
 export async function loader({context}: Route.LoaderArgs) {
     // Fetch all four policies to confirm they exist (some stores may not have all)
     const policies: Array<{handle: string; label: string; description: string; exists: boolean}> = [];

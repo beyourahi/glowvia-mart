@@ -1,15 +1,12 @@
 /**
- * @fileoverview Service Worker Update Banner Component
+ * @fileoverview Fixed top banner notifying users when a new PWA version is available.
  *
- * @description
- * Fixed top banner that notifies users when a new version of the PWA is available.
- * Provides action buttons to immediately apply the update or dismiss until later.
- * Stacks below NetworkStatusIndicator when both are visible (network status is more critical).
+ * Uses `z-9998` — one level below `NetworkStatusIndicator` (`z-9999`) because
+ * offline status is more critical than an update notification for e-commerce.
  *
  * @related
- * - ~/components/ServiceWorkerRegistration - Detects updates and dispatches events
- * - ~/hooks/useServiceWorkerUpdate - Update state and control logic hook
- * - ~/components/NetworkStatusIndicator - Companion banner for offline status
+ * - ~/hooks/useServiceWorkerUpdate - Update state and `applyUpdate` / `dismissUpdate` controls
+ * - ~/components/NetworkStatusIndicator - Companion banner at z-9999
  */
 
 import {RefreshCw, X} from "lucide-react";
@@ -17,33 +14,14 @@ import {cn} from "~/lib/utils";
 import {Button} from "~/components/ui/button";
 import {useServiceWorkerUpdate} from "~/hooks/useServiceWorkerUpdate";
 
-// =============================================================================
-// TYPES
-// =============================================================================
-
 interface ServiceWorkerUpdateBannerProps {
     className?: string;
 }
 
-// =============================================================================
-// COMPONENT
-// =============================================================================
-
-/**
- * ServiceWorkerUpdateBanner - Top banner for PWA update notifications.
- *
- * @param className - Additional Tailwind classes
- *
- * @example
- * ```tsx
- * // In root layout
- * <ServiceWorkerUpdateBanner />
- * ```
- */
+/** Fixed top banner for PWA update notifications. Returns null when no update is pending. */
 export function ServiceWorkerUpdateBanner({className}: ServiceWorkerUpdateBannerProps) {
     const {updateAvailable, applyUpdate, dismissUpdate} = useServiceWorkerUpdate();
 
-    // Don't render if no update available
     if (!updateAvailable) return null;
 
     return (
@@ -51,12 +29,8 @@ export function ServiceWorkerUpdateBanner({className}: ServiceWorkerUpdateBanner
             role="alert"
             aria-live="polite"
             className={cn(
-                // Base styles - z-9998 is just below NetworkStatusIndicator (z-9999)
-                // Network offline is more critical than SW updates for e-commerce
                 "fixed top-0 inset-x-0 z-9998",
-                // Animation - slide down and fade in
                 "animate-slide-down-fade",
-                // Info colors (blue-ish)
                 "bg-info text-info-foreground",
                 className
             )}
@@ -70,9 +44,7 @@ export function ServiceWorkerUpdateBanner({className}: ServiceWorkerUpdateBanner
                         <span>A new version is available. Please refresh.</span>
                     </div>
 
-                    {/* Actions */}
                     <div className="flex items-center gap-2">
-                        {/* Reload button */}
                         <Button
                             variant="link"
                             size="sm"
@@ -82,7 +54,6 @@ export function ServiceWorkerUpdateBanner({className}: ServiceWorkerUpdateBanner
                             Reload
                         </Button>
 
-                        {/* Dismiss button */}
                         <Button
                             variant="ghost"
                             size="icon-sm"

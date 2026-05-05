@@ -81,8 +81,8 @@ interface ContainerProps {
     children: React.ReactNode;
 
     /**
-     * Container size variant
-     * @default "default" (1440px max-width)
+     * Container size variant (no effect — all sizes behave identically)
+     * @default "default"
      */
     size?: ContainerSize;
 

@@ -1,3 +1,16 @@
+/**
+ * @fileoverview Product Card Price and Display Utilities
+ *
+ * Computes display-ready price, discount, image, and availability data for product
+ * cards. Handles the full range of variant configurations: single variant, multi-variant
+ * with uniform pricing, and multi-variant with variable pricing/discounts.
+ *
+ * Primary exports:
+ * - `getPriceRangeForCard` — full price range with on-sale and discount data
+ * - `transformProductToCardData` — normalize a `ShopifyProduct` into `ProductCardData`
+ * - `getProductDataForCard` — unified entry point accepting either type
+ */
+
 import {formatShopifyMoney, formatMinimalisticRange, calculateDiscount} from "~/lib/currency-formatter";
 import {parseNumber} from "~/lib/number-utils";
 import type {ProductCardData, ShopifyProduct, ShopifyProductVariant} from "~/lib/types/product-card";

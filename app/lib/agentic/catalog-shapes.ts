@@ -83,11 +83,13 @@ type StorefrontProductConnection = {
 
 // ── Scalar helpers ────────────────────────────────────────────────────────────
 
+/** Convert a Storefront API money object to the UCP wire format. Defaults to USD 0.00 when absent. */
 export function toUcpMoney(node: StorefrontMoney): UcpMoney {
     if (!node) return { amount: "0.00", currencyCode: "USD" };
     return { amount: node.amount, currencyCode: node.currencyCode };
 }
 
+/** Convert a Storefront API image node to a `UcpMedia` descriptor. Returns null when the node is absent. */
 export function toUcpImage(node: StorefrontImage): UcpMedia | null {
     if (!node) return null;
     return {
@@ -101,6 +103,10 @@ export function toUcpImage(node: StorefrontImage): UcpMedia | null {
 
 // ── Variant ───────────────────────────────────────────────────────────────────
 
+/**
+ * Transform a Storefront API variant node into the UCP variant wire format.
+ * Builds a `checkoutUrl` (cart permalink) from the numeric variant ID when `storeUrl` is provided.
+ */
 export function toUcpVariant(node: StorefrontVariantNode, storeUrl?: string): UcpVariant {
     // Build checkout URL from numeric variant ID when a store URL is available
     const numericId = extractNumericVariantId(node.id);
@@ -139,6 +145,11 @@ export function toUcpVariant(node: StorefrontVariantNode, storeUrl?: string): Uc
 
 // ── Product ───────────────────────────────────────────────────────────────────
 
+/**
+ * Transform a Storefront API product node into the UCP product wire format.
+ * Handles image list fallback (uses `featuredImage` when `images` field is absent)
+ * and option value normalization (`optionValues` → `values` legacy fallback).
+ */
 export function toUcpProduct(node: StorefrontProductNode, storeUrl?: string): UcpProduct {
     const featuredImage = toUcpImage(node.featuredImage);
 
@@ -209,6 +220,10 @@ export function toUcpProduct(node: StorefrontProductNode, storeUrl?: string): Uc
 
 // ── Page-level helpers ────────────────────────────────────────────────────────
 
+/**
+ * Transform a Storefront API product connection (search or collection nodes + pageInfo)
+ * into a `UcpProductPage` suitable for the agent search and product endpoints.
+ */
 export function toUcpProductPage(
     connection: StorefrontProductConnection,
     storeUrl?: string
@@ -221,6 +236,14 @@ export function toUcpProductPage(
     return { products, pageInfo };
 }
 
+/**
+ * Transform a batch of Storefront API `nodes` results into a `UcpLookupBatch`.
+ * Null nodes (IDs that resolved to non-Product types or were not found) are
+ * collected into `unresolved` so callers know which IDs had no result.
+ *
+ * @param nodes - Raw node results from `LOOKUP_NODES_QUERY` (may contain nulls)
+ * @param requestedIds - The original GID list that was requested
+ */
 export function toUcpLookupBatch(
     nodes: Array<unknown>,
     requestedIds: string[]

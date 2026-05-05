@@ -1,43 +1,13 @@
 /**
- * @fileoverview Full-screen product media lightbox component
+ * @fileoverview Full-screen product media lightbox — Radix Dialog with looping nav, keyboard support, and thumbnail strip.
  *
- * @description
- * Modal overlay for viewing product images and videos at their natural
- * aspect ratios. Provides navigation via arrows, keyboard, swipe gestures,
- * and thumbnail strip. Built on Radix Dialog for accessibility.
- *
- * @features
- * - Natural aspect ratio display (object-fit: contain, no cropping)
- * - Continuous loop navigation (last → first → last)
- * - Keyboard: Arrow keys navigate, ESC closes
- * - Thumbnails: Click to jump, auto-scroll to active
- * - Video: Native HTML5 playback with custom controls
- * - Backdrop click to close
- *
- * @layout
- * Full-screen overlay with three zones:
- * 1. Top: Close button and position counter
- * 2. Center: Main media display with side navigation arrows
- * 3. Bottom: Thumbnail strip
- *
- * @state
- * - currentIndex: Active media position (loops 0 to length-1)
- * - isVideoPlaying: Video playback state (pauses on navigation)
- *
- * @accessibility
- * - ARIA: role="dialog", aria-modal="true"
- * - Focus trap via Radix Dialog
- * - Focus returns to trigger on close
- * - All controls have aria-labels
- * - Touch targets ≥ 44x44px
- * - Keyboard navigation support
+ * Videos unmount when navigating away (only `currentMedia` is rendered), so no explicit
+ * pause is needed — the next video `autoPlay`s on mount.
  *
  * @related
  * - ProductImageGallery.tsx - Triggers lightbox on image click
- * - LightboxMedia.tsx - Renders individual media items
- * - LightboxControls.tsx - Navigation arrows and close button
- * - LightboxThumbnails.tsx - Bottom thumbnail strip
- * - useLightboxKeyboard.ts - Keyboard navigation hook
+ * - LightboxMedia.tsx / LightboxControls.tsx / LightboxThumbnails.tsx - Child components
+ * - useLightboxKeyboard.ts - Arrow + ESC keyboard handler
  */
 
 import {useState, useEffect} from "react";
@@ -52,78 +22,22 @@ import {LightboxThumbnails} from "./LightboxThumbnails";
 import {LightboxControls} from "./LightboxControls";
 import {useLightboxKeyboard} from "./useLightboxKeyboard";
 
-// =============================================================================
-// PRODUCT LIGHTBOX COMPONENT
-// =============================================================================
-
-/**
- * ProductLightbox - Full-screen media viewer for product detail page
- *
- * @description
- * Opens as a modal overlay when user clicks a product image.
- * Displays images and videos at natural aspect ratio with full
- * navigation capabilities.
- *
- * @example
- * ```tsx
- * const [lightboxOpen, setLightboxOpen] = useState(false);
- * const [initialIndex, setInitialIndex] = useState(0);
- *
- * <ProductLightbox
- *   media={product.media.nodes}
- *   initialIndex={initialIndex}
- *   isOpen={lightboxOpen}
- *   onClose={() => setLightboxOpen(false)}
- * />
- * ```
- */
 export function ProductLightbox({media, initialIndex, isOpen, onClose}: ProductLightboxProps) {
-    // ==========================================================================
-    // STATE MANAGEMENT
-    // ==========================================================================
-
-    // Current media index - loops continuously
     const [currentIndex, setCurrentIndex] = useState(initialIndex);
 
-    // ==========================================================================
-    // RESET ON OPEN
-    // ==========================================================================
-
-    // Reset to initial index when opening
+    // Reset to the clicked image's index each time the lightbox opens.
     useEffect(() => {
         if (isOpen) {
             setCurrentIndex(initialIndex);
         }
     }, [isOpen, initialIndex]);
 
-    // ==========================================================================
-    // BODY SCROLL LOCK
-    // ==========================================================================
-
-    // Prevent page scroll when lightbox is open
-    // Uses Lenis scroll lock - same mechanism as cart drawer
+    // Lenis-aware scroll lock — same mechanism as the cart drawer.
     useScrollLock(isOpen);
 
-    // ==========================================================================
-    // NAVIGATION HANDLERS
-    // ==========================================================================
-
-    /**
-     * Navigate to next media with continuous looping.
-     * Videos unmount on navigation (only currentMedia is rendered) so no
-     * explicit pause needed — the new video autoPlays on mount.
-     */
     const goToNext = () => setCurrentIndex(prev => (prev + 1) % media.length);
-
-    /** Navigate to previous media with continuous looping */
     const goToPrevious = () => setCurrentIndex(prev => (prev - 1 + media.length) % media.length);
-
-    /** Jump to specific index (from thumbnail click) */
     const goToIndex = (index: number) => setCurrentIndex(index);
-
-    // ==========================================================================
-    // KEYBOARD NAVIGATION
-    // ==========================================================================
 
     useLightboxKeyboard({
         isOpen,
@@ -132,11 +46,7 @@ export function ProductLightbox({media, initialIndex, isOpen, onClose}: ProductL
         onClose
     });
 
-    // ==========================================================================
-    // IMAGE PRELOADING
-    // ==========================================================================
-
-    // Preload adjacent images for smoother navigation
+    // Preload adjacent images for smoother navigation.
     useEffect(() => {
         if (!isOpen) return;
 
@@ -151,29 +61,16 @@ export function ProductLightbox({media, initialIndex, isOpen, onClose}: ProductL
         });
     }, [isOpen, currentIndex, media]);
 
-    // ==========================================================================
-    // CURRENT MEDIA ITEM
-    // ==========================================================================
-
     const currentMedia = media[currentIndex];
 
-    // Guard against empty media array
     if (!currentMedia) {
         return null;
     }
 
-    // ==========================================================================
-    // RENDER
-    // ==========================================================================
-
     return (
         <DialogPrimitive.Root open={isOpen} onOpenChange={open => !open && onClose()}>
             <DialogPrimitive.Portal>
-                {/* ================================================================
-                    BACKDROP OVERLAY
-                    Clickable to close (wrapped in Close primitive)
-                    Theater-dark background for immersive viewing
-                    ================================================================ */}
+                {/* Backdrop — wrapped in Close so clicking it dismisses the lightbox */}
                 <DialogPrimitive.Close asChild>
                     <DialogPrimitive.Overlay
                         className={cn(
@@ -189,11 +86,6 @@ export function ProductLightbox({media, initialIndex, isOpen, onClose}: ProductL
                     />
                 </DialogPrimitive.Close>
 
-                {/* ================================================================
-                    MAIN CONTENT CONTAINER
-                    Full screen flexbox layout
-                    Three sections: controls (absolute), media (center), thumbnails (bottom)
-                    ================================================================ */}
                 <DialogPrimitive.Content
                     className={cn(
                         // Full screen fixed positioning
@@ -205,11 +97,9 @@ export function ProductLightbox({media, initialIndex, isOpen, onClose}: ProductL
                         "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
                         "duration-200"
                     )}
-                    // Prevent default Radix close behavior (we handle it manually)
-                    onPointerDownOutside={e => e.preventDefault()}
+                    onPointerDownOutside={e => e.preventDefault()} // backdrop handled by DialogPrimitive.Close above
                     aria-label="Product media lightbox"
                 >
-                    {/* Navigation controls (close, arrows, counter) */}
                     <LightboxControls
                         onClose={onClose}
                         onNext={goToNext}
@@ -219,17 +109,15 @@ export function ProductLightbox({media, initialIndex, isOpen, onClose}: ProductL
                         totalCount={media.length}
                     />
 
-                    {/* Main media display area - click empty space to close */}
+                    {/* Click the empty area around the media to close; stop propagation on the media itself. */}
                     <div
                         className="flex-1 flex items-center justify-center px-4 md:px-8 cursor-pointer"
                         onClick={e => {
-                            // Only close if clicking the container itself, not the media
                             if (e.target === e.currentTarget) {
                                 onClose();
                             }
                         }}
                         onKeyDown={e => {
-                            // Allow Enter/Space to close when focused on backdrop
                             if ((e.key === "Enter" || e.key === " ") && e.target === e.currentTarget) {
                                 e.preventDefault();
                                 onClose();
@@ -239,7 +127,6 @@ export function ProductLightbox({media, initialIndex, isOpen, onClose}: ProductL
                         tabIndex={-1}
                         aria-label="Click to close lightbox"
                     >
-                        {/* Stop propagation on media to prevent closing when clicking image/video */}
                         <div
                             onClick={e => e.stopPropagation()}
                             onKeyDown={e => e.stopPropagation()}
@@ -249,7 +136,6 @@ export function ProductLightbox({media, initialIndex, isOpen, onClose}: ProductL
                         </div>
                     </div>
 
-                    {/* Thumbnail strip - always visible on all devices */}
                     <LightboxThumbnails media={media} currentIndex={currentIndex} onSelect={goToIndex} />
                 </DialogPrimitive.Content>
             </DialogPrimitive.Portal>

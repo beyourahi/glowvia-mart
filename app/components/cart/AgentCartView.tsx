@@ -1,3 +1,19 @@
+/**
+ * @fileoverview Agent-native cart view — monospace layout with JSON-LD structured data.
+ *
+ * Shown in `cart.tsx` and `cart.$lines.tsx` instead of the normal cart UI when
+ * `useAgentSurface().isAgent` is true. Injects a Schema.org `ItemList` JSON-LD
+ * block via `useCartJsonLd` for agents that parse structured data from the DOM.
+ * The plaintext checkout URL rendered below the button is intentional — it allows
+ * agents that parse body text to extract the URL without JavaScript.
+ *
+ * @related
+ * - ~/routes/cart.tsx — conditionally renders this component
+ * - ~/routes/cart.$lines.tsx — also renders this for agent cart-lines view
+ * - ~/lib/agent-surface-context.tsx — `useAgentSurface()` detection
+ * - ~/components/checkout/CheckoutKitEmbed.tsx — checkout CTA
+ */
+
 import {useEffect, useRef} from "react";
 import {useCartMutationPending} from "~/lib/cart-utils";
 import {formatShopifyMoney} from "~/lib/currency-formatter";
@@ -6,8 +22,11 @@ import {Bot, ArrowRight} from "lucide-react";
 
 type MoneyV2 = {amount: string; currencyCode: string};
 
-// Structural duck type — avoids strict OptimisticCart<CartApiQueryFragment>
-// which marks updatedAt as string | undefined after useOptimisticCart().
+/**
+ * Structural duck type for the cart passed to AgentCartView.
+ * Avoids strict `OptimisticCart<CartApiQueryFragment>` because `useOptimisticCart()`
+ * marks `updatedAt` as `string | undefined`, which conflicts with strict typing.
+ */
 export type AgentCart = {
     checkoutUrl?: string | null;
     cost?: {subtotalAmount?: MoneyV2 | null} | null;
@@ -32,8 +51,11 @@ export type AgentCart = {
 
 type CartLine = NonNullable<NonNullable<AgentCart["lines"]>["nodes"]>[number];
 
-// JSON-LD injected via ref.textContent — safe DOM API, no innerHTML.
-// type="application/ld+json" does not execute as JavaScript.
+/**
+ * Injects a Schema.org `ItemList` JSON-LD block into `<head>` for the current cart.
+ * Uses `ref.textContent` (not `innerHTML`) — safe from XSS. Re-runs when cart size
+ * or checkout URL changes; cleans up the script tag on unmount.
+ */
 function useCartJsonLd(lines: CartLine[], checkoutUrl?: string) {
     const scriptRef = useRef<HTMLScriptElement | null>(null);
 
@@ -88,6 +110,7 @@ function useCartJsonLd(lines: CartLine[], checkoutUrl?: string) {
     }, [lines.length, checkoutUrl]);
 }
 
+/** Agent-native cart view: line items, summary, and checkout CTA in monospace layout. */
 export function AgentCartView({cart}: {cart: AgentCart}) {
     const lines = cart.lines?.nodes ?? [];
     const subtotal = cart.cost?.subtotalAmount;

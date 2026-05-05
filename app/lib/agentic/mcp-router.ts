@@ -1,19 +1,44 @@
+/**
+ * @fileoverview JSON-RPC 2.0 MCP Request Router
+ *
+ * Dispatches incoming MCP requests to registered tool handlers and emits
+ * observability events for tool calls and errors. Supports the two MCP
+ * methods used by this storefront: `tools/list` and `tools/call`.
+ */
+
 import type {JsonRpcRequest, JsonRpcResponse, McpToolRegistry, AgentContext} from "./types";
 import {emitAgentEvent} from "./observability";
 
+/** Standard JSON-RPC 2.0 error codes. */
 const PARSE_ERROR = -32700;
 const INVALID_REQUEST = -32600;
 const METHOD_NOT_FOUND = -32601;
 const INVALID_PARAMS = -32602;
 const INTERNAL_ERROR = -32603;
 
-// Minimal env interface for observability — avoids importing from the global Env augmentation here.
+/** Minimal env interface for observability — avoids importing from the global Env augmentation here. */
 type RouterEnv = Pick<Env, "AGENT_ANALYTICS">;
 
+/** Build a JSON-RPC error response envelope. */
 function errorResponse(id: string | number | null, code: number, message: string): JsonRpcResponse {
     return {jsonrpc: "2.0", id, error: {code, message}};
 }
 
+/**
+ * Dispatch a JSON-RPC 2.0 MCP request to the appropriate tool handler.
+ *
+ * Supports:
+ * - `tools/list` — returns all registered tool descriptors
+ * - `tools/call` — executes a named tool with the provided arguments
+ *
+ * Emits `mcp_tool_call` or `mcp_error` observability events after tool execution.
+ *
+ * @param payload - Raw parsed request body (type-narrowed internally)
+ * @param registry - Map of tool name → `{tool, handler}` entries
+ * @param ctx - Agent context passed through to tool handlers
+ * @param env - Optional env bindings for Analytics Engine observability
+ * @returns JSON-RPC response envelope (never throws)
+ */
 export async function handleMcpRequest(
     payload: unknown,
     registry: McpToolRegistry,

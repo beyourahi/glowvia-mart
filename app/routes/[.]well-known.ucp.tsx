@@ -39,6 +39,13 @@
 import type {Route} from "./+types/[.]well-known.ucp";
 import {buildUcpProfile} from "~/lib/agentic/ucp-profile";
 
+/**
+ * Builds and returns the UCP merchant profile JSON.
+ *
+ * Delegates profile construction to `buildUcpProfile()`, which derives capability
+ * declarations and service endpoint URLs from the environment and request origin.
+ * The response is cached for 1 hour with a 5-hour stale-while-revalidate window.
+ */
 export function loader({request, context}: Route.LoaderArgs) {
     const profile = buildUcpProfile(context.env as unknown as Record<string, string | undefined> ?? {}, request);
 

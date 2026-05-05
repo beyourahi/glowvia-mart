@@ -1,15 +1,12 @@
 /**
- * @fileoverview iOS PWA Installation Instructions Component
+ * @fileoverview iOS PWA install instructions bottom sheet.
  *
- * @description
- * Bottom sheet modal displaying step-by-step visual instructions for installing the PWA
- * on iOS devices. Required because iOS Safari doesn't support the beforeinstallprompt API.
- * Provides a friendly visual guide using platform-native icons and clear instructions.
+ * iOS Safari doesn't support the `beforeinstallprompt` API, so this sheet provides
+ * a manual step-by-step guide: tap Share → "Add to Home Screen".
  *
  * @related
- * - ~/components/pwa/OpenInAppButton - Triggers this component on iOS
- * - ~/components/pwa/PwaAppIcon - Displays app icon with fallback
- * - ~/components/icons/SafariShareIcon - Safari share button icon
+ * - ~/components/pwa/OpenInAppButton - Triggers this sheet on iOS
+ * - ~/components/icons/SafariShareIcon - Safari share button icon used in step 1
  */
 
 import {
@@ -26,10 +23,6 @@ import {PwaAppIcon} from "./PwaAppIcon";
 import {SafariShareIcon} from "~/components/icons/SafariShareIcon";
 import {Plus} from "lucide-react";
 
-// =============================================================================
-// TYPES
-// =============================================================================
-
 interface IosInstallInstructionsProps {
     /** Whether the sheet is open */
     open: boolean;
@@ -41,28 +34,6 @@ interface IosInstallInstructionsProps {
     appIcon: string | null;
 }
 
-// =============================================================================
-// COMPONENT
-// =============================================================================
-
-/**
- * IosInstallInstructions - Bottom sheet with iOS PWA installation steps.
- *
- * @param open - Whether the sheet is currently visible
- * @param onDismiss - Callback invoked when user closes the sheet
- * @param appName - App name from manifest (null if unavailable)
- * @param appIcon - App icon URL from manifest (null if unavailable)
- *
- * @example
- * ```tsx
- * <IosInstallInstructions
- *   open={showInstructions}
- *   onDismiss={() => setShowInstructions(false)}
- *   appName={manifest?.name}
- *   appIcon={manifest?.icons?.[0]?.src}
- * />
- * ```
- */
 export function IosInstallInstructions({open, onDismiss, appName, appIcon}: IosInstallInstructionsProps) {
     return (
         <Sheet open={open} onOpenChange={isOpen => !isOpen && onDismiss()}>

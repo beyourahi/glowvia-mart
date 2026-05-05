@@ -50,7 +50,6 @@ export async function loader(_args: Route.LoaderArgs) {
  * Placeholder component - never rendered due to loader redirect.
  */
 export default function Addresses() {
-    // This component should never render as the loader always redirects
     return null;
 }
 

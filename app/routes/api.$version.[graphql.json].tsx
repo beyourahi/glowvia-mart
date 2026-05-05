@@ -47,18 +47,6 @@ import type {Route} from "./+types/api.$version.[graphql.json]";
 // ACTION
 // =============================================================================
 
-/**
- * Proxies GraphQL requests to Shopify's Storefront API.
- *
- * @param params - Route params containing API version
- * @param context - Hydrogen context with environment variables
- * @param request - Incoming request with GraphQL query body
- *
- * @returns Proxied response from Shopify's GraphQL endpoint
- *
- * @note Uses checkout domain (not store domain) for API access.
- *       Response body is streamed for optimal performance.
- */
 const VALID_VERSION_PATTERN = /^\d{4}-\d{2}$|^unstable$/;
 
 const ALLOWED_HEADERS = [
@@ -71,6 +59,21 @@ const ALLOWED_HEADERS = [
 
 const MAX_BODY_SIZE = 100_000; // 100KB
 
+/**
+ * Proxies a GraphQL request to Shopify's Storefront API.
+ *
+ * Validates the API version param (`YYYY-MM` or `unstable`), enforces a 100 KB
+ * body size limit, and forwards only allowlisted headers to prevent ambient
+ * credentials (cookies, auth tokens) from leaking to Shopify.
+ *
+ * @param params - Route params; `params.version` must match `VALID_VERSION_PATTERN`
+ * @param context - Hydrogen context; `context.env.PUBLIC_CHECKOUT_DOMAIN` is the target host
+ * @param request - Incoming request with the GraphQL query body
+ *
+ * @returns Proxied response from Shopify's GraphQL endpoint, body streamed for performance
+ *
+ * @note Uses the checkout domain (not the store domain) as the API host.
+ */
 export async function action({params, context, request}: Route.ActionArgs) {
     // Validate API version parameter (YYYY-MM or "unstable")
     if (!params.version || !VALID_VERSION_PATTERN.test(params.version)) {

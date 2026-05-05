@@ -1,34 +1,12 @@
 /**
- * @fileoverview Thumbnail strip for product lightbox navigation
+ * @fileoverview Horizontal thumbnail strip for product lightbox navigation.
  *
- * @description
- * Horizontal scrollable thumbnail strip shown at the bottom of the lightbox.
- * Visible on all devices with responsive sizing. Allows quick navigation
- * between media items by clicking thumbnails.
- *
- * @layout
- * - Mobile (<md): Smaller thumbnails (48x60px), centered layout
- * - Desktop (≥md): Larger thumbnails (56x70px), centered layout
- * - Active thumbnail highlighted with ring indicator
- * - Horizontal scroll when thumbnails exceed viewport width
- *
- * @video-thumbnails
- * Videos display their previewImage with a play icon overlay
- * to distinguish them from static images.
- *
- * @accessibility
- * - Each thumbnail is a button with aria-label
- * - Current thumbnail has aria-selected="true"
- * - Keyboard: Tab to focus, Enter to select
- * - Uses role="tablist" for semantic grouping
- *
- * @scroll-behavior
- * Active thumbnail automatically scrolls into view when
- * navigating via keyboard or arrows.
+ * Active thumbnail auto-scrolls into view on index change. Videos and 3D models
+ * show a play/cube icon overlay on their preview image to distinguish from stills.
+ * Uses `role="tablist"` + `aria-selected` for accessible keyboard navigation.
  *
  * @related
  * - ProductLightbox.tsx - Parent that manages current index
- * - LightboxMedia.tsx - Displays the full-size media
  */
 
 import {useRef, useEffect} from "react";
@@ -36,10 +14,6 @@ import {Image} from "@shopify/hydrogen";
 import {PlayIcon} from "lucide-react";
 import {cn} from "~/lib/utils";
 import type {ProductMediaItem} from "types";
-
-// =============================================================================
-// COMPONENT INTERFACE
-// =============================================================================
 
 interface LightboxThumbnailsProps {
     /** Array of all media items */
@@ -50,16 +24,7 @@ interface LightboxThumbnailsProps {
     onSelect: (index: number) => void;
 }
 
-// =============================================================================
-// HELPER FUNCTIONS
-// =============================================================================
-
-/**
- * Extract thumbnail URL from media item.
- * All four Shopify media types are handled:
- * - MediaImage: the image URL directly
- * - Video / ExternalVideo / Model3d: the previewImage supplied by Shopify
- */
+/** Extracts thumbnail URL from any of the four Shopify media types. */
 function getThumbnailUrl(item: ProductMediaItem): string | null {
     if (item.__typename === "MediaImage" && item.image) {
         return item.image.url;
@@ -75,9 +40,7 @@ function getThumbnailUrl(item: ProductMediaItem): string | null {
     return null;
 }
 
-/**
- * Returns a short human-readable label for the media type, used in aria-labels.
- */
+/** Returns a short human-readable label for the media type, used in aria-labels. */
 function getMediaTypeLabel(item: ProductMediaItem): string {
     switch (item.__typename) {
         case "Video":
@@ -90,34 +53,10 @@ function getMediaTypeLabel(item: ProductMediaItem): string {
     }
 }
 
-// =============================================================================
-// LIGHTBOX THUMBNAILS COMPONENT
-// =============================================================================
-
-/**
- * LightboxThumbnails - Horizontal thumbnail strip for media navigation
- *
- * @description
- * Renders clickable thumbnails for all product media.
- * Automatically scrolls to keep the active thumbnail visible.
- *
- * @example
- * ```tsx
- * <LightboxThumbnails
- *   media={product.media.nodes}
- *   currentIndex={currentIndex}
- *   onSelect={(index) => setCurrentIndex(index)}
- * />
- * ```
- */
 export function LightboxThumbnails({media, currentIndex, onSelect}: LightboxThumbnailsProps) {
-    // Refs for scroll management
     const thumbnailRefs = useRef<Map<number, HTMLButtonElement>>(new Map());
 
-    // ==========================================================================
-    // SCROLL ACTIVE THUMBNAIL INTO VIEW
-    // ==========================================================================
-
+    // Scroll active thumbnail into view when index changes (keyboard or arrow nav).
     useEffect(() => {
         const activeThumb = thumbnailRefs.current.get(currentIndex);
         if (activeThumb) {
@@ -129,22 +68,15 @@ export function LightboxThumbnails({media, currentIndex, onSelect}: LightboxThum
         }
     }, [currentIndex]);
 
-    // ==========================================================================
-    // RENDER
-    // ==========================================================================
-
     return (
         <div className="px-4 md:px-8" role="tablist" aria-label="Product media thumbnails">
             {/* Horizontal scrollable container */}
             <div
                 className={cn(
                     "flex gap-2 md:gap-3 overflow-x-auto py-2",
-                    // Hide scrollbar but keep scroll functionality
                     "scrollbar-hide",
-                    // Center thumbnails on all screen sizes
                     "justify-center",
-                    // Suppress browser-native focus ring on the scrollable container;
-                    // individual thumbnail buttons retain their own focus-visible indicator
+                    // Suppress focus ring on the scroll container; individual buttons have their own.
                     "outline-none"
                 )}
             >
@@ -171,13 +103,9 @@ export function LightboxThumbnails({media, currentIndex, onSelect}: LightboxThum
                             aria-selected={isActive}
                             aria-label={`View ${typeLabel} ${index + 1} of ${media.length}`}
                             className={cn(
-                                // Base sizing - responsive
-                                // Portrait 4:5 ratio thumbnails
                                 "relative shrink-0 w-12 h-15 select-none md:w-14 md:h-[70px]",
                                 "rounded-md overflow-hidden",
-                                // Transition for smooth state changes
                                 "sleek",
-                                // Focus ring for keyboard navigation
                                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-light",
                                 // Active state - highlighted ring
                                 isActive
@@ -185,30 +113,25 @@ export function LightboxThumbnails({media, currentIndex, onSelect}: LightboxThum
                                     : "opacity-60 hover:opacity-100"
                             )}
                         >
-                            {/* Thumbnail image */}
                             {thumbnailUrl ? (
                                 <Image
-                                    // Use Shopify CDN params for optimized small image
                                     src={`${thumbnailUrl}&width=128&height=160&crop=center`}
                                     alt=""
                                     className="size-full object-cover"
                                     loading="lazy"
                                 />
                             ) : (
-                                // Fallback for missing thumbnail
                                 <div className="size-full bg-muted flex items-center justify-center">
                                     <span className="text-sm text-muted-foreground">{index + 1}</span>
                                 </div>
                             )}
 
-                            {/* Video indicator overlay (Video + ExternalVideo) */}
                             {isVideo && (
                                 <div className="absolute inset-0 flex items-center justify-center bg-dark/40">
                                     <PlayIcon className="size-4 md:size-5 text-light" />
                                 </div>
                             )}
 
-                            {/* 3D model indicator overlay */}
                             {is3d && (
                                 <div className="absolute inset-0 flex items-center justify-center bg-dark/40">
                                     <svg width="16" height="16" viewBox="0 0 12 12" aria-hidden="true" fill="none" stroke="white" strokeWidth="1" className="md:w-5 md:h-5">

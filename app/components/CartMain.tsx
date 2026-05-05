@@ -1,60 +1,15 @@
 /**
- * @fileoverview Main Cart Display Component
+ * @fileoverview Main cart component — supports "page" and "aside" (drawer) layout modes.
  *
- * @description
- * The primary cart component that renders cart items and order summary.
- * Supports two layout modes: full page view and aside (drawer) view.
- * Uses optimistic updates for instant user feedback on cart changes.
- * Provides empty state with product suggestions and comprehensive cart features.
- *
- * @layouts
- * - "page": Full-width layout for /cart route
- *   - Two-column grid on desktop (items + sticky summary)
- *   - Stacked layout on mobile
- * - "aside": Compact layout for cart drawer
- *   - Fixed header with item count
- *   - Scrollable items list
- *   - Fixed summary at bottom
- *
- * @features
- * - Optimistic cart updates (useOptimisticCart) for instant feedback
- * - Empty state with product suggestions carousel
- * - Product suggestion carousel (8 random products, shuffled)
- * - Store credit support notification
- * - Free shipping progress indicator
- * - Staggered fade-in animations for cart items
- * - Lenis scroll prevention for native scrolling
- * - Safe area padding for iOS devices
- *
- * @architecture
- * Component structure:
- * - CartMain: Main wrapper, handles layout switching
- * - CartAsideHeader: Header for drawer layout with close button
- * - CartEmpty: Empty state with suggestions
- * - CartSuggestions: Product carousel (aside only)
- * - ProductItem: Reusable product card (with compactMode) for carousel
- *
- * @props
- * - layout: "page" or "aside" - determines rendering mode
- * - cart: Cart data from Shopify Hydrogen (optimistic)
- * - isLoggedIn: Whether customer is authenticated
- * - hasStoreCredit: Whether customer has store credit
- * - shippingConfig: Free shipping threshold configuration
- *
- * @accessibility
- * - role="list" for cart items
- * - aria-label for cart items list
- * - Proper heading hierarchy
- * - Screen reader-friendly labels
- * - 44px minimum touch targets
+ * Uses `useOptimisticCart` for instant feedback. In agent mode, renders `AgentCartView`
+ * instead. Auth (`isLoggedIn`, `hasStoreCredit`) is resolved from props when in the aside,
+ * or from deferred root loader promises when in the page layout.
  *
  * @related
  * - CartLineItem.tsx - Individual cart item display
  * - CartSummary.tsx - Totals, discounts, and checkout
  * - ~/routes/cart.tsx - Cart route and action handler
- * - Aside.tsx - Drawer container
- * - PageLayout.tsx - Renders CartSheet with cart data
- * - root.tsx - Provides cartSuggestions data
+ * - root.tsx - Provides cartSuggestions deferred data
  */
 
 import {Suspense, useCallback, useEffect, useMemo, useRef, useState} from "react";
@@ -325,13 +280,11 @@ function CartEmpty({hidden = false, layout}: {hidden: boolean; layout: CartLayou
 }
 
 /**
- * Deterministically shuffles an array based on product IDs
- * Uses ID-based hashing for consistent pseudo-random ordering across renders
- * This ensures products appear in the same order without re-shuffling on re-renders
+ * Sorts suggestions by charcode sum of their product ID — stable across renders,
+ * so suggestions don't reshuffle on re-renders, but appear in a non-sequential order.
  */
 function shuffleArray<T extends {id: string}>(array: T[]): T[] {
     return [...array].sort((a, b) => {
-        // Hash product IDs for consistent pseudo-random ordering
         const hashA = a.id.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
         const hashB = b.id.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
         return hashA - hashB;

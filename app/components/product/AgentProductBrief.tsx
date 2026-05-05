@@ -1,3 +1,15 @@
+/**
+ * @fileoverview Agent-native PDP panel — monospace layout with structured product fields.
+ *
+ * Shown on the PDP in place of the hero section when `useAgentSurface().isAgent` is true.
+ * Renders title, vendor, type, price, collections, tags, options, and description as
+ * labeled field rows — optimized for agents that parse structured DOM text.
+ *
+ * @related
+ * - ~/routes/products.$handle.tsx — conditionally renders this panel
+ * - ~/lib/agent-surface-context.tsx — `useAgentSurface()` detection
+ */
+
 import type {MappedProductOptions} from "@shopify/hydrogen";
 import {formatShopifyMoney} from "~/lib/currency-formatter";
 import {Bot} from "lucide-react";
@@ -24,6 +36,7 @@ type AgentProductBriefProps = {
     productOptions: MappedProductOptions[];
 };
 
+/** Agent-native PDP panel: structured field rows in a monospace layout. */
 export function AgentProductBrief({product, selectedVariant, productOptions}: AgentProductBriefProps) {
     const price = selectedVariant?.price;
     const compareAtPrice = selectedVariant?.compareAtPrice;

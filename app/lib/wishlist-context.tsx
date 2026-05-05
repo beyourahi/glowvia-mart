@@ -51,10 +51,6 @@
 import {createContext, useCallback, useContext, useMemo, useState, useEffect, type ReactNode} from "react";
 import {extractNumericId, getWishlistIds, setWishlistIds, clearWishlist as clearStorage} from "./wishlist-utils";
 
-// =============================================================================
-// TYPES
-// =============================================================================
-
 export interface WishlistContextType {
     /** Array of numeric product IDs in the wishlist */
     ids: number[];
@@ -82,15 +78,7 @@ interface WishlistProviderProps {
     children: ReactNode;
 }
 
-// =============================================================================
-// CONTEXT
-// =============================================================================
-
 const WishlistContext = createContext<WishlistContextType | null>(null);
-
-// =============================================================================
-// DEFAULT VALUES
-// =============================================================================
 
 const DEFAULT_WISHLIST: WishlistContextType = {
     ids: [],
@@ -105,14 +93,7 @@ const DEFAULT_WISHLIST: WishlistContextType = {
     restoreMany: () => {}
 };
 
-// =============================================================================
-// PROVIDER
-// =============================================================================
-
-/**
- * Provider component that wraps the application to provide wishlist functionality
- * Use at the root level (in root.tsx) to make wishlist available everywhere
- */
+/** Wrap the app at root level to make wishlist state available everywhere. */
 export function WishlistProvider({children}: WishlistProviderProps) {
     // Start with empty array to prevent SSR hydration mismatch
     const [ids, setIds] = useState<number[]>([]);
@@ -142,7 +123,6 @@ export function WishlistProvider({children}: WishlistProviderProps) {
     // this means their dep arrays can be [] (truly stable references across all renders).
     // This prevents every wishlist consumer from re-rendering unnecessarily.
 
-    // Add product to wishlist
     const add = useCallback((productId: string) => {
         const numericId = extractNumericId(productId);
         if (numericId === 0) return;
@@ -156,7 +136,6 @@ export function WishlistProvider({children}: WishlistProviderProps) {
         });
     }, []);
 
-    // Remove product from wishlist
     const remove = useCallback((productId: string) => {
         const numericId = extractNumericId(productId);
         if (numericId === 0) return;
@@ -168,7 +147,6 @@ export function WishlistProvider({children}: WishlistProviderProps) {
         });
     }, []);
 
-    // Toggle product in wishlist
     const toggle = useCallback((productId: string) => {
         const numericId = extractNumericId(productId);
         if (numericId === 0) return;
@@ -181,7 +159,7 @@ export function WishlistProvider({children}: WishlistProviderProps) {
         });
     }, []);
 
-    // Check if product is in wishlist — depends on ids so consumers re-render when ids change
+    // `has` depends on ids so consumers re-render when ids change; other callbacks use [] deps.
     const has = useCallback(
         (productId: string): boolean => {
             const numericId = extractNumericId(productId);
@@ -190,18 +168,15 @@ export function WishlistProvider({children}: WishlistProviderProps) {
         [ids]
     );
 
-    // Clear all items from wishlist
     const clear = useCallback(() => {
         setIds([]);
         clearStorage();
     }, []);
 
-    // Restore a single product by numeric ID (for undo single remove)
     const restore = useCallback((numericId: number) => {
         if (numericId === 0) return;
 
         setIds(prev => {
-            // Prevent duplicates
             if (prev.includes(numericId)) return prev;
             const updated = [...prev, numericId];
             setWishlistIds(updated);
@@ -209,12 +184,10 @@ export function WishlistProvider({children}: WishlistProviderProps) {
         });
     }, []);
 
-    // Restore multiple products by numeric IDs (for undo clear all)
     const restoreMany = useCallback((numericIds: number[]) => {
         if (numericIds.length === 0) return;
 
         setIds(prev => {
-            // Merge with existing, preventing duplicates
             const existingSet = new Set(prev);
             const newIds = numericIds.filter(id => !existingSet.has(id));
             if (newIds.length === 0) return prev;
@@ -245,14 +218,7 @@ export function WishlistProvider({children}: WishlistProviderProps) {
     return <WishlistContext.Provider value={value}>{children}</WishlistContext.Provider>;
 }
 
-// =============================================================================
-// HOOKS
-// =============================================================================
-
-/**
- * Hook to access wishlist functionality
- * Throws an error if used outside of WishlistProvider
- */
+/** Access wishlist functionality. Throws if used outside WishlistProvider. */
 export function useWishlist(): WishlistContextType {
     const context = useContext(WishlistContext);
     if (!context) {

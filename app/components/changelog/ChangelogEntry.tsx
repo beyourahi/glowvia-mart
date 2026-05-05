@@ -1,28 +1,12 @@
 /**
- * @fileoverview ChangelogEntry — Single changelog entry card
- *
- * @description
- * Renders one user-facing changelog entry as a card with category badge,
- * headline, and full summary text. Dates are grouped at the
- * section level (ChangelogPage) rather than per-entry.
- *
- * @accessibility
- * - article element provides semantic sectioning
- * - Minimum 44px touch targets on mobile
+ * @fileoverview Single changelog entry card — category badge, headline, summary, and author.
+ * Dates are grouped at the section level in ChangelogPage, not per-entry.
  */
 
 import {cn} from "~/lib/utils";
 import type {ChangelogEntry as ChangelogEntryType, ChangelogCategory} from "~/lib/types/changelog";
 
-// =============================================================================
-// AUTHOR
-// =============================================================================
-
 const CHANGELOG_AUTHOR = {name: "Rahi Khan", url: "https://beyourahi.com"} as const;
-
-// =============================================================================
-// CATEGORY COLOR MAPPING
-// =============================================================================
 
 interface CategoryStyle {
     background: string;
@@ -73,17 +57,9 @@ const CATEGORY_DOT_COLORS: Record<ChangelogCategory, string> = {
     "Design": "oklch(0.46 0.12 270)"
 };
 
-// =============================================================================
-// CONSTANTS
-// =============================================================================
-
 /** Animation delay cap (11 items * 40ms = 440ms max) */
 const MAX_STAGGER_INDEX = 11;
 const STAGGER_INCREMENT_MS = 40;
-
-// =============================================================================
-// COMPONENT
-// =============================================================================
 
 interface ChangelogEntryProps {
     entry: ChangelogEntryType;

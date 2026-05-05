@@ -41,12 +41,16 @@ import {getSitemapIndex} from "@shopify/hydrogen";
 // =============================================================================
 
 /**
- * Generates the sitemap index XML using Hydrogen's utility.
+ * Generates the sitemap index XML using Hydrogen's utility, then injects a
+ * custom entry for `/sitemap.custom.xml` before returning the response.
  *
- * @param request - HTTP request
- * @param storefront - Storefront API client
+ * The custom entry covers storefront-specific routes (FAQ, gallery, sale, etc.)
+ * that Shopify's sitemap generator does not include automatically.
  *
- * @returns XML Response with sitemap index, cached for 24 hours
+ * @param request - HTTP request (used to derive the origin for the custom entry URL)
+ * @param context - Hydrogen context; `context.storefront` is passed to `getSitemapIndex`
+ *
+ * @returns XML Response with the augmented sitemap index, cached for 24 hours
  */
 export async function loader({request, context: {storefront}}: Route.LoaderArgs) {
     const shopifyResponse = await getSitemapIndex({storefront, request});

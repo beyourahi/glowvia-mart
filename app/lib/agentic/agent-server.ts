@@ -125,6 +125,13 @@ type AgentContext = {
     env: {PUBLIC_STORE_DOMAIN?: string};
 };
 
+/**
+ * Handle a `GET /search?agent=true&q=<term>` request by executing a product search
+ * and returning a UCP JSON response without going through React Router rendering.
+ *
+ * @param request - Incoming request (reads `q` query parameter)
+ * @param context - Hydrogen context with `dataAdapter` and `env`
+ */
 export async function handleAgentSearchRequest(
     request: Request,
     context: AgentContext
@@ -163,6 +170,13 @@ export async function handleAgentSearchRequest(
     }
 }
 
+/**
+ * Handle a `GET /products/:handle` request from an agent by fetching the product
+ * by handle and returning a single-product UCP JSON response.
+ *
+ * @param request - Incoming request (reads handle from the pathname)
+ * @param context - Hydrogen context with `dataAdapter` and `env`
+ */
 export async function handleAgentProductRequest(
     request: Request,
     context: AgentContext

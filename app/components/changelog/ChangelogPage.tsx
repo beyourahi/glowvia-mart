@@ -1,29 +1,9 @@
 /**
- * @fileoverview ChangelogPage — Full changelog page layout
+ * @fileoverview Changelog page — date-grouped entry cards with category filter chips.
  *
- * @description
- * Renders the /changelog page with a compact hero, category filter chips,
- * date-grouped entry cards, and a "Load more" button for pagination.
- *
- * @features
- * - Compact hero with h1 + subtitle (no forced min-height)
- * - Category filter chips (All, New Feature, Improvement, Fix, Performance, Design)
- * - Entries grouped by date with serif section headers + horizontal rule
- * - Staggered entry card animations via ChangelogEntryCard (global stagger index)
- * - Client-side "Load more" pagination (50 entries at a time, no URL changes)
- * - Empty state when filter returns no results
- * - Skeleton loading state (ChangelogPageSkeleton)
- *
- * @layout
- * px-4 sm:px-6 lg:px-8 outer wrapper (no pt — PageLayout main already clears the header):
- *   1. Hero (center-aligned, pt-(--page-breathing-room) — standard breathing room)
- *   2. Filter chips row
- *   3. Date-grouped cards (IIFE scopes globalStaggerIndex across groups)
- *   4. Load-more button
- *
- * @accessibility
- * - Filter chips: role="radiogroup" with aria-checked per chip
- * - Date group headers: <h2> for correct heading hierarchy
+ * Entries are grouped by date; a global stagger index (via IIFE) ensures animation
+ * delays are continuous across all date groups rather than resetting per group.
+ * Filter chips use `role="radiogroup"` + `aria-checked` for accessibility.
  */
 
 import {Skeleton} from "~/components/ui/skeleton";
@@ -34,10 +14,6 @@ import {formatAbsoluteDate, formatRelativeDayLabel} from "~/lib/date-formatters"
 import type {ChangelogCategory, ChangelogEntry as ChangelogEntryType, ChangelogLoaderData} from "~/lib/types/changelog";
 import {PageHeading} from "~/components/PageHeading";
 
-// =============================================================================
-// CONSTANTS
-// =============================================================================
-
 const ALL_CATEGORIES: ChangelogCategory[] = [
     "New Feature",
     "Improvement",
@@ -46,10 +22,6 @@ const ALL_CATEGORIES: ChangelogCategory[] = [
     "Design"
 ];
 
-
-// =============================================================================
-// HELPERS
-// =============================================================================
 
 interface DateGroup {
     date: string;
@@ -69,10 +41,6 @@ function groupEntriesByDate(entries: ChangelogEntryType[]): DateGroup[] {
     }
     return Array.from(map.entries()).map(([date, entries]) => ({date, entries}));
 }
-
-// =============================================================================
-// CHANGELOG PAGE
-// =============================================================================
 
 export function ChangelogPage({entries}: ChangelogLoaderData) {
     const {filteredEntries, setCategory, activeCategory, isEmpty} = useChangelogFilter(entries);
@@ -210,10 +178,6 @@ export function ChangelogPage({entries}: ChangelogLoaderData) {
         </div>
     );
 }
-
-// =============================================================================
-// SKELETON
-// =============================================================================
 
 function ChangelogCardSkeleton({index}: {index: number}) {
     return (

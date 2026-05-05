@@ -192,10 +192,7 @@ const DEFAULT_THEME_FONTS: ThemeFonts = {
     mono: "Inter"
 };
 
-// =============================================================================
-// OKLCH HELPERS
-// =============================================================================
-
+/** Parse any CSS color string into `OklchColor`. Returns null for invalid inputs. */
 export function parseOklch(color: string): OklchColor | null {
     const parsed = toOklch(color);
     if (!parsed) return null;
@@ -207,10 +204,12 @@ export function parseOklch(color: string): OklchColor | null {
     };
 }
 
+/** Serialize an `OklchColor` to an `oklch(...)` CSS string with normalized hue. */
 export function toOklchString(color: OklchColor): string {
     return `oklch(${color.l.toFixed(4)} ${color.c.toFixed(4)} ${normalizeHue(color.h).toFixed(4)})`;
 }
 
+/** Add `delta` to the lightness channel, clamped to [0, 1]. Returns original on parse failure. */
 export function adjustLightness(color: string, delta: number): string {
     const parsed = parseOklch(color);
     if (!parsed) return color;
@@ -221,6 +220,7 @@ export function adjustLightness(color: string, delta: number): string {
     });
 }
 
+/** Multiply the chroma channel by `factor`, clamped to [0, 0.4]. */
 export function adjustChroma(color: string, factor: number): string {
     const parsed = parseOklch(color);
     if (!parsed) return color;
@@ -231,6 +231,7 @@ export function adjustChroma(color: string, factor: number): string {
     });
 }
 
+/** Rotate the hue channel by `degrees`, normalized to [0, 360). */
 export function rotateHue(color: string, degrees: number): string {
     const parsed = parseOklch(color);
     if (!parsed) return color;
@@ -241,6 +242,7 @@ export function rotateHue(color: string, degrees: number): string {
     });
 }
 
+/** Derive a muted variant by shifting lightness ±0.08 toward middle and crushing chroma to ≤0.05. */
 export function toMuted(color: string): string {
     const parsed = parseOklch(color);
     if (!parsed) return color;
@@ -266,6 +268,10 @@ function roundRadius(value: number): number {
     return Math.round(value);
 }
 
+/**
+ * Parse and clamp a border-radius seed value to [MIN_BORDER_RADIUS_SEED, MAX_BORDER_RADIUS_SEED].
+ * Accepts number or numeric string; falls back to `DEFAULT_BORDER_RADIUS_SEED` on invalid input.
+ */
 export function sanitizeBorderRadiusSeed(
     value: unknown,
     fallback = DEFAULT_BORDER_RADIUS_SEED
@@ -284,6 +290,7 @@ export function sanitizeBorderRadiusSeed(
     return clamp(roundRadius(numeric), MIN_BORDER_RADIUS_SEED, MAX_BORDER_RADIUS_SEED);
 }
 
+/** Compute the full radius scale (xs → pill) from a single seed pixel value. */
 export function deriveRadiusScale(seed: number): ThemeRadiusScale {
     const base = sanitizeBorderRadiusSeed(seed);
 
@@ -309,6 +316,7 @@ function hueDistance(a: number, b: number): number {
     return Math.abs(((a - b + 540) % 360) - 180);
 }
 
+/** Perceptual distance between two colors in OKLCH space (lightness + weighted chroma + hue). */
 function colorDistance(a: string, b: string): number {
     const colorA = parseOklch(a);
     const colorB = parseOklch(b);
@@ -359,6 +367,10 @@ function getContrastRatio(foreground: string, background: string): number {
     return calculateContrast(foreground, background, "WCAG21")?.ratio ?? 0;
 }
 
+/**
+ * Ensure the foreground meets `targetRatio` against the background.
+ * Falls back to black or white (whichever has higher contrast) if the input color fails.
+ */
 function ensureReadableText(foreground: string, background: string, targetRatio: number = 4.5): string {
     const currentRatio = getContrastRatio(foreground, background);
     if (currentRatio >= targetRatio) return foreground;
@@ -375,6 +387,10 @@ function ensureReadableText(foreground: string, background: string, targetRatio:
     return getContrastRatio(BLACK, background) >= getContrastRatio(WHITE, background) ? BLACK : WHITE;
 }
 
+/**
+ * Validate, clamp, and normalize a raw color seed string to a safe OKLCH value.
+ * Pushes diagnostic entries for invalid inputs, gamut violations, or chroma clamping.
+ */
 function normalizeColorInput(
     input: string | null,
     fallback: string,
@@ -797,6 +813,7 @@ function buildDerivedTheme(scheme: SemanticScheme): DerivedTheme {
     };
 }
 
+/** Convenience wrapper: derive `DerivedTheme` from five core color strings (no fonts or radius). */
 export function deriveThemeColors(core: ThemeCoreColors): DerivedTheme {
     return resolveTheme(core, DEFAULT_THEME_FONTS)?.colors ?? buildDerivedTheme(buildSemanticScheme(normalizeSeeds(toThemeSeedInputs(core)).seeds));
 }
@@ -805,10 +822,12 @@ export function deriveThemeColors(core: ThemeCoreColors): DerivedTheme {
 // FONT UTILITIES
 // =============================================================================
 
+/** Strip unsafe characters from a Google Fonts family name (keep letters, digits, spaces, `-`, `_`). */
 export function sanitizeFontName(fontName: string): string {
     return fontName.replace(/[^a-zA-Z0-9\s\-_]/g, "").trim();
 }
 
+/** Build a Google Fonts CSS2 URL for the three theme font roles (sans, serif, mono). Returns `""` when no valid fonts. */
 export function generateGoogleFontsUrl(fonts: ThemeFonts): string {
     const fontFamilies: string[] = [];
 
@@ -838,6 +857,7 @@ export function generateGoogleFontsUrl(fonts: ThemeFonts): string {
     return `https://fonts.googleapis.com/css2?${fontFamilies.join("&")}&display=swap`;
 }
 
+/** Return a CSS `font-family` stack for the given font role, with appropriate system fallbacks. */
 export function generateFontFamily(fontName: string, type: "sans" | "serif" | "mono"): string {
     const fallbacks = {
         sans: "ui-sans-serif, system-ui, sans-serif",
@@ -868,6 +888,10 @@ function deriveThemeShadowColor(colors: DerivedTheme): string {
     });
 }
 
+/**
+ * Emit the full `:root { ... }` block of CSS custom properties from a resolved theme.
+ * Includes canonical semantic tokens and legacy shadcn/Tailwind compatibility aliases.
+ */
 export function generateThemeCssVariables(
     colors: DerivedTheme,
     fonts: ThemeFonts,
@@ -973,6 +997,11 @@ function toThemeSeedInputs(coreColors: ThemeCoreColors | ThemeSeedInputs): Theme
     };
 }
 
+/**
+ * Normalize seed colors, derive the semantic scheme, build CSS variables, and return
+ * a `ResolvedTheme` with diagnostics. The primary entry point for the theme pipeline.
+ * Returns null when both `coreColors` and `fonts` are null.
+ */
 export function resolveTheme(
     coreColors: ThemeCoreColors | ThemeSeedInputs | null,
     fonts: ThemeFonts | null,
@@ -1001,6 +1030,7 @@ export function resolveTheme(
     };
 }
 
+/** Thin wrapper over `resolveTheme` that merges `coreColors` with defaults before resolving. */
 export function generateTheme(
     coreColors: ThemeCoreColors | null,
     fonts: ThemeFonts | null,

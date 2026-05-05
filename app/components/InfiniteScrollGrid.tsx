@@ -1,91 +1,13 @@
 /**
- * @fileoverview Infinite Scroll Grid Component
+ * @fileoverview Custom infinite scroll grid using React Router fetcher + Intersection Observer.
  *
- * @description
- * Custom infinite scroll implementation for product grids using React Router fetcher
- * and Intersection Observer. Provides automatic pagination with 200px early loading,
- * staggered animations for new items, and comprehensive error handling.
- *
- * @component
- * InfiniteScrollGrid<T> - Generic infinite scroll container
- *
- * @features
- * - Automatic infinite scroll via Intersection Observer
- * - 200px early loading threshold (loads before user reaches bottom)
- * - Staggered fade-in animations for newly loaded products (50ms stagger, max 8 items)
- * - Deduplication: Prevents duplicate products in edge cases
- * - Error handling: Displays error message with manual retry button
- * - Optional skeleton placeholders during loading (instead of spinner)
- * - Optional end state message when all products loaded
- * - Cursor-based pagination via URL params
- * - Resets state when initialProducts change (e.g., sort/filter change)
- * - Optimistic loading indicators
- *
- * @props
- * - initialProducts: T[] - Initial product batch (from loader)
- * - pageInfo: PageInfo - Pagination info (hasNextPage, endCursor)
- * - resourcesClassName?: string - CSS class for grid container
- * - children: (props: {node, index, isNew}) => ReactNode - Render function per product
- * - fetcherKey: string - Unique fetcher key for this grid instance
- * - showSkeletons?: boolean - Show skeleton placeholders instead of spinner (default: false)
- * - skeletonCount?: number - Number of skeleton items (default: 4)
- * - renderSkeleton?: () => ReactNode - Custom skeleton component
- * - endMessage?: string - Message when all products loaded (pass "" to hide)
- *
- * @types
- * PageInfo:
- * - hasNextPage: boolean - Whether more products exist
- * - endCursor: string | null - Cursor for next page
- *
- * Generic Constraint:
- * - T extends {id: string} - Products must have unique ID
- *
- * @behavior
- * Loading Flow:
- * 1. Sentinel element enters viewport (200px before bottom)
- * 2. If hasMore && !error && fetcher idle: triggers load via fetcher.load()
- * 3. Fetcher loads route with ?cursor=X&index= params
- * 4. Route returns {products, pageInfo}
- * 5. Component appends new products with deduplication
- * 6. Updates cursor and hasMore state
- * 7. Repeat when sentinel re-enters viewport
- *
- * Error Handling:
- * - Detects failed fetches (fetcher.data === null or invalid structure)
- * - Displays error message with retry button
- * - Retry button re-triggers load with same cursor
- * - Observer disabled during error state (prevents auto-retry loop)
- *
- * Reset Behavior:
- * - When initialProducts/pageInfo change: resets all state
- * - Clears error, resets cursor, updates hasMore
- * - This happens on sort/filter changes (new loader data)
- *
- * @animations
- * Staggered Fade-In:
- * - New products get animate-product-fade-in class
- * - Stagger delay: index * 50ms (max 350ms for 8th+ item)
- * - Animation state clears after 1000ms (cleanup)
- * - Uses newProductsStartIndex to track new vs existing products
- *
- * @styling
- * Loading States:
- * - Spinner: Centered with "Loading more products..." text
- * - Skeletons: Grid layout matching product grid
- * - Error: Centered with destructive text + retry button
- * - End: Horizontal line + muted text
- *
- * Sentinel Element:
- * - Min height: 80px (mobile) / 100px (desktop)
- * - Centers loading/error/end states
- *
- * @dependencies
- * - react-router: useFetcher for pagination, useSearchParams for URL state
- * - ~/components/ui: Spinner, Skeleton, Button components
- * - Intersection Observer API (browser native)
+ * Triggers the next page load 200px before the sentinel reaches the viewport. Deduplicates
+ * by ID, handles errors with a retry button, and resets all state when `initialProducts`
+ * changes (e.g., on sort/filter). New items animate in with a 50ms stagger (max 8 items).
+ * Generic: `T extends {id: string}`.
  *
  * @related
- * - InfiniteScrollSection.tsx - Alternative using Hydrogen's Pagination component
+ * - InfiniteScrollSection.tsx - Hydrogen Pagination-based alternative (preferred for new work)
  * - PaginatedResourceSection.tsx - Legacy pagination component
  * - routes/collections.$handle.tsx - Uses InfiniteScrollGrid for collection products
  * - routes/collections.all.tsx - Uses InfiniteScrollGrid for all products

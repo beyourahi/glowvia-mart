@@ -21,7 +21,7 @@ const SORT_PILLS: {label: string; value: SortOption}[] = [
 ];
 
 /**
- * Standalone sort pill selector for collection pages (feature 13 — smart sorting).
+ * Standalone sort pill selector for collection pages.
  * Renders as a horizontal scrollable carousel on mobile and a flex-wrap row on desktop.
  * Sort state is managed externally via useSortOption() from CollectionPageLayout.
  */

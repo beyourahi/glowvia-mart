@@ -1,3 +1,24 @@
+/**
+ * @fileoverview Order Detail Page
+ *
+ * @description
+ * Displays the full details of a single customer order: line items, pricing,
+ * shipping address, billing summary, and current fulfillment status.
+ *
+ * @route GET /account/orders/:id
+ *
+ * @authentication Required — redirects to login via handleAuthStatus() on unauthenticated requests.
+ *
+ * @data-loading
+ * Fetches the order via the Customer Account API using the order GID.
+ * Accepts either a raw numeric ID or a full GID string in the :id param.
+ *
+ * @related
+ * - account.orders._index.tsx - Order list page
+ * - graphql/customer-account/CustomerOrderQuery.ts - Order detail GraphQL query
+ * - lib/order-status.ts - Status badge and label helpers
+ */
+
 import {Image} from "@shopify/hydrogen";
 import {Link, useLoaderData} from "react-router";
 import type {Route} from "./+types/account.orders.$id";
@@ -18,6 +39,14 @@ export const meta: Route.MetaFunction = ({data}) => {
     return [{title: `Order ${orderName}`}];
 };
 
+/**
+ * Loads the order record for the authenticated customer.
+ *
+ * Normalizes the :id param to a full GID before querying. Throws 400 if the
+ * param is absent and 404 if the order is not found or belongs to another customer.
+ *
+ * @returns `{order}` — Customer Account API order node
+ */
 export const loader = async ({params, context}: Route.LoaderArgs) => {
     if (!params.id) {
         throw new Response("Order ID is required", {status: 400});
@@ -38,6 +67,10 @@ export const loader = async ({params, context}: Route.LoaderArgs) => {
     return {order: data.order};
 };
 
+/**
+ * Formats an ISO date string into a locale-aware long-form date+time label.
+ * Output example: "January 15, 2025, 3:42 PM"
+ */
 const formatDate = (dateString: string) =>
     new Date(dateString).toLocaleDateString(STORE_FORMAT_LOCALE, {
         year: "numeric",

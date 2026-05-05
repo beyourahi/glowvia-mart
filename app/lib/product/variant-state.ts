@@ -1,3 +1,11 @@
+/**
+ * @fileoverview Product Variant State Utilities
+ *
+ * Helpers for finding variants by option selection, computing their price/discount
+ * state, and deriving available option values given the current selection. Used
+ * by PDP option pickers and quick-add flows.
+ */
+
 type ShopifyMoney = {
     amount: string;
     currencyCode: string;
@@ -59,10 +67,12 @@ type ShopifyProduct = {
     seo: ShopifyProductSeo;
 };
 
+/** Map of option name → selected value (e.g. `{Color: "Red", Size: "M"}`). */
 export interface VariantSelection {
     [optionName: string]: string;
 }
 
+/** Find the first variant whose `selectedOptions` fully match the given selection. */
 export const findVariantByOptions = (
     variants: ShopifyProductVariant[],
     selectedOptions: VariantSelection
@@ -74,6 +84,7 @@ export const findVariantByOptions = (
     );
 };
 
+/** Extract price, compare-at price, and whether a discount exists for the given variant. */
 export const getVariantPrice = (variant: ShopifyProductVariant | null) => {
     if (!variant) return null;
 
@@ -86,6 +97,7 @@ export const getVariantPrice = (variant: ShopifyProductVariant | null) => {
     };
 };
 
+/** Return availability status and quantity for the given variant. */
 export const getVariantInventory = (variant: ShopifyProductVariant | null) => {
     if (!variant) return {available: false, quantity: 0};
 
@@ -126,6 +138,11 @@ export const isValidSelection = (product: ShopifyProduct, selectedOptions: Varia
     );
 };
 
+/**
+ * Return the option values for `optionName` that are available for sale
+ * given the rest of the current selection (other options must match).
+ * Used to disable unavailable swatches/pills without hiding them.
+ */
 export const getAvailableValues = (
     product: ShopifyProduct,
     optionName: string,

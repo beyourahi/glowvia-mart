@@ -1,23 +1,10 @@
 /**
- * @fileoverview PWA App Icon Component
- *
- * @description
- * Displays the app icon from the PWA manifest with an elegant fallback when unavailable.
- * The fallback shows the first letter of the app name in a rounded square with brand colors.
- * Used in PWA install prompts and instructions for visual consistency with the installed app.
- *
- * @related
- * - ~/components/pwa/IosInstallInstructions - Uses lg variant for prominent display
- * - ~/components/pwa/OpenInAppButton - Provides appIcon prop from manifest
- * - ~/hooks/usePwaInstall - Source of icon and name from manifest
+ * @fileoverview PWA manifest app icon with initial-letter fallback.
+ * Used in install prompt sheets for visual consistency with the installed app.
  */
 
 import {Image} from "@shopify/hydrogen";
 import {cn} from "~/lib/utils";
-
-// =============================================================================
-// TYPES
-// =============================================================================
 
 interface PwaAppIconProps {
     /** Icon URL from manifest */
@@ -30,43 +17,16 @@ interface PwaAppIconProps {
     size?: "sm" | "md" | "lg";
 }
 
-// =============================================================================
-// CONSTANTS
-// =============================================================================
-
-/**
- * Size class mappings.
- * sm: 48px, md: 64px, lg: 80px
- */
+/** sm: 48px, md: 64px, lg: 80px */
 const sizeClasses = {
     sm: "size-12",
     md: "size-16",
     lg: "size-20"
 };
 
-// =============================================================================
-// COMPONENT
-// =============================================================================
-
-/**
- * PwaAppIcon - Displays app icon with fallback to initial.
- *
- * @param src - Icon URL from manifest (null if unavailable)
- * @param alt - App name for fallback and alt text
- * @param className - Additional Tailwind classes
- * @param size - Size variant: "sm", "md", or "lg" (default: "md")
- */
 export function PwaAppIcon({src, alt, className, size = "md"}: PwaAppIconProps) {
     const sizeClass = sizeClasses[size];
 
-    // =============================================================================
-    // RENDER
-    // =============================================================================
-
-    /**
-     * Fallback rendering when no icon available.
-     * Shows first letter of app name in branded container.
-     */
     if (!src) {
         return (
             <div

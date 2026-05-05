@@ -1,50 +1,17 @@
 /**
- * @fileoverview Wishlist Product Storage and URL Sharing
+ * @fileoverview Wishlist localStorage utilities and base64url share URL helpers.
  *
- * @description
- * Client-side localStorage utilities for managing wishlist product IDs with efficient storage
- * and URL-based sharing. Stores numeric IDs instead of full GIDs for compact size and provides
- * base64url encoding for shareable wishlist URLs.
- *
- * @architecture
- * Storage Strategy:
- * - Format: JSON array of numeric IDs (not full Shopify GIDs)
- * - Key: "wishlist_product_ids"
- * - Example: [8547362819123, 8547362819124] (not gid://shopify/Product/...)
- * - Persistence: Never expires until user clears browser storage
- * - SSR-safe: All browser APIs guarded with try/catch
- *
- * ID Conversion:
- * - extractNumericId(): gid://shopify/Product/123 → 123
- * - reconstructGid(): 123 → gid://shopify/Product/123
- * - Compact storage (numeric) vs GraphQL (full GID)
- *
- * URL Sharing:
- * - encodeWishlistIds(): [123, 456] → base64url encoded string
- * - decodeWishlistIds(): base64url string → [123, 456]
- * - generateShareableWishlistUrl(): Creates /wishlist/share?ids=... URL
- * - Used for social sharing and deep linking
- *
- * Integration with Routes:
- * - /wishlist route: Reads from localStorage, displays products
- * - /wishlist/share route: Decodes URL param, fetches products, displays
- *
- * @dependencies
- * - Browser localStorage API
- * - Browser btoa/atob for base64 encoding
+ * Stores numeric IDs (not full GIDs) under `"wishlist_product_ids"`. All browser APIs
+ * are guarded with try/catch for SSR safety. Share URLs use base64url encoding:
+ * `encodeWishlistIds` / `decodeWishlistIds` / `generateShareableWishlistUrl`.
  *
  * @related
- * - app/routes/wishlist.tsx - Wishlist page (reads from localStorage)
- * - app/routes/api.wishlist-products.tsx - API route to fetch wishlist products
- * - app/components/HomepageWishlistSection.tsx - Shows wishlist preview on homepage
- * - app/lib/social-share.tsx - Social sharing utilities
+ * - app/lib/wishlist-context.tsx - React Context that wraps these utilities
+ * - app/routes/wishlist.tsx - Wishlist page
+ * - app/routes/api.wishlist-products.tsx - Fetches products by numeric ID
  */
 
 const STORAGE_KEY = "wishlist_product_ids";
-
-// =============================================================================
-// ID CONVERSION UTILITIES
-// =============================================================================
 
 /**
  * Extract numeric ID from Shopify GID
@@ -70,10 +37,6 @@ export function reconstructGid(numericId: number): string {
 export function reconstructGids(numericIds: number[]): string[] {
     return numericIds.map(reconstructGid);
 }
-
-// =============================================================================
-// LOCALSTORAGE OPERATIONS
-// =============================================================================
 
 /**
  * Check if localStorage is available
@@ -131,12 +94,7 @@ export function setWishlistIds(ids: number[]): void {
  */
 export function addToWishlist(numericId: number): number[] {
     const current = getWishlistIds();
-
-    // Prevent duplicates
-    if (current.includes(numericId)) {
-        return current;
-    }
-
+    if (current.includes(numericId)) return current;
     const updated = [...current, numericId];
     setWishlistIds(updated);
     return updated;
@@ -179,10 +137,6 @@ export function clearWishlist(): void {
 export function getWishlistCount(): number {
     return getWishlistIds().length;
 }
-
-// =============================================================================
-// URL ENCODING FOR SHARING
-// =============================================================================
 
 /**
  * Encode wishlist IDs for sharing via URL

@@ -1,78 +1,16 @@
 /**
- * @fileoverview Cart summary component with shipping progress, order notes, and checkout
+ * @fileoverview Cart summary with free-shipping progress, order notes, and checkout.
  *
- * @description
- * Cart summary that displays free shipping progress, order notes, and checkout button.
- * Supports both cart page and cart drawer (aside) layouts with different styling.
- *
- * @features
- * - Free shipping progress bar with threshold tracking
- * - Visual celebration when free shipping is unlocked (animated icons, glow effects)
- * - Order note textarea with debounced auto-save (800ms delay)
- * - Store credit notification for logged-in users
- * - Checkout button with price display and total
- * - Loading state on free shipping progress during cart mutations (matches checkout pattern)
- * - Offline detection with disabled state and warning
- * - Responsive layouts for page vs drawer with theme-aware styling
- * - Progress milestone markers at 25%, 50%, 75%
- * - Encouraging message when close to free shipping (70%+)
- *
- * @props
- * - cart: Cart data from Shopify API
- * - layout: "page" or "aside" (drawer) - determines styling
- * - isLoggedIn: Whether user is authenticated
- * - hasStoreCredit: Whether user has available store credit
- * - shippingConfig: Free shipping threshold configuration
- *
- * @state
- * - Order note value with debounced save (local state + fetcher)
- *
- * @dependencies
- * - CartForm: Shopify cart action forms (Hydrogen)
- * - useNetworkStatus: Detects online/offline status
- * - Money: Currency formatting component
- * - Progress: Free shipping progress bar (shadcn)
- * - useFetcher: React Router fetcher for non-blocking submissions
- *
- * @free-shipping-logic
- * - Calculates progress: (subtotal / threshold) * 100
- * - Shows remaining amount needed
- * - Milestone markers at 25%, 50%, 75%
- * - Celebration animation when unlocked (bounce, pulse, glow)
- * - Encouraging message when close (70%+ progress)
- * - Different styling for page vs aside (success vs success-on-dark)
- * - Loading state: replaces amount with "Calculating..." + spinner during cart mutations
- * - Progress bar dims (opacity-50) during recalculation to signal pending state
- * - "Almost there" message hidden during mutations to avoid stale encouragement
- *
- * @offline-handling
- * - useNetworkStatus hook for real-time detection
- * - Checkout button disabled when offline
- * - Warning message with WifiOff icon above button
- * - Prevents checkout attempts that would fail
- * - Cart actions (add/remove) also disabled
- *
- * @architecture
- * Main component: CartSummary - wrapper with layout switching
- * Sub-components:
- * - FreeShippingProgress: Animated progress tracker
- * - CartCheckoutActions: Checkout button with offline detection
- * - CartOrderNote: Debounced note textarea
- *
- * @accessibility
- * - Proper labels on all inputs
- * - Loading states indicated visually and in text
- * - 44px minimum touch targets
- * - Color not sole indicator (icons + text)
- * - ARIA labels on interactive elements
+ * Adapts layout for `"page"` (two-column) and `"aside"` (drawer) modes. Key behaviors:
+ * - Free shipping progress bar dims + shows "Calculating..." during cart mutations
+ * - "Almost there" message suppressed during mutations to avoid stale encouragement
+ * - Order note debounced 800ms before save
+ * - Checkout button disabled when offline (WifiOff warning shown above)
  *
  * @related
  * - ~/lib/shipping.ts - Free shipping calculations
- * - ~/routes/cart.tsx - Cart action handlers
- * - CartForm (Hydrogen) - Form submissions
- * - Money.tsx - Price formatting with currency symbol
- * - useNetworkStatus - Online/offline detection hook
  * - CartMain.tsx - Renders CartSummary with props
+ * - CartForm (Hydrogen) - Form submissions
  */
 
 import type {CartSummaryProps} from "types";

@@ -20,10 +20,8 @@ const DEFAULT_STRUCTURED_LINKS: NonNullable<AgentFallbackBannerProps["structured
 /**
  * Full-page interstitial shown when an agent lands on an interactive route
  * (quiz, editorial experience) that cannot be navigated programmatically.
- *
- * Design — SF002 structured subheadings: font-mono, divide-y vertical list,
- * max-w-2xl centered. Full-page rather than a strip so the agent gets clear
- * routing guidance without attempting to parse the inaccessible UI beneath.
+ * Full-page rather than a strip so the agent gets clear routing guidance
+ * without attempting to parse the inaccessible UI beneath.
  *
  * Emits `fallback_shown` observability event on mount (console.log path only;
  * AGENT_ANALYTICS binding is server-only and unavailable here).

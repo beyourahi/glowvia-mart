@@ -1,129 +1,19 @@
 /**
- * @fileoverview Collection Page Layout Component
+ * @fileoverview Collection Page Layout with sidebar, view options, and responsive grid.
  *
- * @description
- * Comprehensive layout system for collection and product listing pages with integrated
- * sidebar navigation, view controls, and responsive grid management. Provides consistent
- * UI patterns for all product browsing experiences (collections, all products, sale page).
+ * Shared by collections, all-products, and the sale page. Key design choices:
+ * - Sort via URL params (server-side, SEO-friendly); grid columns + layout mode in localStorage
+ * - Grid columns auto-constrain on resize (4-col → 3-col on tablet, etc.)
+ * - `mapSortToCollectionSortKey` uses `CREATED`; `mapSortToProductSortKey` uses `CREATED_AT`
+ *   (different field names across Collection vs root Products GraphQL queries)
  *
- * @components
- * - CollectionPageLayout - Main layout with sidebar, header, and view controls
- * - ViewOptionsSelector - Pill-based UI for sort, grid columns, and layout mode selection
- *
- * @features
- * - Sticky sidebar navigation with collection links and product counts
- * - Responsive grid columns (1-4 cols) with screen size constraints
- * - Sort options: Newest, A-Z, Z-A, Price (↑/↓)
- * - Layout modes: Grid (multi-column) and List (single column)
- * - localStorage persistence for user preferences (grid columns, layout mode)
- * - URL param-based sorting for server-side sort implementation
- * - Automatic column constraint on screen resize (4-col → 3-col on tablet, etc.)
- * - Mobile: Horizontal scrollable pill carousel
- * - Desktop: Flex-wrap pill groups with visual separators
- * - Discount badge support for sale page (shows "upto X% off")
- *
- * @hooks
- * - useResponsiveGridColumns - Manages grid columns with responsive constraints
- *   - Persists preference to localStorage
- *   - Auto-adjusts on screen resize (e.g., 4-col → 3-col on tablet)
- *   - SSR-safe with hydration handling
- *
- * - useLayoutMode - Manages grid/list toggle with localStorage
- *   - Persists user preference
- *   - SSR-safe
- *
- * - useSortOption - Manages sort option via URL params
- *   - Enables server-side sorting
- *   - Resets pagination cursor on sort change
- *   - Defaults to "newest"
- *
- * @utilities
- * - mapSortToCollectionSortKey - Converts UI sort to Collection products GraphQL params
- * - mapSortToProductSortKey - Converts UI sort to root Products GraphQL params
- *   (Note: CREATED vs CREATED_AT for newest across Collection vs root Products queries)
- *
- * @props
- * CollectionPageLayout:
- * - title: string - Page heading (e.g., "All Products", "SALE")
- * - collections: CollectionWithCount[] - Sidebar collection list
- * - activeHandle: string | "all-products" | "sale" - Active collection identifier
- * - totalProductCount: number - Total products across all collections
- * - discountCount?: number - Count of discounted products (for SALE link)
- * - maxDiscount?: number - Maximum discount % (for sale badge)
- * - children: ReactNode - Product grid content
- * - gridColumns: GridColumns - Current grid column count (1-4)
- * - onGridColumnsChange: (columns) => void - Grid column change handler
- * - sortOption: SortOption - Current sort option
- * - onSortChange: (sort) => void - Sort change handler
- * - layoutMode: LayoutMode - Current layout mode (grid/list)
- * - onLayoutModeChange: (mode) => void - Layout mode change handler
- * - showSortOptions?: boolean - Whether to show sort pills (default: true)
- *
- * ViewOptionsSelector:
- * - Same as CollectionPageLayout minus title/collections/activeHandle
- *
- * @layout
- * Desktop Structure:
- * ```
- * ┌─────────────────────────────────────────────────────────┐
- * │  / Title                                       upto X% off │
- * ├────────────┬────────────────────────────────────────────┤
- * │            │  [Sort Pills] | [Grid Pills] [List]        │
- * │  Sidebar   │  ┌──────┬──────┬──────┐                   │
- * │  (sticky)  │  │ Prod │ Prod │ Prod │                   │
- * │            │  └──────┴──────┴──────┘                   │
- * └────────────┴────────────────────────────────────────────┘
- * ```
- *
- * Mobile Structure:
- * ```
- * ┌─────────────────────────────────────────┐
- * │  / Title                      upto X% off │
- * │  <──────── Pills Carousel ───────>       │
- * │  ┌──────┬──────┐                         │
- * │  │ Prod │ Prod │                         │
- * │  └──────┴──────┘                         │
- * └─────────────────────────────────────────┘
- * ```
- *
- * @styling
- * - Page header: Large serif title ("/") with optional discount badge
- * - Sidebar: Desktop only, sticky at top-24, 240-288px width
- * - View options: Always visible pills (no dropdown)
- * - Pill buttons: 44px touch target on mobile, border-2 border-primary
- * - Mobile carousel: snap-scroll with horizontal scrollbar hidden
- * - Visual separators: 1px vertical lines between pill groups
- *
- * @responsive
- * Grid Column Constraints:
- * - Mobile (< 768px): 1-2 columns
- * - Tablet (768-1024px): 2-3 columns
- * - Desktop (≥ 1024px): 2-4 columns
- *
- * Sidebar:
- * - Hidden on mobile (md:hidden)
- * - Visible on desktop with sticky positioning
- *
- * @dependencies
- * - react-router: useSearchParams, useNavigate for URL-based sort
- * - ~/components/CollectionSidebar: Sidebar navigation component
- * - ~/lib/gridColumns: Grid column utilities and constraints
- * - ~/hooks/useScreenSize: Responsive breakpoint detection
+ * Exported hooks: `useResponsiveGridColumns`, `useLayoutMode`, `useSortOption`
+ * Exported utilities: `mapSortToCollectionSortKey`, `mapSortToProductSortKey`
  *
  * @related
- * - CollectionSidebar.tsx - Sidebar component with collection links
- * - routes/collections.$handle.tsx - Uses layout for collection pages
- * - routes/collections.all.tsx - Uses layout for all products
- * - routes/sale.tsx - Uses layout for sale page
- * - lib/gridColumns.ts - Grid column logic and constraints
- *
- * @architecture
- * This component implements the "view options as pills" pattern established in the design system.
- * Sort options modify URL params for server-side sorting (important for SEO and initial page load).
- * Grid columns and layout mode are client-side only (localStorage) for instant UI response.
- *
- * The responsive grid column system automatically constrains user preferences to valid options
- * for the current screen size, preventing invalid states (e.g., 4-col on mobile).
+ * - CollectionSidebar.tsx - Sidebar navigation component
+ * - routes/collections.$handle.tsx, routes/collections.all.tsx, routes/sale.tsx
+ * - lib/gridColumns.ts - Grid column constraints
  */
 import * as React from "react";
 import {useSearchParams, useNavigate} from "react-router";

@@ -1,54 +1,15 @@
 /**
- * @fileoverview Add to cart button with price display and offline detection
+ * @fileoverview Add to cart button with price display and offline detection.
  *
- * @description
- * Primary CTA button for adding products to cart. Displays price with sale comparison,
- * handles cart line submission via Shopify CartForm, and disables when offline.
- *
- * @features
- * - Price display on the left (current + compare-at strikethrough if on sale)
- * - Button text on the right (custom children or default)
- * - Offline detection with disabled state and icon
- * - Loading state during cart submission
- * - Sale price highlighting (strikethrough compare-at)
- * - Optional analytics tracking
- * - Hover and active state transitions
- * - Responsive font sizing
- *
- * @props
- * - analytics: Optional analytics data to track with cart addition
- * - children: Button text (e.g., "Get it now", "Sold out", "Subscribe now")
- * - disabled: External disabled state (e.g., out of stock, no variant selected)
- * - lines: Cart lines to add (merchandise ID, quantity, selling plan)
- * - onClick: Optional callback when button is clicked
- * - price: Current price to display
- * - compareAtPrice: Original price for sale comparison
- *
- * @state
- * - Fetcher state from CartForm (idle/submitting/loading)
- * - Online status from useNetworkStatus
- *
- * @disabled-conditions
- * Button is disabled when:
- * 1. Explicitly disabled via prop (e.g., out of stock)
- * 2. Cart submission in progress (fetcher not idle)
- * 3. Device is offline (no network connection)
- *
- * @offline-behavior
- * - Shows "Offline" text with WifiOff icon
- * - Displays helper text below button
- * - Prevents cart submission attempts
- *
- * @sale-logic
- * - Compares compareAtPrice with price
- * - Shows strikethrough original price if on sale
- * - Uses smaller font size for compare-at
+ * Shows current price (+ strikethrough compare-at when on sale) on the left and
+ * button text on the right. Disabled when offline (shows WifiOff icon + helper text),
+ * when a cart mutation is in flight, or via the `disabled` prop. Handles bfcache
+ * restore (back navigation from checkout) via a `pageshow` listener.
  *
  * @related
  * - ProductForm.tsx - Primary usage location
  * - CartForm (Hydrogen) - Cart submission handling
  * - Money.tsx - Price formatting
- * - useNetworkStatus - Offline detection
  */
 
 import {useState, useEffect} from "react";
@@ -60,10 +21,6 @@ import {Money} from "~/components/Money";
 import {useNetworkStatus} from "~/hooks/useNetworkStatus";
 import {WifiOff} from "lucide-react";
 import {Button} from "~/components/ui/button";
-
-// =============================================================================
-// ADD TO CART BUTTON
-// =============================================================================
 
 export function AddToCartButton({
     analytics,

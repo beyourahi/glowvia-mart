@@ -1,3 +1,11 @@
+/**
+ * @fileoverview PDP order summary panel — unit price × quantity with savings row and cart context.
+ *
+ * Reads the deferred `cart` promise from the root loader via `useRouteLoaderData` to show
+ * the existing cart total alongside the new item. The "Total" label becomes "New Total"
+ * when an existing cart is present, so the buyer sees their full updated cost before adding.
+ */
+
 import {Suspense} from "react";
 import {Await, useRouteLoaderData} from "react-router";
 import {ShoppingCart} from "lucide-react";

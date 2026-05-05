@@ -1,10 +1,32 @@
+/**
+ * @fileoverview Agent Bearer Token Verification
+ *
+ * Verifies JWT bearer tokens presented by AI agents at the authenticated MCP endpoint.
+ * Implements a staged validation pipeline:
+ * 1. Structure check — must be a 3-part JWT
+ * 2. Expiry — rejects tokens past their `exp` claim
+ * 3. Audience — validates the `aud` claim when `expectedAudience` is configured
+ * 4. JWKS — fetches the issuer's public keys (cached in-memory via jwks-cache)
+ * 5. Signature — verifies via `crypto.subtle.verify` (Web Crypto API)
+ *
+ * Permissive mode: when `permissive: true`, tokens are accepted without JWKS
+ * signature verification (useful during early integration / local dev). A console
+ * warning is emitted so permissive mode is never silent.
+ */
+
 import type {AgentJwtClaims} from "./types";
 import {getJwks} from "./jwks-cache";
 
+/**
+ * Result of bearer token verification.
+ * On failure, `reason` is a short enum-style string (never free-text input)
+ * suitable for observability logging and debugging.
+ */
 export type AgentBearerResult =
     | {ok: true; claims: AgentJwtClaims}
     | {ok: false; reason: string};
 
+/** Decode a base64url-encoded segment into a raw byte array. */
 function base64urlDecode(input: string): Uint8Array {
     const base64 = input.replace(/-/g, "+").replace(/_/g, "/");
     const padded = base64.padEnd(base64.length + (4 - base64.length % 4) % 4, "=");
@@ -16,12 +38,14 @@ function base64urlDecode(input: string): Uint8Array {
     return bytes;
 }
 
+/** Decode a base64url segment and parse it as JSON. */
 function decodeJson(base64url: string): Record<string, unknown> {
     const bytes = base64urlDecode(base64url);
     const text = new TextDecoder().decode(bytes);
     return JSON.parse(text) as Record<string, unknown>;
 }
 
+/** Map a JWK key type (and curve) to the Web Crypto import algorithm descriptor. */
 function resolveAlgorithm(kty: string, crv?: string): RsaHashedImportParams | EcKeyImportParams {
     if (kty === "RSA") {
         return {name: "RSASSA-PKCS1-v1_5", hash: "SHA-256"};
@@ -32,6 +56,15 @@ function resolveAlgorithm(kty: string, crv?: string): RsaHashedImportParams | Ec
     throw new Error(`Unsupported key type: kty=${kty} crv=${crv ?? "none"}`);
 }
 
+/**
+ * Verify a JWT bearer token presented by an AI agent.
+ *
+ * @param token - Raw bearer token string (without "Bearer " prefix)
+ * @param opts.jwksUrl - JWKS endpoint URL for signature verification; omit to skip crypto check
+ * @param opts.expectedAudience - Required `aud` claim value; set `""` to skip audience check
+ * @param opts.permissive - When true, accepts tokens without JWKS verification (dev/integration mode)
+ * @returns Verification result with decoded claims on success, or a reason string on failure
+ */
 export async function verifyAgentBearer(
     token: string,
     opts: {jwksUrl?: string; expectedAudience: string; permissive: boolean}

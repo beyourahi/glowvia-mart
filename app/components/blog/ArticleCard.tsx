@@ -1,35 +1,12 @@
 /**
- * @fileoverview Article Card Component
+ * @fileoverview Article card for blog listings — three layout variants with staggered animations.
  *
- * @description
- * Reusable card component for displaying blog articles in various layouts. Supports three
- * distinct visual variants (default, featured, compact) with responsive design and staggered
- * animations. Handles article images, excerpts, tags, metadata, and reading time calculations.
- *
- * @features
- * - Three visual variants: default (grid), featured (hero), compact (list)
- * - Staggered fade-in animations for smooth list rendering
- * - Responsive image loading with aspect ratio variants per layout
- * - Reading time calculation from article content
- * - Tag display with customizable limits
- * - Author and metadata display
- * - Hover effects and transitions
- * - Prefetch optimization for viewport-visible links
- *
- * @props
- * - article: ArticleCardData - Complete article data from Shopify Blog API
- * - loading: "eager" | "lazy" - Image loading strategy for performance
- * - variant: "default" | "featured" | "compact" - Visual layout variant
- * - index: number - Position in list for staggered animation timing
- * - className: string - Additional Tailwind classes
- * - showTags: boolean - Toggle tag display (default: true)
- * - showReadingTime: boolean - Toggle reading time (default: true)
- * - showAuthor: boolean - Toggle author name (default: false)
+ * Variants: `"default"` (grid), `"featured"` (hero), `"compact"` (list).
+ * Use `index` for staggered fade-in timing. `showTags`, `showReadingTime`, `showAuthor`
+ * are opt-in display toggles (defaults: true, true, false).
  *
  * @related
  * - ~/lib/blog-utils - Date formatting, reading time calculation, HTML stripping
- * - ~/components/blog/TagBadge - Tag rendering component
- * - ~/routes/blogs.$blogHandle.$articleHandle - Article detail page
  * - ~/routes/blogs.$blogHandle._index - Blog listing page
  */
 

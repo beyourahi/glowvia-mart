@@ -1,39 +1,14 @@
 /**
- * @fileoverview Related Articles Carousel Component
+ * @fileoverview Deferred horizontal carousel of related blog articles.
  *
- * @description
- * Displays a horizontal scrollable carousel of related blog articles with deferred
- * loading and skeleton states. Uses Embla Carousel with wheel gesture support for
- * smooth desktop scrolling. Handles async article data with React Router's Await
- * component for streaming server data.
- *
- * @features
- * - Deferred data loading with Suspense boundaries
- * - Horizontal scrollable carousel with drag support
- * - Responsive breakpoints: 80% mobile → 22% 2xl desktop
- * - Skeleton loading states during data fetch
- * - Limited to 8 articles maximum for performance
- * - Eager loading for first 4 items, lazy for remainder
- * - Loop and dragFree carousel options
- * - Negative margin technique for full-bleed mobile scrolling
- *
- * @props
- * - articles: Promise<ArticleCardData[] | null> - Deferred articles promise
- * - title: string - Section heading (default: "Related Articles")
- * - className: string - Additional Tailwind classes
- *
- * @architecture
- * Uses React Router's data loading pattern:
- * 1. Loader returns deferred promise
- * 2. Component renders immediately with Suspense fallback
- * 3. Await resolves promise and renders content
- * 4. Skeleton replaced with actual cards
+ * Accepts a `Promise<ArticleCardData[] | null>` so it can render with a skeleton
+ * immediately while the loader streams data in. Capped at 8 articles; first 4
+ * are eager-loaded for LCP, remainder are lazy. Uses negative margin for
+ * full-bleed mobile scrolling.
  *
  * @related
  * - ~/components/blog/ArticleCard - Card rendering in carousel
- * - ~/components/ui/carousel - Embla Carousel wrapper
  * - ~/routes/blogs.$blogHandle.$articleHandle - Article detail page loader
-
  */
 
 import {Suspense} from "react";

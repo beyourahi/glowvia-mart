@@ -49,6 +49,15 @@ type ObservabilityEnv = {
     AGENT_ANALYTICS?: AnalyticsEngineDataset;
 };
 
+/**
+ * Emit an agent observability event to both console (JSON) and the Analytics Engine binding.
+ *
+ * Catches all errors internally — observability must never interrupt a request.
+ * The Analytics Engine path is skipped when `AGENT_ANALYTICS` is not bound (e.g. local dev).
+ *
+ * @param env - Workers environment bindings (only `AGENT_ANALYTICS` is accessed)
+ * @param event - Structured event payload (see `AgentEvent` type for allowed fields)
+ */
 export function emitAgentEvent(
     env: ObservabilityEnv | null | undefined,
     event: AgentEvent

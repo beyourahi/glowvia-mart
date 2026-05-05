@@ -79,6 +79,14 @@ type ProductCardData = {
     maxDiscountSavings: number;
 };
 
+/**
+ * @fileoverview Pre-order Product Detection
+ *
+ * Detects pre-order products by checking for a `preorder` tag (case-insensitive,
+ * with hyphen/space normalization). Used by the PDP and product cards to swap
+ * the "Add to Bag" CTA for a "Pre-order" label.
+ */
+
 const normalizeTag = (tag: string): string => {
     return tag.toLowerCase().replace(/[-\s]/g, "");
 };

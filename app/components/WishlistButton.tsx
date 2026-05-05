@@ -1,179 +1,23 @@
 /**
- * @fileoverview Wishlist Button Component
+ * @fileoverview Wishlist heart toggle button with celebration animations and undo toasts.
  *
- * @description
- * Interactive heart button for toggling product wishlist status with celebration
- * animations, toast notifications, and undo functionality. Supports multiple visual
- * variants and prevents event bubbling for use within clickable product cards.
+ * Variants: `floating` (image overlay), `inline`, `outline`, `primary-outline` (matches
+ * variant pill UI). Sizes: `sm`, `default`, `lg`. Prevents event bubbling — safe inside
+ * `<Link>` and product cards. Disabled while SSR-hydrating to prevent mismatch.
  *
- * @components
- * - WishlistButton - Main heart toggle button with animations
- * - WishlistToggle - Simplified inline variant (no background)
+ * Animation sequence on add: heart-pop (600ms) → burst-ring → heart-glow (2s) → heart-beat.
+ * Remove shows a 4s toast with undo action; add shows a 2s confirmation toast.
  *
- * @features
- * - Animated heart fill with pop effect on add
- * - Burst ring animation radiating from button on add
- * - Continuous heartbeat animation when in wishlist
- * - Glow effect for 2s after adding
- * - Breathing animation on parent hover for discoverability (animateOnParentHover)
- * - Enhanced touch targets (min 36-44px) for WCAG 2.5.5 compliance
- * - Subtle inactive fill (fill-primary/10) for better visual weight
- * - Glassmorphic floating variant with ring border for image contrast
- * - Toast notifications with undo functionality
- * - Event bubbling prevention (safe inside Link/clickable cards)
- * - SSR-safe with hydration mismatch prevention
- * - Multiple visual variants: floating, inline, outline, primary-outline
- * - Size variants: sm, default, lg
- * - Disabled state while hydrating
+ * WCAG contrast:
+ * - Inactive (--primary on white): 14.68:1 (AAA) ✓
+ * - Active (--wishlist-active #e63946 on white): 4.15:1 (WCAG 1.4.11 for icons) ✓
  *
- * @props
- * WishlistButton:
- * - productId: string - Full Shopify GID (e.g., "gid://shopify/Product/123")
- * - productTitle?: string - Product name for toast notifications
- * - className?: string - Additional CSS classes
- * - size?: "sm" | "default" | "lg" - Button size variant
- * - variant?: "floating" | "inline" | "outline" | "primary-outline"
- * - animateOnParentHover?: boolean - Enable breathing animation on parent hover
- *
- * WishlistToggle:
- * - productId: string - Full Shopify GID
- * - productTitle?: string - Product name for toast
- * - className?: string - Additional CSS classes
- * (Hardcoded to variant="inline" size="default")
- *
- * @variants
- * Visual Variants:
- * - floating: White background with blur, shadow (for overlays on images)
- * - inline: Transparent, minimal hover state (for inline text)
- * - outline: Border with background, structured look
- * - primary-outline: Matches variant options button styling
- *   - Active: filled bg-primary (like selected variant)
- *   - Inactive: outline only (like unselected variant)
- *
- * Size Variants:
- * - sm: p-1.5, icon size-4
- * - default: p-2, icon size-5
- * - lg: p-2.5, icon size-6
- *
- * primary-outline (special):
- * - min-h-10 min-w-10 for consistent touch target
- * - border-2 border-primary (always)
- * - Active: bg-primary text-primary-foreground
- * - Inactive: text-primary hover:bg-primary
- *
- * @animations
- * Heart States:
- * 1. Default: fill-transparent, stroke only
- * 2. Hover (not in wishlist): scale-105
- * 3. Adding: animate-heart-pop (scale bounce)
- * 4. Added: fill-current (for primary-outline) or fill-red-500 (other variants)
- * 5. In wishlist (idle): animate-heart-beat (continuous subtle pulse)
- * 6. Just added: animate-heart-glow (2s soft glow effect)
- *
- * Button Animations:
- * - active:scale-90/95 on click
- * - animate-burst-ring when adding (radiating ring effect)
- *
- * Animation Timing:
- * - Pop animation: 600ms (setIsAnimating timeout)
- * - Glow effect: 2000ms (setJustAdded timeout)
- * - Heartbeat: continuous when in wishlist
- *
- * @behavior
- * Click Handler:
- * 1. Prevent default + stop propagation (safe in Link)
- * 2. Check current wishlist state
- * 3. Toggle in wishlist context
- * 4. If adding: trigger animations (pop, burst, glow)
- * 5. Show toast notification
- * 6. If removing: show undo action in toast
- *
- * Undo Functionality:
- * - Extract numeric ID from GID
- * - Pass to restore() function in context
- * - Show confirmation toast on restore
- *
- * Hydration Safety:
- * - Disabled until isHydrated is true
- * - Prevents SSR mismatch errors
- * - Uses safe hook (useWishlistSafe) that handles missing context
- *
- * @toast_notifications
- * Added:
- * - Success toast with product title
- * - Duration: 2000ms
- *
- * Removed:
- * - Success toast with undo action
- * - Duration: 4000ms (longer for undo)
- * - Undo button calls restore() and shows confirmation
- *
- * @styling
- * Base (all variants):
- * - rounded-full
- * - transition-all duration-200
- * - focus-visible:ring-2 ring-primary ring-offset-2
- * - disabled:opacity-50 cursor-not-allowed
- *
- * Inactive State (non-primary-outline):
- * - Heart: fill-transparent text-primary
- * - Color: Uses --primary token (#1f1f1f) - consistent with CTA system
- * - Contrast: 14.68:1 on white background (WCAG AAA) ✓
- *
- * Active State (non-primary-outline):
- * - shadow-md shadow-wishlist-active/20 when in wishlist
- * - Heart: fill-wishlist-active text-wishlist-active scale-110
- * - Color: Uses --wishlist-active token (#e63946 warm red)
- * - Contrast: 4.15:1 on white background (WCAG 1.4.11 for icons) ✓
- *
- * Active State (primary-outline):
- * - bg-primary text-primary-foreground (matches selected variant option)
- * - Heart: fill-current (inherits text color)
- *
- * @accessibility
- * - Semantic button with type="button"
- * - aria-label: "Add to wishlist" or "Remove from wishlist"
- * - aria-pressed: boolean (true when in wishlist)
- * - Disabled state during hydration
- * - Clear visual feedback on state changes
- *
- * @dependencies
- * - react: useState, useEffect for animation state
- * - lucide-react: Heart icon
- * - sonner: toast notifications
- * - ~/lib/wishlist-context: useWishlistSafe hook
- * - ~/lib/wishlist-utils: extractNumericId for undo
+ * `WishlistToggle` is a simplified alias hardcoded to `variant="inline" size="default"`.
  *
  * @related
- * - WishlistCount.tsx - Badge showing wishlist count
  * - lib/wishlist-context.tsx - Wishlist state management
  * - lib/wishlist-utils.ts - ID extraction and utilities
  * - ProductItem.tsx - Uses WishlistButton in product cards
- * - Header.tsx - Uses WishlistButton in navigation
- *
- * @usage_example
- * ```tsx
- * // Floating variant on product card image
- * <WishlistButton
- *   productId={product.id}
- *   productTitle={product.title}
- *   variant="floating"
- *   size="default"
- * />
- *
- * // Primary outline variant (matches UI)
- * <WishlistButton
- *   productId={product.id}
- *   productTitle={product.title}
- *   variant="primary-outline"
- * />
- *
- * // Simplified inline toggle
- * <WishlistToggle
- *   productId={product.id}
- *   productTitle={product.title}
- * />
- * ```
  */
 
 import {useState, useEffect, useCallback} from "react";

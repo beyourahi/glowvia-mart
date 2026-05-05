@@ -40,10 +40,6 @@ import {useLocation} from "react-router";
 import {useMemo} from "react";
 import type {SelectedOption} from "@shopify/hydrogen/storefront-api-types";
 
-// =============================================================================
-// HOOKS
-// =============================================================================
-
 /**
  * Hook to generate a variant URL for the current product.
  *
@@ -67,8 +63,9 @@ import type {SelectedOption} from "@shopify/hydrogen/storefront-api-types";
 export function useVariantUrl(handle: string, selectedOptions?: SelectedOption[]) {
     const {pathname} = useLocation();
 
-    // Memoize to avoid recomputing on every render when handle/selectedOptions haven't changed.
-    // selectedOptions is serialized to a string key so the memo detects content changes.
+    // selectedOptions is an array, so we serialize it for stable memo comparison.
+    // Using JSON.stringify as the dep key means the memo fires on content changes
+    // without needing to spread array items individually.
     return useMemo(
         () =>
             getVariantUrl({
@@ -77,14 +74,10 @@ export function useVariantUrl(handle: string, selectedOptions?: SelectedOption[]
                 searchParams: new URLSearchParams(),
                 selectedOptions
             }),
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- JSON.stringify(selectedOptions) is intentional; selectedOptions object identity changes on every render
         [handle, pathname, JSON.stringify(selectedOptions)]
     );
 }
-
-// =============================================================================
-// UTILITY FUNCTIONS
-// =============================================================================
 
 /**
  * Constructs a product variant URL with selected options as query parameters.

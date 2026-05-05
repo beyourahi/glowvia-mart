@@ -1,3 +1,18 @@
+/**
+ * @fileoverview Catalog extension metadata display — gift card, digital, subscription, and collection badges.
+ *
+ * Renders a `<ul>` of product attribute signals derived from Phase 3 structured data fields
+ * (`isGiftCard`, `requiresShipping`, `sellingPlans`, `collections`). Returns null when none
+ * of these attributes are present so no empty DOM is left behind.
+ *
+ * Note: `requiresShipping === false` (strict equality) is intentional — `undefined` means
+ * the field was not queried, not that the product is digital.
+ *
+ * @related
+ * - ~/lib/agentic/structured-data.ts — Phase 3 catalog extension fields
+ * - ~/routes/products.$handle.tsx — passes extension props to this component
+ */
+
 import {Link} from "react-router";
 import {Layers, ArrowRight} from "lucide-react";
 import {Badge} from "~/components/ui/badge";
@@ -21,6 +36,7 @@ export type CatalogExtensionDisplayProps = {
     className?: string;
 };
 
+/** Renders gift card, digital, subscription plan, and "also found in" collection badges. Returns null when no extension data is present. */
 export const CatalogExtensionDisplay = ({
     isGiftCard,
     requiresShipping,

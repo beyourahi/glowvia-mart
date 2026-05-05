@@ -1,3 +1,4 @@
+/** Locale and i18n constants for the store's primary market (Bangladesh, English). */
 export const STORE_COUNTRY_NAME = "Bangladesh" as const;
 export const STORE_COUNTRY_CODE = "BD" as const;
 export const STORE_LANGUAGE_CODE = "EN" as const;

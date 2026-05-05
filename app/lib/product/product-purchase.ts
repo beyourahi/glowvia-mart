@@ -1,3 +1,11 @@
+/**
+ * @fileoverview Product Purchase Calculation Utilities
+ *
+ * Public API for the PDP purchase flow: total price, cart projection, and
+ * quantity adjustment guards. Delegates core math to `product-calculations.ts`
+ * and wraps results in display-ready formatted strings.
+ */
+
 import {calculateProductPricing, canAdjustQuantity} from "./product-calculations";
 import {formatShopifyMoney} from "~/lib/currency-formatter";
 

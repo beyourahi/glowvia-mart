@@ -1,8 +1,25 @@
+/**
+ * @fileoverview Custom Sitemap
+ *
+ * @description
+ * Provides a sitemap for storefront routes that Shopify's generated sitemap
+ * index does not include: `/faq`, `/gallery`, `/sale`, `/changelog`, `/wishlist`.
+ * Injected into `/sitemap.xml` as an additional `<sitemap>` entry.
+ *
+ * @route GET /sitemap.custom.xml
+ *
+ * @caching Cached for 24 hours — custom URL list rarely changes.
+ *
+ * @related
+ * - [sitemap.xml].tsx - Injects this URL into the sitemap index
+ */
+
 import type {Route} from "./+types/sitemap[.]custom[.]xml";
 
 /**
- * Custom sitemap for storefront routes not covered by Shopify's generated sitemap index.
- * Referenced from /sitemap.xml so custom content pages remain crawlable.
+ * Renders the custom sitemap XML with static storefront URLs.
+ * Uses `request.url` origin so the sitemap works correctly across all deployment
+ * environments (dev, Cloudflare Workers, Oxygen).
  */
 export const loader = async ({request}: Route.LoaderArgs) => {
     const url = new URL(request.url);

@@ -72,12 +72,19 @@ export interface SocialSharePlatform {
     customHandler?: (shareData: ShareData, onSuccess?: () => void, onError?: () => void) => Promise<void>;
 }
 
-// Format price using the shared CurrencyFormatter for consistent symbol display
+/** Format a Shopify money object as a price string using the shared `CurrencyFormatter`. */
 function formatPrice(price: {amount: string; currencyCode: string}): string {
     return formatShopifyMoney(price);
 }
 
-// Create share data from product
+/**
+ * Build a `ShareData` payload from a product and its selected variant.
+ *
+ * @param product - Product fields needed for title, description, and image
+ * @param variant - Selected or first available variant (used for price)
+ * @param currentUrl - Full canonical URL of the product page
+ * @param shopName - Optional store name injected into the share message
+ */
 export function createShareData(
     product: Pick<ProductFragment, "title" | "description" | "media">,
     variant: ProductFragment["selectedOrFirstAvailableVariant"],
@@ -99,7 +106,12 @@ export function createShareData(
     };
 }
 
-// Generate URL with query parameters
+/**
+ * Append query parameters to a base URL, skipping empty values.
+ *
+ * @param baseUrl - Absolute URL to the social platform share endpoint
+ * @param params - Key/value pairs to append as search params
+ */
 export function generateShareUrl(baseUrl: string, params: Record<string, string>): string {
     const url = new URL(baseUrl);
     Object.entries(params).forEach(([key, value]) => {
@@ -110,12 +122,23 @@ export function generateShareUrl(baseUrl: string, params: Record<string, string>
     return url.toString();
 }
 
-// Generate share message
+/**
+ * Build a plain-text share message for WhatsApp and similar text-based platforms.
+ * Includes the product name, optional shop name, price, and product URL.
+ */
 export function generateShareMessage(shareData: ShareData): string {
     return `Checkout the ${shareData.title}${shareData.shopName ? ` by ${shareData.shopName}` : ""} only at ${shareData.price}\n\nProduct Link:\n${shareData.url}`;
 }
 
-// Copy to clipboard with fallback
+/**
+ * Write text to the clipboard using the Clipboard API, falling back to
+ * `document.execCommand("copy")` for browsers without async clipboard support.
+ *
+ * @param text - Text to copy
+ * @param onSuccess - Called after a successful copy
+ * @param onError - Called when all copy strategies fail
+ * @returns `true` on success, `false` on failure
+ */
 export async function copyToClipboard(text: string, onSuccess?: () => void, onError?: () => void): Promise<boolean> {
     if (typeof navigator !== "undefined" && navigator.clipboard) {
         try {
@@ -153,7 +176,11 @@ export async function copyToClipboard(text: string, onSuccess?: () => void, onEr
     return false;
 }
 
-// Check if device is mobile
+/**
+ * Heuristic check for mobile devices based on User-Agent and viewport width.
+ * Used to choose between the WhatsApp deep-link scheme (`whatsapp://`) and the
+ * web URL (`https://wa.me/`).
+ */
 export function isMobileDevice(): boolean {
     if (typeof window === "undefined") return false;
 
@@ -163,7 +190,13 @@ export function isMobileDevice(): boolean {
     );
 }
 
-// Open share window (centered popup)
+/**
+ * Open a centered browser popup for social platform share URLs.
+ * Standard 600×400 popup centered on the current screen.
+ *
+ * @param url - Platform share URL to open
+ * @param title - Popup window title (shown in the OS taskbar)
+ */
 export function openShareWindow(url: string, title: string = "Share"): void {
     const width = 600;
     const height = 400;
@@ -173,7 +206,10 @@ export function openShareWindow(url: string, title: string = "Share"): void {
     window.open(url, title, `width=${width},height=${height},left=${left},top=${top},scrollbars=yes,resizable=yes`);
 }
 
-// Track share event via API
+/**
+ * POST a share analytics event to the `/api/share/track` endpoint.
+ * Errors are silently swallowed — analytics must never break the share flow.
+ */
 export async function trackShareEvent(analytics: ShareAnalytics): Promise<void> {
     try {
         await fetch("/api/share/track", {
@@ -188,7 +224,13 @@ export async function trackShareEvent(analytics: ShareAnalytics): Promise<void> 
     }
 }
 
-// Create analytics data
+/**
+ * Build a `ShareAnalytics` payload for a share event.
+ *
+ * @param platform - Platform ID (e.g. `"facebook"`, `"x"`, `"copy"`)
+ * @param productId - Shopify product GID
+ * @param productHandle - URL-friendly product handle
+ */
 export function createShareAnalytics(platform: string, productId: string, productHandle: string): ShareAnalytics {
     return {
         platform,
@@ -270,7 +312,16 @@ interface ShareDataInit {
 // SOCIAL PLATFORM ICONS
 // =============================================================================
 
-// Social platform icons as inline SVG components
+/** Platform brand colors keyed by platform ID — used by `ProductShareButton` to tint icons on hover. */
+export const PLATFORM_COLORS = {
+    facebook: "rgb(24, 119, 242)",
+    x: "rgb(0, 0, 0)",
+    whatsapp: "rgb(37, 211, 102)",
+    pinterest: "rgb(189, 8, 28)",
+    copy: "rgb(107, 114, 128)"
+} as const;
+
+// Social platform icons as inline SVG React components.
 export const FacebookIcon = ({className}: {className?: string}) => (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor">
         <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
@@ -310,16 +361,10 @@ export const LinkIcon = ({className}: {className?: string}) => (
     </svg>
 );
 
-// Platform brand colors
-export const PLATFORM_COLORS = {
-    facebook: "rgb(24, 119, 242)",
-    x: "rgb(0, 0, 0)",
-    whatsapp: "rgb(37, 211, 102)",
-    pinterest: "rgb(189, 8, 28)",
-    copy: "rgb(107, 114, 128)"
-} as const;
-
-// Get all social share platforms
+/**
+ * Return the list of supported social share platforms with their icon, URL generator,
+ * and optional custom handler. The "Copy Link" entry uses `customHandler` instead of `url`.
+ */
 export function getSocialSharePlatforms(): SocialSharePlatform[] {
     return [
         {

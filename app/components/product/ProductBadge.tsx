@@ -1,3 +1,9 @@
+/**
+ * @fileoverview Product badge primitives driven by `BADGE_CONFIG` from `lib/product-tags`.
+ * `ProductBadge` renders a single badge; `ProductBadgeStack` renders a row of them.
+ * Both return null when given unknown or empty types.
+ */
+
 import {cn} from "~/lib/utils";
 import {BADGE_CONFIG, type BadgeType} from "~/lib/product-tags";
 

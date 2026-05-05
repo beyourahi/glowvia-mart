@@ -22,20 +22,6 @@
 
 import {useBrandMarquee} from "~/lib/site-content-context";
 
-/**
- * BrandMarquee - Infinite scrolling brand words
- *
- * Animation behavior:
- * - Continuous scroll via CSS animation (animate-marquee)
- * - Runs continuously (no pause on hover/tap)
- * - Pauses for users with prefers-reduced-motion
- *
- * Responsive Features:
- * - Font size: 48px → 72px → 96px (mobile → tablet → desktop)
- * - Animation speed: 60s → 80s → 100s (faster on mobile due to smaller content width)
- * - Gap: 32px → 56px (mobile → tablet+)
- * - Accessibility: Respects prefers-reduced-motion
- */
 export function BrandMarquee() {
     const {words} = useBrandMarquee();
     if (!words || words.length === 0) return null;

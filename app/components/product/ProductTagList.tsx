@@ -1,31 +1,9 @@
 /**
- * @fileoverview Shopper-facing product tags — unified above-title badge row
+ * @fileoverview Shopper-facing product tag badges for the PDP, QuickAddSheet, and QuickAddDialog.
  *
- * @description
- * Renders filtered product tags (system tags — pin, premium, preorder, new,
- * clearance — are excluded and surfaced via ProductBadgeStack / preorder button
- * logic instead). Used as a single primitive directly above the product title
- * on the PDP, QuickAddSheet, and QuickAddDialog for consistent placement,
- * styling, spacing, and semantics across every surface.
- *
- * @placement
- * Immediately above the product title in:
- * - PDP mobile + desktop layouts
- * - QuickAddSheet header
- * - QuickAddDialog header
- *
- * @design
- * Outline pill treatment that reads as a category highlight, not metadata:
- * - rounded-full outline pills in text-primary, border on --primary
- * - font-semibold, uppercase, tracking-wide keeps each tag terse and scannable
- * - text-xs fits comfortably above titles at every breakpoint
- * - Tag icon intentionally omitted — above the title, the badges themselves
- *   are the label; a leading icon would read as a metadata footer again
- *
- * @a11y
- * - role="group" + aria-label="Product tags" identifies the region
- * - Tags render as plain Badge spans (non-interactive metadata, not filters)
- * - text-primary on transparent over --background stays within WCAG AA contrast
+ * System tags (pin, premium, preorder, new, clearance) are filtered out by
+ * `filterDisplayTags` and surfaced elsewhere via `ProductBadgeStack`. The tag icon is
+ * intentionally omitted above the title — it would read as a metadata footer.
  */
 
 import {Badge} from "~/components/ui/badge";

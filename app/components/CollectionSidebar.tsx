@@ -1,104 +1,13 @@
 /**
- * @fileoverview Collection Sidebar Component
+ * @fileoverview Collection Sidebar — desktop-only sticky navigation for collection pages.
  *
- * @description
- * Desktop-only sticky navigation sidebar for collection pages, displaying a list of all
- * collections with product counts and highlighting the active collection. Includes special
- * "All Products" and "SALE" links.
- *
- * @components
- * - CollectionSidebar - Main navigation list (nav element)
- * - CollectionLink - Individual collection link with animated underline
- *
- * @features
- * - Sticky positioning (handled by parent CollectionPageLayout)
- * - Active collection highlighting with bold text and visible underline
- * - Hover animations: underline scales from left on hover
- * - Product count display as superscript (max 250+)
- * - Special SALE link with emerald green color (when discountCount > 0)
- * - "All Products" link shows total product count across collections
- * - Desktop only (md:block) - mobile uses different navigation pattern
- *
- * @props
- * CollectionSidebar:
- * - collections: CollectionWithCount[] - Array of collection objects
- * - activeHandle: string | "all-products" | "sale" - Currently active collection identifier
- * - totalProductCount: number - Total products for "All" link
- * - discountCount?: number - Count of discounted products (shows SALE link if > 0)
- *
- * CollectionLink (internal):
- * - href: string - Link destination
- * - title: string - Collection name
- * - count: number - Product count (displays as "250+" if ≥ 250)
- * - isActive: boolean - Whether this is the active collection
- * - isSale?: boolean - Whether this is the SALE link (for accent styling)
- *
- * @types
- * CollectionWithCount:
- * - handle: string - Collection handle (URL slug)
- * - title: string - Display name
- * - productsCount: number - Number of products in collection
- *
- * @styling
- * Link States:
- * - Default: text-primary/80 with opacity
- * - Hover: text-primary (full opacity) with underline animation
- * - Active: text-primary font-semibold with visible underline
- * - SALE variant: text-sale-text (emerald green) with same state pattern
- *
- * Underline Animation:
- * - Absolutely positioned 1px line
- * - Scales from left (origin-left) on hover
- * - Active: scale-x-100 (always visible)
- * - Inactive: scale-x-0, scales to 100 on hover
- * - Duration: 300ms ease-out
- *
- * Count Badge:
- * - Superscript (sup element) with text-sm
- * - Positioned with ml-0.5 after title
- * - Formats large counts as "250+"
- *
- * @layout
- * Sidebar is a simple vertical list (ul with space-y-1):
- * ```
- * All           (123)
- * SALE          (45)   <- Only if discountCount > 0
- * Collection 1  (20)
- * Collection 2  (15)
- * ...
- * ```
- *
- * Active collection has bold font and visible underline.
- * SALE link uses emerald green to match discount badges.
- *
- * @responsive
- * - Hidden on mobile (< md breakpoint)
- * - Visible on desktop (md:block)
- * - Parent (CollectionPageLayout) handles sticky positioning
- *
- * @dependencies
- * - react-router: Link component for navigation
- * - ~/lib/utils: cn utility for className merging
+ * Shows "All Products", an optional SALE link (when `discountCount > 0`), and all
+ * collections with product counts. Active link is bold with a persistent underline;
+ * inactive links animate the underline in from the left on hover (origin-left, 300ms).
+ * Counts cap at "250+". Sticky positioning is handled by the parent CollectionPageLayout.
  *
  * @related
- * - CollectionPageLayout.tsx - Parent component that positions sidebar
- * - routes/collections.$handle.tsx - Uses sidebar for collection pages
- * - routes/collections.all-products.tsx - Uses sidebar with activeHandle="all-products"
- * - routes/sale.tsx - Uses sidebar with activeHandle="sale"
- *
- * @accessibility
- * - Semantic nav element for screen readers
- * - Proper link hierarchy with meaningful text
- * - Count information included in link text (not aria-label)
- * - Clear visual distinction for active state
- *
- * @architecture
- * This component is purely presentational and controlled by parent.
- * The parent provides all data and active state. Sidebar uses prefetch="viewport"
- * for optimistic collection loading when links enter viewport.
- *
- * Special links ("All", "SALE") are rendered first, followed by regular collections.
- * SALE link only appears when discountCount > 0 (conditional rendering).
+ * - CollectionPageLayout.tsx - Positions the sidebar and provides its props
  */
 import {Link} from "react-router";
 import {cn} from "~/lib/utils";

@@ -1,50 +1,19 @@
 /**
- * @fileoverview Site Content React Context Provider and Hooks
+ * @fileoverview Site Content React Context Provider and Hooks.
  *
- * @description
- * React Context system for providing site-wide content from Shopify metaobjects (site_settings
- * and theme_settings) throughout the application. Offers specialized hooks for accessing
- * specific content sections with type safety and fallback defaults.
+ * Wraps the app with `SiteContentProvider` (in root.tsx) and exposes typed hooks for
+ * accessing `site_settings` and `theme_settings` metaobject data throughout the tree.
+ * Only high-value CMS-controlled content lives here — low-level UI strings are imported
+ * directly from `FALLBACK_*` constants in `metaobject-parsers.ts`.
  *
- * @architecture
- * Context Provider Pattern (Simplified - 80/20 Rule):
- * - SiteContentProvider wraps app in root.tsx
- * - Data fetched in root.tsx loader from 2 metaobjects (site_settings + theme_settings)
- * - Provides SiteSettings + ThemeConfig to all routes/components
- * - Hooks offer typed access to specific content sections
- *
- * Note: UI content hooks (useProductContent, useCartContent, etc.) have been removed.
- * Components now import FALLBACK_* constants directly from metaobject-parsers.ts.
- * This follows the 80/20 rule - only high-value, frequently-changed content
- * (brand, hero, promotions, theme) needs Shopify Admin control.
- *
- * Data Structure:
- * - SiteSettings: Brand, hero, SEO, sections, promotions, collections
- * - ThemeConfig: Fonts (sans, serif, mono) + Colors (primary, secondary, background, foreground, accent)
- *
- * Hook Variants:
- * - useSiteContent(): Full content (throws if outside provider)
- * - useSiteContentSafe(): Full content with fallback defaults
- * - useSiteSettings(): Only site settings
- * - useThemeConfig(): Only theme configuration
- * - useSocialLinks(): Social media links array
- * - useSectionHeadings(): Section heading strings
- * - useTestimonials(), useFaqItems(), useInstagramMedia(): Collections
- * - useGeneratedTheme(): Complete theme with CSS variables and fonts
- *
- * @dependencies
- * - React (createContext, useContext)
- * - TypeScript types from types/index.ts
- * - Default values from ./metaobject-parsers.ts
- * - Theme generation from ./theme-utils.ts
+ * Available hooks: `useSiteSettings`, `useThemeConfig`, `useSocialLinks`,
+ * `useSectionHeadings`, `useTestimonials`, `useFaqItems`, `useInstagramMedia`,
+ * `useGeneratedTheme`.
  *
  * @related
  * - app/root.tsx - Fetches data and wraps app with SiteContentProvider
- * - app/lib/metaobject-queries.ts - GraphQL queries for site content
- * - app/lib/metaobject-parsers.ts - Parses query results into typed objects
+ * - app/lib/metaobject-parsers.ts - Parses query results + provides FALLBACK_* constants
  * - app/lib/theme-utils.ts - Generates CSS variables from theme config
- * - app/lib/metaobject-parsers.ts - FALLBACK_* constants for UI content (import directly)
- * - app/components/* - All components can use hooks to access site content
  */
 
 import {createContext, useContext, useMemo, type ReactNode} from "react";

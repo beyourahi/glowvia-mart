@@ -104,7 +104,6 @@ import {OrderHistorySection} from "~/components/OrderHistorySection";
 import {BrandMarquee} from "~/components/BrandMarquee";
 import {ExploreCollectionsSection} from "~/components/ExploreCollectionsSection";
 import {InstagramSection} from "~/components/InstagramSection";
-// Note: AnnouncementBanner is now rendered globally in PageLayout (fixed at top on all pages)
 import {PromotionalBanner} from "~/components/PromotionalBanner";
 import {TestimonialsSection} from "~/components/TestimonialsSection";
 import {BlogSection} from "~/components/BlogSection";
@@ -137,6 +136,11 @@ import {useWishlist} from "~/lib/wishlist-context";
 // BELOW-FOLD DATA LOADERS (deferred — do not block TTFB)
 // =============================================================================
 
+/**
+ * Fetches collections used by the "Explore" section (below the fold).
+ * Returns an empty array on error so the section is simply hidden rather than
+ * causing the page to fail.
+ */
 async function loadExploreCollections(context: Route.LoaderArgs["context"]): Promise<ExploreCollectionFragment[]> {
     try {
         const response = await context.dataAdapter.query(EXPLORE_COLLECTIONS_QUERY, {
@@ -149,6 +153,14 @@ async function loadExploreCollections(context: Route.LoaderArgs["context"]): Pro
     }
 }
 
+/**
+ * Fetches recently viewed products (by ID from the cookie) and a general product
+ * list in parallel. The general list (`allProducts`) is used as a fallback when
+ * the visitor has no cookie history or the server-side lookup returns nothing.
+ *
+ * Products are returned in the original cookie order (most recently viewed first),
+ * reconstructed via a Map after the batched GID lookup.
+ */
 async function loadRecentlyViewed(
     context: Route.LoaderArgs["context"],
     cookieHeader: string | null
@@ -194,6 +206,12 @@ async function loadRecentlyViewed(
     return {products, allProducts};
 }
 
+/**
+ * Fetches the four most recent blog articles across all blogs for the homepage
+ * blog preview section. Articles from multiple blogs are merged and sorted by
+ * publish date descending before slicing to the top 4.
+ * Returns an empty array on error.
+ */
 async function loadRecentArticles(context: Route.LoaderArgs["context"]): Promise<HomepageArticle[]> {
     try {
         const blogsResponse = await context.dataAdapter.query(RECENT_BLOG_ARTICLES_QUERY, {
@@ -216,6 +234,14 @@ async function loadRecentArticles(context: Route.LoaderArgs["context"]): Promise
     return [];
 }
 
+/**
+ * Fetches the authenticated customer's order history products for the homepage
+ * "reorder" section. Returns early with `isLoggedIn: false` for anonymous visitors.
+ *
+ * After extracting products from orders, a second query resolves product handles
+ * (needed for PDP links) via a batch GID lookup. Handle resolution failures are
+ * non-fatal — products are returned without handles rather than crashing the section.
+ */
 async function loadOrderHistory(
     context: Route.LoaderArgs["context"]
 ): Promise<{products: OrderHistoryProduct[]; isLoggedIn: boolean}> {
@@ -1046,8 +1072,6 @@ const PRODUCT_HANDLES_QUERY = `#graphql
   }
 ` as const;
 
-// GraphQL query to fetch homepage shop metafields (announcement banner only)
-/// GraphQL query to fetch recent blog articles for homepage
 const RECENT_BLOG_ARTICLES_QUERY = `#graphql
   fragment HomepageArticle on Article {
     handle

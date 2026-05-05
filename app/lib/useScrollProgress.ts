@@ -1,42 +1,13 @@
 /**
- * @fileoverview Scroll Progress Tracking Hook
+ * @fileoverview Scroll progress hook — returns 0-1 ratio between `startOffset` and `endOffset`.
  *
- * @description
- * React hook for tracking scroll progress as a 0-1 ratio between start and end offsets using
- * Lenis smooth scroll values. Provides buttery-smooth scroll progress for animations, progress
- * bars, and scroll-based transitions.
- *
- * @architecture
- * Progress Calculation:
- * - Subscribes to Lenis scroll events
- * - Calculates progress as (scrollY - startOffset) / (endOffset - startOffset)
- * - Clamps result to 0-1 range
- * - Updates on every scroll frame for smooth animations
- *
- * Return Value:
- * - progress: 0-1 ratio of scroll progress
- * - scrollY: Current scroll position
- * - isComplete: True when progress reaches 1
- *
- * Use Cases:
- * - Scroll progress bars
- * - Parallax animations
- * - Scroll-triggered transitions
- * - Reading progress indicators
- *
- * Performance:
- * - Efficient: Uses Lenis RAF loop
- * - Smooth: Updates on every animation frame
- *
- * @dependencies
- * - React (useState, useEffect)
- * - types (ScrollProgressOptions, ScrollProgressResult)
- * - ./LenisProvider (useLenis hook)
+ * Subscribes to Lenis scroll events and clamps progress to [0, 1]. Returns
+ * `{ progress, scrollY, isComplete }`. Suitable for parallax, progress bars, and
+ * scroll-triggered transitions.
  *
  * @related
- * - app/lib/LenisProvider.tsx - Provides Lenis instance
- * - app/lib/useScrolled.ts - Related hook for threshold detection
- * - app/components/* - Components using scroll progress for animations
+ * - app/lib/LenisProvider.tsx - Provides the Lenis instance
+ * - app/lib/useScrolled.ts - Simpler boolean threshold detection
  */
 
 import {useState, useEffect} from "react";

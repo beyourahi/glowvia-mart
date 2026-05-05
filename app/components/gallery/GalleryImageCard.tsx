@@ -1,15 +1,11 @@
 /**
- * @fileoverview Gallery Image Card Component
- *
- * @description
- * Display-only card component for showcasing gallery images from Shopify products.
- * Features responsive aspect ratio, optimized image loading, and hover overlay that
- * reveals product information. Purely visual presentation for gallery/lookbook pages.
+ * @fileoverview Gallery image card — AVIF-optimized product image with lazy shimmer
+ * and a hover overlay revealing the product title.
  *
  * @related
- * - ~/components/gallery/GalleryGrid - Parent grid component
- * - ~/lib/gallery - Gallery data types and utilities
- * - ~/routes/gallery - Gallery route providing image data
+ * - ~/components/gallery/GalleryGrid - Parent masonry grid
+ * - ~/lib/gallery - GalleryImageData type
+ * - ~/lib/performance - buildShopifyImageUrl, getGridImageConfig
  */
 
 import {useEffect, useRef, useState} from "react";
@@ -21,18 +17,10 @@ import {parseProductTitle} from "~/lib/product";
 import {usePointerCapabilities} from "~/hooks/usePointerCapabilities";
 import {buildShopifyImageUrl, createResponsiveSizes, getGridImageConfig} from "~/lib/performance";
 
-// =============================================================================
-// TYPES
-// =============================================================================
-
 interface GalleryImageCardProps {
     image: GalleryImageData;
     index?: number;
 }
-
-// =============================================================================
-// CONSTANTS
-// =============================================================================
 
 // Candidate widths requested from Shopify's CDN. The browser picks the closest
 // match given the computed `sizes` attribute.
@@ -44,16 +32,7 @@ const MAX_COLUMNS = 5;
 
 const RESPONSIVE_SIZES = createResponsiveSizes(2, 3, 5);
 
-// =============================================================================
-// COMPONENT
-// =============================================================================
-
-/**
- * GalleryImageCard - Individual image card with hover overlay for product info.
- *
- * @param image - Gallery image data (url, dimensions, product/collection info)
- * @param index - Card position in the grid (used for loading priority)
- */
+/** Gallery image card with AVIF delivery, lazy shimmer, and hover product overlay. */
 export function GalleryImageCard({image, index = 0}: GalleryImageCardProps) {
     const {canHover} = usePointerCapabilities();
     const {primary, secondary} = parseProductTitle(image.productTitle);

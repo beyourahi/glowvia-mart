@@ -1,3 +1,37 @@
+/**
+ * @fileoverview Cart Route
+ *
+ * @description
+ * Handles all CartForm mutations via the `action` and renders the full-page cart
+ * view exclusively for AI agent sessions.
+ *
+ * Normal browser navigation to `/cart` redirects to "/" — the cart UI lives in
+ * the aside drawer managed by the root layout. The full cart page is only rendered
+ * when `cart.$lines.tsx` detected an agent arrival and wrote a session key.
+ *
+ * @route POST /cart (CartForm mutations)
+ * @route GET /cart (page view — agent sessions only)
+ *
+ * @architecture
+ * Action: dispatches CartForm mutations (add/update/remove lines, discount codes,
+ * gift cards, buyer identity, note). Returns UCP JSON when the request carries
+ * agent headers; otherwise returns cart data with a 303 redirect when `redirectTo`
+ * is present (used by BuyNowButton).
+ *
+ * Loader: detects agent session via `agentSessionId` session key and either
+ * returns cart data (agent sessions) or issues a 302 redirect to "/" (browsers).
+ *
+ * @security
+ * The `redirectTo` field is validated: only `__checkout_url__` and relative paths
+ * starting with "/" (but not "//") are accepted to prevent open-redirect attacks.
+ *
+ * @related
+ * - cart.$lines.tsx - Cart permalink handler that creates the agent session
+ * - components/cart/CartMain.tsx - Cart UI component (includes AgentArrivalBanner)
+ * - components/cart/AgentCartView.tsx - Agent-native cart rendering
+ * - lib/cart-utils.ts - CART_FETCHER_KEY, useCartMutationPending, useLineItemMutating
+ */
+
 import {data, type HeadersFunction} from "react-router";
 import {Suspense} from "react";
 import {Await, useRouteLoaderData} from "react-router";
@@ -17,6 +51,14 @@ export const meta: Route.MetaFunction = () => [
 
 export const headers: HeadersFunction = ({actionHeaders}) => actionHeaders;
 
+/**
+ * Dispatches CartForm mutations and returns updated cart data.
+ *
+ * For agent requests (identified by `isAgentRequest()`): returns UCP JSON with
+ * `application/x-ucp+json` content type, using 422 on cart errors.
+ * For browser requests: sets cart ID cookie and optionally redirects to
+ * `redirectTo` destination (validated against open-redirect attack vectors).
+ */
 export const action = async ({request, context}: Route.ActionArgs) => {
     const {cart} = context;
 

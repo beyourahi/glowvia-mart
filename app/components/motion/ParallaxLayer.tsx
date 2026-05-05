@@ -1,3 +1,14 @@
+/**
+ * @fileoverview Lenis-driven parallax container — translates content relative to scroll position.
+ *
+ * Amplitude controls how many pixels the content travels as the container crosses the viewport
+ * midpoint. `scale` pre-scales content to hide the overflow gap left by the translation.
+ * Both effects are disabled at zero amplitude (mobile, reduced-motion, or explicit mobileAmplitude=0).
+ *
+ * @related
+ * - ~/lib/LenisProvider.tsx — `useLenisScroll` scroll event source
+ */
+
 import {useCallback, useEffect, useRef, useState, type ReactNode} from "react";
 import {useLenisScroll} from "~/lib/LenisProvider";
 import {cn} from "~/lib/utils";
@@ -16,6 +27,13 @@ type ParallaxLayerProps = {
 
 const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
 
+/**
+ * Wraps children in a parallax container driven by Lenis scroll events.
+ *
+ * @param amplitude - Max vertical translation in px at desktop (default 24)
+ * @param mobileAmplitude - Max translation on mobile/coarse-pointer devices (default 0 = disabled)
+ * @param scale - Content scale factor to fill the overflow gap; only applied when amplitude > 0
+ */
 export function ParallaxLayer({
     children,
     className,

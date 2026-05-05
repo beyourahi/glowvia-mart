@@ -1,4 +1,13 @@
-// Known AI surface referrer domains — mapped to their utm_source values
+/**
+ * @fileoverview AI Traffic Attribution
+ *
+ * Server-side detection of AI-originated traffic from request headers and URL params.
+ * Used by the root loader to set `AgentSurface` and by analytics to segment AI-driven
+ * sessions. The attribution is injected as UTM params onto outbound checkout URLs so
+ * the signal persists through the Shopify checkout funnel.
+ */
+
+/** Known AI surface referrer domains — mapped to their utm_source values. */
 const AI_REFERRER_MAP: Record<string, string> = {
     "chatgpt.com": "chatgpt",
     "chat.openai.com": "chatgpt",
@@ -18,6 +27,7 @@ export interface AiAttribution {
     utmCampaign: string;
 }
 
+/** Zero-value attribution returned for non-AI requests. Avoids allocating a new object per request. */
 const EMPTY: AiAttribution = {
     isAiReferrer: false,
     utmSource: "",

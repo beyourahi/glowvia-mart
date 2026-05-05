@@ -1,102 +1,17 @@
 /**
- * @fileoverview Infinite Scroll Section Component (Hydrogen Pattern)
+ * @fileoverview Hydrogen Pagination-based infinite scroll using react-intersection-observer.
  *
- * @description
- * Official Shopify Hydrogen-based infinite scroll implementation using the Pagination
- * component with react-intersection-observer. Provides automatic pagination by navigating
- * to next page URL when "Load more" link enters viewport. Uses replace mode to preserve
- * browser history.
+ * Navigates to the next page URL (replace mode, no scroll reset) when the NextLink sentinel
+ * enters the viewport. Preferred over InfiniteScrollGrid for new work — cleaner API via
+ * Hydrogen's Pagination component and better SSR support via the GraphQL Connection pattern.
+ * New items animate in with a 50ms stagger (max 8 items). Generic: `T extends {id: string}`.
  *
- * @components
- * - InfiniteScrollSection<T> - Main infinite scroll wrapper
- * - PaginationContent<T> - Internal render component (allows hooks usage)
- * - ItemsGrid<T> - Internal grid with auto-navigation logic
- *
- * @features
- * - Auto-loads when "Load more" link enters viewport (configurable threshold)
- * - Browser history-friendly: uses navigate replace mode
- * - Staggered fade-in animations for newly loaded items (50ms stagger, max 8 items)
- * - Optional skeleton placeholders during loading
- * - Optional end state message when all items loaded
- * - Hidden "Previous" link for accessibility (supports back navigation)
- * - Compatible with any GraphQL Connection pattern
- * - Generic implementation: works with products, articles, etc.
- *
- * @props
- * InfiniteScrollSection:
- * - connection: Connection<T> - GraphQL connection (nodes + pageInfo)
- * - resourcesClassName?: string - CSS class for grid container
- * - children: (props: {node, index}) => ReactNode - Render function per item
- * - showSkeletons?: boolean - Show skeleton placeholders (default: false)
- * - skeletonCount?: number - Number of skeleton items (default: 4)
- * - renderSkeleton?: () => ReactNode - Custom skeleton component
- * - endMessage?: string - Message when all items loaded (pass "" to hide)
- * - threshold?: string - Intersection Observer rootMargin (default: "200px")
- *
- * @types
- * Connection<T>:
- * - nodes: T[] - Array of items
- * - pageInfo: PageInfo - Pagination metadata
- *   - hasNextPage: boolean
- *   - hasPreviousPage: boolean
- *   - startCursor?: string | null
- *   - endCursor?: string | null
- *
- * Generic Constraint:
- * - T extends {id: string} - Items must have unique ID
- *
- * @behavior
- * Official Hydrogen Pattern:
- * 1. Pagination component manages state (nodes, isLoading, NextLink, etc.)
- * 2. NextLink component rendered with ref for intersection observer
- * 3. When NextLink enters viewport (via threshold): navigate(nextPageUrl)
- * 4. Navigation uses replace mode + preventScrollReset
- * 5. Route loader returns updated connection with accumulated nodes
- * 6. Pagination component re-renders with new nodes appended
- * 7. Repeat when NextLink re-enters viewport
- *
- * This follows the official Shopify Hydrogen example:
+ * Follows the official Hydrogen infinite-scroll example:
  * https://github.com/Shopify/hydrogen/tree/main/examples/infinite-scroll
  *
- * @animations
- * Staggered Fade-In:
- * - Tracks previousNodesCount to identify new items
- * - New items get animate-product-fade-in class
- * - Stagger delay: index * 50ms (max 350ms for 8th+ item)
- * - isNewBatch flag triggers animation for entire new batch
- *
- * @styling
- * Loading States:
- * - Spinner: Centered with "Loading more..." text
- * - Skeletons: Grid layout matching item grid
- * - End: Horizontal line + muted text
- *
- * Sentinel Element:
- * - Min height: 80px (mobile) / 100px (desktop)
- * - Centers loading/end states
- * - Contains NextLink for intersection observer
- *
- * @dependencies
- * - @shopify/hydrogen: Pagination component
- * - react-intersection-observer: useInView hook for viewport detection
- * - react-router: useNavigate for URL-based pagination
- * - ~/components/ui: Spinner, Skeleton components
- *
  * @related
- * - InfiniteScrollGrid.tsx - Custom fetcher-based infinite scroll
+ * - InfiniteScrollGrid.tsx - Custom fetcher-based alternative (has retry support)
  * - PaginatedResourceSection.tsx - Legacy pagination component
- * - routes/blogs.$blogHandle._index.tsx - Uses for article listings
- * - routes/search.tsx - Could use for search results pagination
- *
- * @advantages_over_custom
- * - Official Hydrogen pattern: better long-term support
- * - Cleaner API: Pagination handles state management
- * - Better SSR: Connection pattern standard in GraphQL
- * - Simpler implementation: Less custom state management
- *
- * @disadvantages_vs_custom
- * - Less control over error states (no built-in retry)
- * - Requires Connection pattern (not compatible with all APIs)
  * - Navigation-based (slightly more complex debugging)
  *
  * @accessibility

@@ -1,78 +1,15 @@
-/**
- * @fileoverview General Utility Functions
- *
- * @description
- * Common utility functions used throughout the application.
- * Currently provides the `cn` function for merging Tailwind CSS classes.
- *
- * @architecture
- * This is the central utility module. Keep functions here only if they are:
- * - Used across multiple unrelated parts of the codebase
- * - Simple and single-purpose
- * - Not specific to any domain (product, cart, etc.)
- *
- * @dependencies
- * - clsx - Conditional class name construction
- * - tailwind-merge - Intelligent Tailwind class merging
- *
- * @related
- * - All components - Use cn() for className props
- * - shadcn/ui components - Also use this utility
- *
- * @example
- * ```tsx
- * <div className={cn(
- *   "base-class",
- *   isActive && "active-class",
- *   props.className
- * )} />
- * ```
- */
+/** @fileoverview General utility functions — class merging and text truncation. */
 
 import {type ClassValue, clsx} from "clsx";
 import {twMerge} from "tailwind-merge";
 
-// =============================================================================
-// CLASS NAME UTILITIES
-// =============================================================================
-
 /**
- * Merges class names with Tailwind-aware conflict resolution.
- *
- * Combines the power of clsx (conditional classes) with tailwind-merge
- * (intelligent Tailwind class merging). This prevents issues like:
- * - "p-2 p-4" → only p-4 is applied
- * - "text-red-500 text-blue-500" → only last one wins
- *
- * @param inputs - Class values (strings, objects, arrays, conditionals)
- *
- * @returns Merged class string with Tailwind conflicts resolved
- *
- * @example
- * ```tsx
- * // Basic usage
- * cn("px-4", "py-2")
- * // → "px-4 py-2"
- *
- * // Conditional classes
- * cn("base", isActive && "active", isFocused && "ring-2")
- * // → "base active" (if isActive is true)
- *
- * // Override pattern (common in component APIs)
- * cn("bg-primary text-white", props.className)
- * // → If className includes "bg-secondary", only bg-secondary is kept
- *
- * // Object syntax
- * cn({ "hidden": !isVisible, "block": isVisible })
- * ```
+ * Merges Tailwind class names with conflict resolution.
+ * @example cn("px-2", isActive && "bg-primary", props.className)
  */
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
-
-// =============================================================================
-// TEXT UTILITIES
-// =============================================================================
 
 /**
  * Truncates text to a specified length at word boundaries with customizable options.
@@ -118,29 +55,21 @@ export function truncateText(
         breakOnWord?: boolean;
     }
 ): string {
-    // Handle null/undefined/empty
     if (!text) return "";
 
     const {suffix = "...", stripHtml = true, breakOnWord = true} = options || {};
 
-    // Strip HTML tags if requested (using regex for server-side safety)
     let cleanText = text;
     if (stripHtml) {
-        // Remove HTML tags while preserving text content
-        cleanText = text.replace(/<[^>]*>/g, "");
-        // Clean up multiple spaces and trim
-        cleanText = cleanText.replace(/\s+/g, " ").trim();
+        cleanText = text.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
     }
 
-    // If text is already short enough, return as-is
     if (cleanText.length <= maxLength) {
         return cleanText;
     }
 
-    // Truncate to max length
     let truncated = cleanText.substring(0, maxLength);
 
-    // If breaking on word boundaries, find the last space
     if (breakOnWord) {
         const lastSpaceIndex = truncated.lastIndexOf(" ");
         if (lastSpaceIndex > 0) {
@@ -148,6 +77,5 @@ export function truncateText(
         }
     }
 
-    // Add suffix
     return truncated + suffix;
 }

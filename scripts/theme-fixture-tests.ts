@@ -1,3 +1,26 @@
+/**
+ * @fileoverview Theme Generation Fixture Tests
+ *
+ * @description
+ * Validates that `resolveTheme()` produces WCAG-compliant, visually distinct
+ * color tokens for a representative set of merchant brand inputs.
+ *
+ * Each fixture defines a `ThemeSeedInputs` bundle (brand primary, secondary,
+ * canvas, ink, accent) and declares whether normalization diagnostics are expected.
+ * The test suite asserts contrast ratios, surface separation, chroma ceilings, and
+ * structural CSS variable output for every fixture.
+ *
+ * A second pass (`runUsageAssertions`) verifies that specific UI components do not
+ * reference raw brand tokens directly (enforces the design token contract).
+ *
+ * @usage Run via `node --import tsx scripts/theme-fixture-tests.ts` or the
+ * project's `npm run test:theme` script.
+ *
+ * @related
+ * - app/lib/theme-utils.ts - resolveTheme, parseOklch, ThemeSeedInputs
+ * - app/lib/color/contrast.ts - calculateContrast (WCAG21 / APCA)
+ */
+
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -5,6 +28,7 @@ import path from "node:path";
 import {calculateContrast} from "../app/lib/color";
 import {parseOklch, resolveTheme, type ThemeSeedInputs} from "../app/lib/theme-utils";
 
+/** A named theme seed bundle with an expectation about normalization diagnostic output. */
 type Fixture = {
     name: string;
     seeds: ThemeSeedInputs;
@@ -146,12 +170,15 @@ const fixtures: Fixture[] = [
     }
 ];
 
+/** Surface color keys that must remain low-chroma (neutral) regardless of brand inputs. */
 const structuralColorKeys = ["background", "card", "muted", "border", "input"] as const;
 
+/** Returns the WCAG 2.1 contrast ratio between two OKLCH color strings. Returns 0 on parse failure. */
 function getRatio(foreground: string, background: string): number {
     return calculateContrast(foreground, background, "WCAG21")?.ratio ?? 0;
 }
 
+/** Asserts that `foreground` on `background` meets the given WCAG contrast minimum. */
 function assertContrast(label: string, foreground: string, background: string, minimum: number): void {
     const ratio = getRatio(foreground, background);
     assert(
@@ -160,12 +187,18 @@ function assertContrast(label: string, foreground: string, background: string, m
     );
 }
 
+/** Asserts that the OKLCH chroma of `color` does not exceed `maximum` (keeps surfaces neutral). */
 function assertLowChroma(label: string, color: string, maximum: number): void {
     const parsed = parseOklch(color);
     assert(parsed, `${label} could not be parsed as OKLCH`);
     assert(parsed.c <= maximum, `${label} chroma ${parsed.c.toFixed(4)} exceeded ${maximum}`);
 }
 
+/**
+ * Asserts that `card` and `muted` surfaces are perceptually distinct from `background`.
+ * Requires card to differ by at least 0.004 L and muted to differ more than card,
+ * ensuring visual hierarchy between the three surface layers.
+ */
 function assertSurfaceSeparation(label: string, background: string, card: string, muted: string): void {
     const bg = parseOklch(background);
     const cardColor = parseOklch(card);
@@ -180,6 +213,11 @@ function assertSurfaceSeparation(label: string, background: string, card: string
     assert(mutedDelta > cardDelta, `${label} muted must be more separated than card`);
 }
 
+/**
+ * Asserts diagnostic count expectations.
+ * When `expected` is true, requires at least one diagnostic (the theme needed
+ * normalization). When false, only verifies the count is non-negative.
+ */
 function assertDiagnostics(label: string, actual: number, expected: boolean): void {
     if (expected) {
         assert(actual > 0, `${label} should emit normalization diagnostics`);
@@ -189,6 +227,11 @@ function assertDiagnostics(label: string, actual: number, expected: boolean): vo
     assert(actual >= 0, `${label} diagnostics count must be valid`);
 }
 
+/**
+ * Runs WCAG contrast, chroma, surface separation, and diagnostic assertions against
+ * every fixture. Validates that the theme resolver produces structurally correct
+ * CSS variable output (`--surface-canvas` and legacy `--background` tokens).
+ */
 function runFixtureAssertions() {
     for (const fixture of fixtures) {
         const resolved = resolveTheme(fixture.seeds, null);
@@ -214,6 +257,11 @@ function runFixtureAssertions() {
     }
 }
 
+/**
+ * Verifies that targeted UI component files do not use raw brand token classes
+ * (`bg-primary/10`, `bg-accent/20`, etc.) directly. These classes bypass the
+ * design token layer and break contrast guarantees on custom themes.
+ */
 function runUsageAssertions() {
     const targetedFiles = ["app/components/FullScreenSearch.tsx", "app/components/FullScreenMenu.tsx", "app/routes/search.tsx"];
 

@@ -1,3 +1,16 @@
+/**
+ * @fileoverview Product Data Normalization for Card Display
+ *
+ * Transforms raw Shopify Storefront API product shapes (which vary slightly between
+ * query contexts) into the canonical `ShopifyProduct` type used by product card
+ * utilities. Each `from*` function handles the field variations specific to its source:
+ * - `fromStorefrontNode` — standard collection/search nodes
+ * - `fromSaleProduct` — sale page products (may use `featuredImage` fallback)
+ * - `fromWishlistProduct` — wishlist products (filters variants with prices)
+ * - `fromOrderHistoryProduct` — order line items (reconstructs a product from sparse fields)
+ * - `fromCartSuggestionProduct` / `fromRecentlyViewedAllProducts` — recommendation contexts
+ */
+
 import type {
     ShopifyImage,
     ShopifyMoney,

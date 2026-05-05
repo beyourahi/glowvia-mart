@@ -1,44 +1,15 @@
 /**
- * @fileoverview Theme Data Caching for Offline Accessibility
+ * @fileoverview Theme localStorage cache for offline page styling.
  *
- * @description
- * Client-side localStorage utilities for persisting generated theme data (colors + fonts) to
- * ensure brand-consistent styling on the offline page when network is unavailable. Caches
- * the complete theme configuration and updates the service worker cache for the offline route.
- *
- * @architecture
- * Theme Caching Strategy:
- * - Save theme to localStorage on app mount (when theme is loaded from Shopify)
- * - Offline page reads cached theme from localStorage
- * - Falls back to default theme if cache is unavailable
- * - Timestamp tracking for cache validation
- *
- * Storage Structure:
- * - Key: "hydrogen-theme-cache"
- * - Value: JSON {theme: GeneratedTheme, timestamp: number}
- * - Persistence: Never expires (always shows most recent theme)
- *
- * Service Worker Integration:
- * - updateOfflinePageCache() asks SW to refresh /offline route cache
- * - Ensures offline page has latest theme CSS from SSR
- * - Uses postMessage to communicate with service worker
- *
- * Offline Page Flow:
- * 1. User browses site → theme loaded from Shopify → saved to localStorage
- * 2. Network goes offline → user navigates → /offline route served by SW
- * 3. Offline page reads theme from localStorage → displays brand colors/fonts
- * 4. Fallback: If no cached theme, uses default theme constants from metaobject-parsers.ts
- *
- * @dependencies
- * - TypeScript types from types/index.ts (GeneratedTheme)
- * - Browser localStorage API
- * - Service Worker postMessage API
+ * Persists the generated theme (colors + fonts) to `"hydrogen-theme-cache"` so the
+ * service-worker-served `/offline` route can apply brand styling without a network request.
+ * `updateOfflinePageCache()` asks the SW to re-fetch `/offline` after the theme is available,
+ * overwriting the precached version that was stored before theme data loaded.
  *
  * @related
  * - app/routes/offline.tsx - Reads cached theme for offline page styling
  * - app/root.tsx - Saves theme to localStorage on mount
  * - app/lib/theme-utils.ts - Generates theme from colors and fonts
- * - public/service-worker.js - Handles UPDATE_OFFLINE_CACHE message
  */
 
 import type {GeneratedTheme} from "types";
@@ -50,10 +21,7 @@ interface CachedTheme {
     timestamp: number;
 }
 
-/**
- * Save theme to localStorage
- * Called on app mount when theme data is available
- */
+/** Save theme to localStorage. Called on app mount when theme data is available. */
 export function saveThemeToStorage(theme: GeneratedTheme): void {
     if (typeof window === "undefined") return;
 
@@ -69,10 +37,7 @@ export function saveThemeToStorage(theme: GeneratedTheme): void {
     }
 }
 
-/**
- * Load theme from localStorage
- * Returns null if no cached theme exists or if parsing fails
- */
+/** Load theme from localStorage. Returns null if no cache exists or parsing fails. */
 export function getThemeFromStorage(): GeneratedTheme | null {
     if (typeof window === "undefined") return null;
 
@@ -103,10 +68,7 @@ export function getThemeFromStorage(): GeneratedTheme | null {
     }
 }
 
-/**
- * Get the timestamp of the cached theme
- * Useful for debugging or cache invalidation
- */
+/** Get the timestamp of the cached theme (for debugging or cache invalidation). */
 export function getThemeCacheTimestamp(): number | null {
     if (typeof window === "undefined") return null;
 
@@ -132,10 +94,7 @@ export function getThemeCacheTimestamp(): number | null {
     }
 }
 
-/**
- * Clear the cached theme
- * Useful for testing or forcing a refresh
- */
+/** Clear the cached theme (useful for testing or forcing a refresh). */
 export function clearThemeStorage(): void {
     if (typeof window === "undefined") return;
 
@@ -146,9 +105,7 @@ export function clearThemeStorage(): void {
     }
 }
 
-/**
- * Check if a cached theme exists
- */
+/** Check if a cached theme exists. */
 export function hasThemeInStorage(): boolean {
     return getThemeFromStorage() !== null;
 }

@@ -79,6 +79,15 @@ export async function loader({request, context}: Route.LoaderArgs) {
     });
 }
 
+/**
+ * Renders the llms.txt manifest body.
+ *
+ * @param storeName - Display name of the Shopify store
+ * @param storeDescription - Store description from Shopify admin
+ * @param storeUrl - Primary domain URL (from Shopify; may differ from request origin)
+ * @param origin - Request origin URL (used to build absolute endpoint URLs)
+ * @returns Plain-text llms.txt content following the llmstxt.org convention
+ */
 function buildLlmsTxt({
     storeName,
     storeDescription,

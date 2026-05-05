@@ -36,6 +36,14 @@ const MCP_HEADERS = {
     "Cache-Control": "no-store"
 } as const;
 
+/**
+ * Handles a JSON-RPC 2.0 MCP request from an AI agent.
+ *
+ * Rejects non-POST methods with 405. Parses the request body and dispatches to
+ * the policies tool registry. Returns the JSON-RPC response (or error) with
+ * no-store cache headers so MCP responses are never served from cache.
+ * Emits an `mcp_request` observability event on every call.
+ */
 export async function action({request, context}: Route.ActionArgs) {
     // Only accept POST
     if (request.method !== "POST") {

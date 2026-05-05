@@ -1,9 +1,41 @@
+/**
+ * @fileoverview Quick Add Product Data Endpoint
+ *
+ * @description
+ * Fetches full product data by handle for use by the Quick Add system
+ * (QuickAddDialog / QuickAddSheet). Returns a normalized `ShopifyProduct` object
+ * that matches the shared product card type so Quick Add components can render
+ * variant selectors without navigating to the PDP.
+ *
+ * @route GET /api/products/:handle
+ *
+ * @authentication None — public endpoint.
+ *
+ * @rate-limiting 30 requests per IP per minute (sliding window).
+ *
+ * @query-params
+ * - handle (route param, required) — Shopify product handle
+ *
+ * @returns JSON `{product: ShopifyProduct}` — normalized product with up to 100
+ * variants, 20 images, and all option values.
+ *
+ * @related
+ * - components/QuickAddDialog.tsx - Desktop quick-add modal
+ * - components/QuickAddSheet.tsx - Mobile quick-add bottom sheet
+ * - lib/types/product-card.ts - ShopifyProduct type definition
+ */
+
 import type {Route} from "./+types/api.products.$handle";
 import type {ShopifyProduct} from "~/lib/types/product-card";
 import {createRateLimiter, getClientIP, getRateLimitResponse} from "~/lib/rate-limit";
 
 const limiter = createRateLimiter({windowMs: 60_000, maxRequests: 30});
 
+/**
+ * Fetches product data by handle and returns a normalized ShopifyProduct.
+ * Rate-limited per IP; responds 400 when handle is missing, 404 when the product
+ * does not exist, and 500 on Storefront API failure.
+ */
 export const loader = async ({request, params, context}: Route.LoaderArgs) => {
     const rateLimitResponse = getRateLimitResponse(limiter.check(getClientIP(request)));
     if (rateLimitResponse) return rateLimitResponse;
@@ -43,6 +75,13 @@ export const loader = async ({request, params, context}: Route.LoaderArgs) => {
     }
 };
 
+/**
+ * Converts the raw Storefront API product node into a `ShopifyProduct` shape.
+ *
+ * Defensively handles missing or malformed fields so Quick Add components always
+ * receive a fully typed object. Falls back to `featuredImage` when `images.nodes`
+ * is empty so at least one image is always present.
+ */
 function normalizeQuickAddProduct(product: any): ShopifyProduct {
     const imageNodes = Array.isArray(product?.images?.nodes)
         ? product.images.nodes.filter(Boolean)

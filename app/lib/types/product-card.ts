@@ -1,3 +1,12 @@
+/**
+ * @fileoverview Shared product card type definitions.
+ *
+ * Provides lightweight Shopify data shapes (`ShopifyProduct`, `ShopifyProductVariant`, etc.)
+ * and the pre-computed `ProductCardData` type used by the unified product card system.
+ * Raw Shopify types come from the Storefront API; `ProductCardData` is derived by
+ * `lib/pricing-analysis.ts` and includes pre-computed discount metadata.
+ */
+
 export type ShopifyMoney = {
     amount: string;
     currencyCode: string;
@@ -67,6 +76,10 @@ export type ProductCardVariant = {
     image: {url: string; altText: string | null} | null;
 };
 
+/**
+ * Pre-computed product card data returned by `lib/pricing-analysis.ts`.
+ * Includes discount metadata so cards can render badges without re-computing.
+ */
 export type ProductCardData = {
     id: string;
     handle: string;
@@ -81,8 +94,10 @@ export type ProductCardData = {
     maxDiscountSavings: number;
 };
 
+/** Grid column count for product card layout (1–4 columns). */
 export type ProductCardViewMode = "grid1" | "grid2" | "grid3" | "grid4";
 
+/** Props for the unified product card — accepts either raw Shopify data or pre-computed `ProductCardData`. */
 export type UnifiedProductCardProps = {
     product: ShopifyProduct | ProductCardData;
     viewMode?: ProductCardViewMode | string;

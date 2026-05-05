@@ -1,37 +1,12 @@
 /**
- * @fileoverview Scroll Position Detection Hook
+ * @fileoverview Boolean scroll threshold hook — returns `true` once scroll exceeds `threshold`.
  *
- * @description
- * React hook for detecting if the page has been scrolled past a threshold using Lenis smooth
- * scroll values. Provides boolean state for conditional rendering based on scroll position
- * (e.g., header styling, scroll-to-top button visibility).
- *
- * @architecture
- * Scroll Detection Strategy:
- * - Subscribes to Lenis scroll events
- * - Compares current scroll position to threshold
- * - Updates boolean state when crossing threshold
- * - Uses both Lenis event listener and context scroll value
- *
- * Use Cases:
- * - Header background on scroll
- * - Sticky navigation appearance
- * - Scroll-to-top button visibility
- * - Progress indicators
- *
- * Performance:
- * - Efficient: Only updates when threshold crossing occurs
- * - Synced with Lenis smooth scroll values
- * - Automatic cleanup on unmount
- *
- * @dependencies
- * - React (useState, useEffect)
- * - ./LenisProvider (useLenis hook)
+ * Subscribes to both the Lenis `scroll` event and the LenisProvider context value so
+ * it stays accurate during animated scrolls and on initial mount.
  *
  * @related
  * - app/lib/LenisProvider.tsx - Provides Lenis instance and scroll value
- * - app/components/Header.tsx - Uses for header background on scroll
- * - app/lib/useScrollProgress.ts - Related hook for scroll progress
+ * - app/lib/useScrollProgress.ts - Continuous 0-1 progress variant
  */
 
 import {useState, useEffect} from "react";

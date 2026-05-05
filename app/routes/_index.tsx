@@ -877,7 +877,7 @@ const ALL_PRODUCTS_QUERY = `#graphql
     $country: CountryCode
     $language: LanguageCode
   ) @inContext(country: $country, language: $language) {
-    products(first: 50) {
+    products(first: 250) {
       nodes {
         id
         title

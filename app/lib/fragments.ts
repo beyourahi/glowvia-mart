@@ -567,15 +567,15 @@ export const CART_SUGGESTIONS_QUERY = `#graphql
  * - Product type filters
  * - Availability indicators
  *
- * @note Fetches first 50 collections with 1 available product each (existence check only).
- * allProducts fetches 50 products with 3 variants for search terms, discount count, and popular products.
+ * @note Fetches first 250 collections with 1 available product each (existence check only).
+ * allProducts fetches 250 products with 3 variants for search terms, discount count, and popular products.
  */
 export const MENU_COLLECTIONS_QUERY = `#graphql
   query MenuCollections(
     $country: CountryCode
     $language: LanguageCode
   ) @inContext(language: $language, country: $country) {
-    collections(first: 50, sortKey: TITLE) {
+    collections(first: 250, sortKey: TITLE) {
       nodes {
         id
         handle
@@ -597,7 +597,7 @@ export const MENU_COLLECTIONS_QUERY = `#graphql
         }
       }
     }
-    allProducts: products(first: 50, query: "available_for_sale:true") {
+    allProducts: products(first: 250, query: "available_for_sale:true") {
       nodes {
         id
         handle
@@ -649,7 +649,7 @@ export const MENU_COLLECTIONS_QUERY = `#graphql
  * Single canonical definition shared across all routes that render a sidebar.
  * Returned as a deferred Promise so it does not block above-fold rendering.
  *
- * - collections.products(first:100): accurate per-collection counts for filter sidebar
+ * - collections.products(first:250): accurate per-collection counts for filter sidebar
  * - allProducts(first:250): full catalog slice for discount counting without over-fetching
  */
 export const SIDEBAR_COLLECTIONS_QUERY = `#graphql
@@ -657,12 +657,12 @@ export const SIDEBAR_COLLECTIONS_QUERY = `#graphql
     $country: CountryCode
     $language: LanguageCode
   ) @inContext(country: $country, language: $language) {
-    collections(first: 50, sortKey: TITLE) {
+    collections(first: 250, sortKey: TITLE) {
       nodes {
         id
         handle
         title
-        products(first: 100) {
+        products(first: 250) {
           nodes {
             id
           }

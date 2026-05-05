@@ -94,7 +94,7 @@ export async function loader(args: Route.LoaderArgs) {
 
     const {products} = await context.dataAdapter.query(GALLERY_PRODUCTS_QUERY, {
         variables: {
-            first: 100,
+            first: 250,
             after: cursor
         },
         cache: context.dataAdapter.CacheShort()

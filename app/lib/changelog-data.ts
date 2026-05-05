@@ -30,6 +30,34 @@ import type {ChangelogEntry} from "~/lib/types/changelog";
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
         date: "2026-05-05",
+        category: "Performance",
+        headline: "Product and collection listings load more completely on first visit",
+        summary:
+            "The store now fetches up to 250 products and collections in catalog queries — up from a lower cap. Pages with larger catalogs show more results without extra pagination on first load."
+    },
+    {
+        date: "2026-05-05",
+        category: "Fix",
+        headline: "Product card image gallery now snaps cleanly between photos",
+        summary:
+            "Swiping through images on a product card now snaps precisely to the next or previous photo. Browsing product media feels more deliberate and predictable on both mobile and desktop."
+    },
+    {
+        date: "2026-05-02",
+        category: "Design",
+        headline: "Product title size is now more proportionate at each grid column count",
+        summary:
+            "On mobile, product title font sizes in the grid have been refined for each column layout — single, two, and three columns each use a size that gives the title presence without crowding the card."
+    },
+    {
+        date: "2026-05-02",
+        category: "Fix",
+        headline: "Cart suggestions no longer show a loading skeleton indefinitely",
+        summary:
+            "On the first visit to a page with cart suggestions, the skeleton loader could remain visible even after product recommendations finished loading. Suggestions now appear correctly as soon as data is ready."
+    },
+    {
+        date: "2026-05-05",
         category: "Fix",
         headline: "Add to Bag button is now visible on mobile and tablet",
         summary: "The purchase button was previously hidden on smaller screens, replaced by a separate mobile-only section with different button text. It now appears consistently across all screen sizes using the same form, so you can add items to your bag from any device without confusion."
@@ -912,10 +940,31 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
         summary: "Clicking 'Log out' or 'Cancel subscription' now immediately disables the button and shows a spinner while the action processes — preventing accidental double-taps and making it clear that your request is on its way."
     },
     {
+        date: "2026-03-25",
+        category: "Improvement",
+        headline: "Cart now updates instantly even on slow connections",
+        summary:
+            "Cart interactions — adding items, changing quantities, and removing products — now respond immediately because they no longer wait on unrelated authentication requests to complete first. The cart drawer feels consistently snappy regardless of connection speed."
+    },
+    {
         date: "2026-03-23",
         category: "Fix",
         headline: "Brand marquee no longer pauses when you hover over it",
         summary: "The scrolling strip at the bottom of the hero section used to stop moving when you moved your cursor over it. It now scrolls continuously — hovering over it no longer interrupts the animation."
+    },
+    {
+        date: "2026-03-22",
+        category: "Fix",
+        headline: "Cart shipping bar and order note have lighter, more legible backgrounds",
+        summary:
+            "The free shipping progress bar and the order note field inside the cart now use a slightly lighter background tone. The previous shading was too dark, making these areas harder to read — they now sit comfortably alongside the rest of the cart design."
+    },
+    {
+        date: "2026-03-14",
+        category: "Improvement",
+        headline: "Hover effects and page animations are now smoother and more consistent",
+        summary:
+            "Hover animations on product cards, buttons, and interactive elements now respond to pointer type — mouse-driven interactions are fluid and smooth, while touch interactions avoid triggering effects designed for pointer devices. The overall motion system is now more predictable across devices and screen sizes."
     },
     {
         date: "2026-03-09",
@@ -924,15 +973,43 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
         summary: "The animation that brings the store name into view as you scroll down past the hero section was not triggering reliably. It now plays smoothly on every page load."
     },
     {
+        date: "2026-03-08",
+        category: "Improvement",
+        headline: "Broad UI and interaction polish across the entire storefront",
+        summary:
+            "A wide-ranging set of improvements was applied to product cards, the navigation, the cart, and key interactive components. Typography, spacing, and motion are now more consistent and refined throughout the storefront."
+    },
+    {
         date: "2026-03-06",
         category: "Fix",
         headline: "Navigation links are now easier to read",
         summary: "The colour of links in the top navigation bar has been adjusted for better readability, making it clearer which items are tappable and where they take you."
     },
     {
+        date: "2026-03-06",
+        category: "Improvement",
+        headline: "Promotional banner redesigned for the new storefront layout",
+        summary:
+            "The promotional section above the homepage hero has been updated to match the new storefront design system. Layout, typography, and call-to-action placement have been refined for stronger visual impact across all screen sizes."
+    },
+    {
+        date: "2026-03-06",
+        category: "New Feature",
+        headline: "Storefront design and features fully built out",
+        summary:
+            "A comprehensive first-version design has been applied across the entire storefront — refreshed typography, a cohesive color system, product cards, navigation, the cart experience, account area, and checkout flow. This is the initial feature-complete release of the template."
+    },
+    {
         date: "2026-03-04",
         category: "Fix",
         headline: "Checkout button now correctly opens the checkout page",
         summary: "The 'Proceed to Checkout' button was not navigating to the checkout page — clicking it did nothing. It now takes you to your cart checkout every time."
+    },
+    {
+        date: "2026-03-03",
+        category: "New Feature",
+        headline: "Storefront launched",
+        summary:
+            "The storefront template is live. Built on Shopify Hydrogen with React Router 7, it runs on Shopify Oxygen and Cloudflare Workers. Core features include product browsing, cart management, customer accounts, wishlist, blog, full PWA support, and smooth scroll animations."
     }
 ];

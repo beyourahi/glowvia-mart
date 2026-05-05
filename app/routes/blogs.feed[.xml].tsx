@@ -4,7 +4,7 @@ export async function loader({request, context}: Route.LoaderArgs) {
     const origin = new URL(request.url).origin;
 
     const {articles, shop} = await context.dataAdapter.query(FEED_QUERY, {
-        variables: {first: 50}
+        variables: {first: 250}
     });
 
     const shopName = shop?.name ?? "Store";

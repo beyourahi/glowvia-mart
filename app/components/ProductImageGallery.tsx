@@ -504,7 +504,7 @@ export function ProductImageGallery({images, selectedVariantImage, media, isAvai
             {/* Mobile Carousel — swipeable, arrows hidden at 320px, visible at sm+ */}
             <div className="md:hidden">
                 <Carousel
-                    opts={{align: "start", loop: true, dragFree: true}}
+                    opts={{align: "start", loop: true, dragFree: false, skipSnaps: false}}
                     plugins={[WheelGesturesPlugin({forceWheelAxis: "x"})]}
                     className="w-full"
                 >

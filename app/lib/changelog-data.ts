@@ -30,6 +30,13 @@ import type {ChangelogEntry} from "~/lib/types/changelog";
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
         date: "2026-05-05",
+        category: "Fix",
+        headline: "Product page image gallery snaps cleanly between photos",
+        summary:
+            "Swiping through images on the product detail page now snaps precisely to each photo instead of stopping mid-slide. Browsing product images on mobile feels more deliberate and consistent."
+    },
+    {
+        date: "2026-05-05",
         category: "Performance",
         headline: "Product and collection listings load more completely on first visit",
         summary:
@@ -79,6 +86,13 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
         category: "Improvement",
         headline: "Size guide removed from product pages",
         summary: "The size guide button and dialog have been removed from product pages. Sizing information is still available through product descriptions and any size-related content set up by the store."
+    },
+    {
+        date: "2026-04-30",
+        category: "New Feature",
+        headline: "Product pages now show which collections each item belongs to",
+        summary:
+            "Each product detail page now displays the collections it belongs to as small, tappable badge labels. Tapping a collection badge takes you directly to that category, making it easy to discover related products without navigating back through the store structure."
     },
     {
         date: "2026-04-28",
